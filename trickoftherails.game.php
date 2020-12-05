@@ -19,12 +19,6 @@
 
 require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
 
-define('EXCHANGE', 1);
-define('RESERVATION', 2);
-define('LOCOMOTIVE', 3);
-define('CITY', 4);
-define('RAILWAY', 5);
-
 class TrickOfTheRails extends Table
 {
 	function __construct( )
@@ -111,26 +105,30 @@ class TrickOfTheRails extends Table
         
         $trickcards = array();
 
-        for ($value = 1; $value <= 5; $value++) {
-            $trickcards[] = array('type' => LOCOMOTIVE, 'type_arg' => $value, 'nbr' => 1);
-            $trickcards[] = array('type' => EXCHANGE, 'type_arg' => $value, 'nbr' => 1);
+        for ($ix = 1; $ix <= 5; $ix++) {
+            // locomotives
+            $trickcards[] = array('type' => 6, 'type_arg' => $ix, 'nbr' => 1);
+            // exchange cards
+            $trickcards[] = array('type' => $ix, 'type_arg' => 11, 'nbr' => 1);
         }
 
+        // number of cards in trick lane, and also starting hand size
         $tricklanelen = 0;
 
         switch ($players_nbr) {
             case 3:
-                $trickcards[] = array('type' => RESERVATION, 'type_arg' => 0, 'nbr' => 3);
-                for ($value = 1; $value <= 3; $value++) {
-                    $trickcards[] = array('type' => CITY, 'type_arg' => $value, 'nbr' => 1);
+                // use 3 Reservation and City cards
+                $trickcards[] = array('type' => 6, 'type_arg' => 9, 'nbr' => 3);
+                for ($col = 6; $col <= 8; $col++) {
+                    $trickcards[] = array('type' => 6, 'type_arg' => $col, 'nbr' => 1);
                 }
                 $tricklanelen = 15;
                 break;
             case 4:
                 // only 1 Reservation and City card
-                $trickcards[] = array('type' => RESERVATION, 'type_arg' => 0, 'nbr' => 1);
+                $trickcards[] = array('type' => 6, 'type_arg' => 9, 'nbr' => 1);
                 // the City card used is randomly determined
-                $trickcards[] = array('type' => CITY, 'type_arg' => bga_rand(1,3), 'nbr' => 1);
+                $trickcards[] = array('type' => 6, 'type_arg' => bga_rand(6,8), 'nbr' => 1);
                 $tricklanelen = 11;
                 break;
             case 5:
@@ -142,15 +140,19 @@ class TrickOfTheRails extends Table
                 throw new BgaVisibleSystemException("Invalid player count: {$players_nbr}");
         }
 
+        // shuffle trick deck
         $this->trickcards->createCards($trickcards, 'deck');
+        $this->trickcards->shuffle('deck');
+        $tricklane = $this->trickcards->pickCardsForLocation($tricklanelen, 'deck', 'trickrewards');
 
-        // Shuffle deck
+        // Shuffle main deck
         $this->rrcards->shuffle('deck');
-        // Deal 13 cards to each players
+        // Deal cards to each player
         $players = self::loadPlayersBasicInfos();
         foreach ( $players as $player_id => $player ) {
             $rrcards = $this->rrcards->pickCards($tricklanelen, 'deck', $player_id);
-        } 
+        }
+
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
@@ -181,9 +183,10 @@ class TrickOfTheRails extends Table
         // Cards in player hand
         $result['hand'] = $this->rrcards->getCardsInLocation( 'hand', $current_player_id );
 
-        // Cards played into the trick area
-        $result['cardsontable'] = $this->rrcards->getCardsInLocation( 'cardsontable' );
-
+        // Cards played onto the table
+        $result['cardsontable'] = $this->rrcards->getCardsInLocation( 'cardsplayed' );
+        // Cards in tricklane
+        $result['tricklanecards'] = $this->trickcards->getCardsInLocation( 'trickrewards' );
 
         return $result;
     }

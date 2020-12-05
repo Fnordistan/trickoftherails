@@ -33,13 +33,18 @@
     </div>
 </div>
 
-<div id="trickarea" class="whiteblock cardlane">
-    <h3>Trick Area</h3>
-    <div id="trick_lead" class="openslot whitebock"></div>
+<div id="biddinglane">
+    <h3>Trick Lead</h3>
+    <div id="cardsplayed" class="cardlane whiteblock">
+        <div id="trick_lead" class="openslot"></div>
+    </div>
 </div>
 
-<div id="tricklane" class="whiteblock cardlane">
+<div id="tricklane">
     <h3>Trick Lane</h3>
+    <div id="trickrewards" class="cardlane whiteblock">
+
+    </div>
 </div>
 
 <div id="rr_lanes">
