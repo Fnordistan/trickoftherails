@@ -64,6 +64,7 @@ function (dojo, declare) {
             this.playerHand.image_items_per_row = 12;
 
             // Now set up trick lane
+            // We specify no weight because we don't want it sorted
             this.trickLane = new ebg.stock();
             this.trickLane.create(this, $('trickrewards'), this.cardwidth, this.cardheight );
             this.trickLane.image_items_per_row = 12;
@@ -79,12 +80,12 @@ function (dojo, declare) {
                     if (rr == 6) {
                         // only Locomotives, Cities, and Reservation cards on last row
                         if (vv <= 9) {
-                            this.trickLane.addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                            this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                         }
                     } else {
                         if (vv == 11) {
                             // it's an Exchange card
-                            this.trickLane.addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                            this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                         } else {
                             this.playerHand.addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                         }
