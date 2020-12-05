@@ -48,6 +48,113 @@
 
 /********* You can start writing your CSS below this line: **********/
 
+.playertablecard {
+    display: inline-block;
+    position: relative;
+    margin-top: 5px;
+    width: 113.3px;
+    height: 170px;
+    background-image: url(img/cards_sprites.jpg);
+    border-radius: 10px;
+    border: 1px black solid;
+    
+    -moz-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    -webkit-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    -o-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
+}
+
+.cardlane {
+    margin-top: 5px;
+    height: 170px;
+}
+
+#trickarea {
+    margin-top: 5px;
+    height: 170px;
+}
+
+.rr_lane {
+    margin-top: 5px;
+    height: 170px;
+}
+
+.rr_lane_logo {
+    display: inline-block;
+    position: relative;
+    margin-top: 5px;
+    background-image: url(img/railroad_sprites.png);
+}
+
+#b_and_o_logo {
+    background-size: 705px 125px;
+    width: 125px;
+    height: 125px;
+    background-position: 0px 0px;
+}
+
+#b_and_o_station {
+    background-position: -113.3px 0px;
+}
+
+#c_and_o_logo {
+    background-size: 705px 125px;
+    width: 125px;
+    height: 125px;
+    background-position: -125px 0px;
+}
+
+
+#c_and_o_station {
+    background-position: -113.3px -170px;
+}
+
+#erie_logo {
+    background-size: 705px 125px;
+    width: 125px;
+    height: 125px;
+    background-position: -250px 0px;
+}
+
+#erie_station {
+    background-position: -113.3px -340px;
+}
+
+
+#nyc_logo {
+    background-size: 438px 78px;
+    width: 125px;
+    height: 78px;
+    background-position: -312px 0px;
+}
+
+#nyc_station {
+    background-position: -113.3px -510px;
+}
+
+#prr_logo {
+    background-size: 705px 125px;
+    width: 126.5px;
+    height: 125px;
+    background-position: -375px 0px;
+}
+
+#prr_station {
+    background-position: -113.3px -680px;
+}
+
+/* 
+add rounded corners + shadows
+
+border-radius: 10px;
+border: 1px black solid;
+
+-moz-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+-webkit-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+-o-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);    */
 
 /*
     Example of CSS sprites (a black token and a white token, 20x20px each, embedded in the same "tokens.png" 40x20px image):
