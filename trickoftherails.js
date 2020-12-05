@@ -18,7 +18,8 @@
 define([
     "dojo","dojo/_base/declare",
     "ebg/core/gamegui",
-    "ebg/counter"
+    "ebg/counter",
+    "ebg/stock"
 ],
 function (dojo, declare) {
     return declare("bgagame.trickoftherails", ebg.core.gamegui, {
@@ -26,9 +27,9 @@ function (dojo, declare) {
             console.log('trickoftherails constructor');
               
             // Here, you can init the global variables of your user interface
-            // Example:
-            // this.myGlobalValue = 0;
-
+            console.log('trick of the rails constructor');
+            this.cardwidth = 114;
+            this.cardheight = 171;
         },
         
         /*
@@ -56,8 +57,40 @@ function (dojo, declare) {
                 // TODO: Setting up players boards if needed
             }
             
-            // TODO: Set up your game interface here, according to "gamedatas"
-            
+            // Player hand
+            this.playerHand = new ebg.stock();
+            this.playerHand.create( this, $('myhand'), this.cardwidth, this.cardheight );
+
+            // card sprites is actually 6x12, but railroads are in first 5 rows, and value cards are in cols 1-10
+            this.playerHand.image_items_per_row = 12;
+            // Create cards types:
+            for( var rr = 1; rr <=5; rr++ )
+            {
+                for( var value = 1; value <= 10; value++ )
+                {
+                    // Build card type id
+                    var card_type_id = this.getUniqueTypeForCard( rr, value );
+                    this.playerHand.addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                }
+            }
+            // Cards in player's hand
+            for ( var i in this.gamedatas.hand) {
+                var card = this.gamedatas.hand[i];
+                var rr = card.type;
+                var value = card.type_arg;
+                this.playerHand.addToStockWithId(this.getUniqueTypeForCard(rr, value), card.id);
+            }
+
+            // Cards played on table
+            for (i in this.gamedatas.cardsontable) {
+                var card = this.gamedatas.cardsontable[i];
+                var rr = card.type;
+                var value = card.type_arg;
+                var player_id = card.location_arg;
+                this.playCardOnTable(player_id, rr, value, card.id);
+            }
+
+            dojo.connect( this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged' );
  
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
@@ -150,14 +183,50 @@ function (dojo, declare) {
 
         ///////////////////////////////////////////////////
         //// Utility methods
-        
-        /*
-        
-            Here, you can defines some utility methods that you can use everywhere in your javascript
-            script.
-        
-        */
 
+        /**
+         * Gets a unique identifier for each card
+         * @param int $rr 
+         * @param int $v
+         * @returns int
+         */
+        getUniqueTypeForCard: function(rr, v)
+        {
+            return (rr-1)*12+(v-1);
+        },
+
+        /**
+         * 
+         * @param {*} player_id 
+         * @param {*} rr 
+         * @param {*} value 
+         * @param {*} card_id 
+         */
+        playCardOnTable : function(player_id, rr, value, card_id) {
+            // player_id => direction
+            dojo.place(this.format_block('jstpl_cardontable', {
+                x : this.cardwidth * (value - 1),
+                y : this.cardheight * (rr - 1),
+                player_id : player_id
+            }), 'trickarea');
+
+            if (player_id != this.player_id) {
+                // Some opponent played a card
+                // Move card from player panel
+                this.placeOnObject('trickarea', 'overall_player_board_' + player_id);
+            } else {
+                // You played a card. If it exists in your hand, move card from there and remove
+                // corresponding item
+
+                if ($('myhand_item_' + card_id)) {
+                    this.placeOnObject('trickarea', 'myhand_item_' + card_id);
+                    this.playerHand.removeFromStockById(card_id);
+                }
+            }
+
+            // In any case: move it to its final destination
+            this.slideToObject('trickarea', 'playertablecard_' + player_id).play();
+        },
 
         ///////////////////////////////////////////////////
         //// Player's action
@@ -173,6 +242,26 @@ function (dojo, declare) {
         
         */
         
+       onPlayerHandSelectionChanged : function() {
+        var items = this.playerHand.getSelectedItems();
+
+        if (items.length > 0) {
+            if (this.checkAction('playCard', true)) {
+                // Can play a card
+
+                var card_id = items[0].id;
+                console.log("on playCard "+card_id);
+
+                this.playerHand.unselectAll();
+            } else if (this.checkAction('giveCards')) {
+                // Can give cards => let the player select some cards
+            } else {
+                this.playerHand.unselectAll();
+            }
+        }
+    },
+
+
         /* Example:
         
         onMyMethodToCall1: function( evt )

@@ -27,9 +27,9 @@
 
 
 <div id="myhand_wrap" class="whiteblock">
-    <h3>My Hand</h3>
+    <h3>{MY_HAND}</h3>
     <div id="myhand">
-        <div class="playertablecard"></div>
+
     </div>
 </div>
 
@@ -42,35 +42,17 @@
     <h3>Trick Lane</h3>
 </div>
 
-<h3>Railroads</h3>
-<div id="b_and_o_lane" class="cardlane whiteblock">
-    <div id="b_and_o_logo" class="rr_lane_logo"></div>
-    <div id="b_and_o_lslot" class="openslot whitebock"></div>
-    <div id="b_and_o_station" class="playertablecard"></div>
-</div>
+<div id="rr_lanes">
+    <h3>Railroads</h3>
 
-<div id="c_and_o_lane" class="cardlane whiteblock">
-    <div id="c_and_o_logo" class="rr_lane_logo"></div>
-    <div id="c_and_o_lslot" class="openslot whitebock"></div>
-    <div id="c_and_o_station" class="playertablecard"></div>
-</div>
+    <!-- BEGIN RAILROAD -->
+    <div id="{RR}_lane" class="cardlane whiteblock">
+        <div id="{RR}_logo" class="rr_lane_logo"></div>
+        <div id="{RR}_lslot" class="openslot whitebock"></div>
+        <div id="{RR}_station" class="rr_station nice_card"></div>
+    </div>
+    <!-- END RAILROAD -->
 
-<div id="erie_lane" class="cardlane whiteblock">
-    <div id="erie_logo" class="rr_lane_logo"></div>
-    <div id="erie_lslot" class="openslot whitebock"></div>
-    <div id="erie_station" class="playertablecard"></div>
-</div>
-
-<div id="nyc_lane" class="cardlane whiteblock">
-    <div id="nyc_logo" class="rr_lane_logo"></div>
-    <div id="nyc_lslot" class="openslot whitebock"></div>
-    <div id="nyc_station" class="playertablecard"></div>
-</div>
-
-<div id="prr_lane" class="cardlane whiteblock">
-    <div id="prr_logo" class="rr_lane_logo"></div>
-    <div id="prr_lslot" class="openslot whitebock"></div>
-    <div id="prr_station" class="playertablecard"></div>
 </div>
 
 
@@ -78,12 +60,8 @@
 
 // Javascript HTML templates
 
-/*
-// Example:
-var jstpl_some_game_item='<div class="my_game_item" id="my_game_item_${MY_ITEM_ID}"></div>';
-
-*/
-
+var jstpl_cardontable = '<div class="cardontable nice_card" style="background-position:-${x}px -${y}px">\
+                        </div>';
 </script>  
 
 {OVERALL_GAME_FOOTER}

@@ -39,6 +39,18 @@
 
         /*********** Place your code below:  ************/
 
+        $template = self::getGameName() . "_" . self::getGameName();
+
+        // this will make our My Hand text translatable
+        $this->tpl['MY_HAND'] = self::_("My hand");
+        
+        $RAILCOS = array( 'b_and_o', 'c_and_o', 'erie', 'nyc', 'prr' );
+        
+        // this will inflate our player block with actual players data
+        $this->page->begin_block($template, "RAILROAD");
+        foreach ( $RAILCOS as $rr) {
+            $this->page->insert_block("RAILROAD", array ("RR" => $rr));
+        }
 
         /*
         

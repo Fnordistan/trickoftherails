@@ -19,6 +19,11 @@
 
 require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
 
+define('EXCHANGE', 1);
+define('RESERVATION', 2);
+define('LOCOMOTIVE', 3);
+define('CITY', 4);
+define('RAILWAY', 5);
 
 class TrickOfTheRails extends Table
 {
@@ -33,13 +38,15 @@ class TrickOfTheRails extends Table
         parent::__construct();
         
         self::initGameStateLabels( array( 
-            //    "my_first_global_variable" => 10,
-            //    "my_second_global_variable" => 11,
-            //      ...
-            //    "my_first_game_variant" => 100,
-            //    "my_second_game_variant" => 101,
-            //      ...
-        ) );        
+            "trickRR" => 10,
+        ) );
+
+        $this->rrcards = self::getNew("module.common.deck");
+        $this->rrcards->init("CARDS_RR");
+
+        $this->trickcards = self::getNew("module.common.deck");
+        $this->trickcards->init("CARDS_TRICK");
+
 	}
 	
     protected function getGameName( )
@@ -81,14 +88,69 @@ class TrickOfTheRails extends Table
 
         // Init global values with their initial values
         //self::setGameStateInitialValue( 'my_first_global_variable', 0 );
-        
+         // Set current trick color to zero (= no trick color)
+         self::setGameStateInitialValue( 'trickRR', 0 );
+
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
         //self::initStat( 'table', 'table_teststat1', 0 );    // Init a table statistics
         //self::initStat( 'player', 'player_teststat1', 0 );  // Init a player statistics (for all players)
 
-        // TODO: setup the initial game situation here
-       
+        // Create cards
+        $rrcards = array();
+        foreach ( $this->railroads as $rr_id => $railroad ) {
+            // Railroad company names
+            for ($value = 1; $value <= 10; $value++) {
+                $rrcards[] = array ('type' => $rr_id, 'type_arg' => $value, 'nbr' => 1 );
+            }
+        }
+        $this->rrcards->createCards( $rrcards, 'deck' );
+
+        // Create the trick deck, which varies by number of players
+        $players_nbr = count( $players );
+        
+        $trickcards = array();
+
+        for ($value = 1; $value <= 5; $value++) {
+            $trickcards[] = array('type' => LOCOMOTIVE, 'type_arg' => $value, 'nbr' => 1);
+            $trickcards[] = array('type' => EXCHANGE, 'type_arg' => $value, 'nbr' => 1);
+        }
+
+        $tricklanelen = 0;
+
+        switch ($players_nbr) {
+            case 3:
+                $trickcards[] = array('type' => RESERVATION, 'type_arg' => 0, 'nbr' => 3);
+                for ($value = 1; $value <= 3; $value++) {
+                    $trickcards[] = array('type' => CITY, 'type_arg' => $value, 'nbr' => 1);
+                }
+                $tricklanelen = 15;
+                break;
+            case 4:
+                // only 1 Reservation and City card
+                $trickcards[] = array('type' => RESERVATION, 'type_arg' => 0, 'nbr' => 1);
+                // the City card used is randomly determined
+                $trickcards[] = array('type' => CITY, 'type_arg' => bga_rand(1,3), 'nbr' => 1);
+                $tricklanelen = 11;
+                break;
+            case 5:
+                // no Reservation or City cards
+                $tricklanelen = 9;
+                break;
+            default:
+                // WTF happened?
+                throw new BgaVisibleSystemException("Invalid player count: {$players_nbr}");
+        }
+
+        $this->trickcards->createCards($trickcards, 'deck');
+
+        // Shuffle deck
+        $this->rrcards->shuffle('deck');
+        // Deal 13 cards to each players
+        $players = self::loadPlayersBasicInfos();
+        foreach ( $players as $player_id => $player ) {
+            $rrcards = $this->rrcards->pickCards($tricklanelen, 'deck', $player_id);
+        } 
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
@@ -116,8 +178,13 @@ class TrickOfTheRails extends Table
         $sql = "SELECT player_id id, player_score score FROM player ";
         $result['players'] = self::getCollectionFromDb( $sql );
   
-        // TODO: Gather all information about current game situation (visible by player $current_player_id).
-  
+        // Cards in player hand
+        $result['hand'] = $this->rrcards->getCardsInLocation( 'hand', $current_player_id );
+
+        // Cards played into the trick area
+        $result['cardsontable'] = $this->rrcards->getCardsInLocation( 'cardsontable' );
+
+
         return $result;
     }
 
