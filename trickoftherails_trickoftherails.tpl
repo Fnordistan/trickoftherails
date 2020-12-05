@@ -35,6 +35,7 @@
 
 <div id="trickarea" class="whiteblock cardlane">
     <h3>Trick Area</h3>
+    <div id="trick_lead" class="openslot whitebock"></div>
 </div>
 
 <div id="tricklane" class="whiteblock cardlane">
@@ -44,26 +45,31 @@
 <h3>Railroads</h3>
 <div id="b_and_o_lane" class="cardlane whiteblock">
     <div id="b_and_o_logo" class="rr_lane_logo"></div>
+    <div id="b_and_o_lslot" class="openslot whitebock"></div>
     <div id="b_and_o_station" class="playertablecard"></div>
 </div>
 
 <div id="c_and_o_lane" class="cardlane whiteblock">
     <div id="c_and_o_logo" class="rr_lane_logo"></div>
+    <div id="c_and_o_lslot" class="openslot whitebock"></div>
     <div id="c_and_o_station" class="playertablecard"></div>
 </div>
 
 <div id="erie_lane" class="cardlane whiteblock">
     <div id="erie_logo" class="rr_lane_logo"></div>
+    <div id="erie_lslot" class="openslot whitebock"></div>
     <div id="erie_station" class="playertablecard"></div>
 </div>
 
 <div id="nyc_lane" class="cardlane whiteblock">
     <div id="nyc_logo" class="rr_lane_logo"></div>
+    <div id="nyc_lslot" class="openslot whitebock"></div>
     <div id="nyc_station" class="playertablecard"></div>
 </div>
 
 <div id="prr_lane" class="cardlane whiteblock">
     <div id="prr_logo" class="rr_lane_logo"></div>
+    <div id="prr_lslot" class="openslot whitebock"></div>
     <div id="prr_station" class="playertablecard"></div>
 </div>
 

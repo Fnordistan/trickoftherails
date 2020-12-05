@@ -65,12 +65,17 @@
     filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
 }
 
-.cardlane {
+.openslot {
+    display: inline-block;
+    position: relative;
     margin-top: 5px;
+    width: 113.3px;
     height: 170px;
+    border-radius: 10px;
+    border: 1px black solid;
 }
 
-#trickarea {
+.cardlane {
     margin-top: 5px;
     height: 170px;
 }
@@ -85,6 +90,12 @@
     position: relative;
     margin-top: 5px;
     background-image: url(img/railroad_sprites.png);
+}
+
+
+#trickarea {
+    margin-top: 5px;
+    height: 200px;
 }
 
 #b_and_o_logo {
@@ -143,18 +154,6 @@
 #prr_station {
     background-position: -113.3px -680px;
 }
-
-/* 
-add rounded corners + shadows
-
-border-radius: 10px;
-border: 1px black solid;
-
--moz-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
--webkit-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
--o-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
-filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);    */
 
 /*
     Example of CSS sprites (a black token and a white token, 20x20px each, embedded in the same "tokens.png" 40x20px image):
