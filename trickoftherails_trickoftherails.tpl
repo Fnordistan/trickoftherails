@@ -33,16 +33,14 @@
     </div>
 </div>
 
-<div id="biddinglane">
+<div id="biddinglane" class="whiteblock">
     <h3>Trick Lead</h3>
-    <div id="cardsplayed" class="cardlane whiteblock">
-        <div id="trick_lead" class="openslot"></div>
-    </div>
+    <div id="currenttrick"></div>
 </div>
 
-<div id="tricklane">
+<div id="tricklane" class="whiteblock">
     <h3>Trick Lane</h3>
-    <div id="trickrewards" class="cardlane whiteblock">
+    <div id="trickrewards">
 
     </div>
 </div>
@@ -51,9 +49,9 @@
     <h3>Railroads</h3>
 
     <!-- BEGIN RAILROAD -->
-    <div id="{RR}_lane" class="cardlane whiteblock">
+    <div id="{RR}_lane" class="whiteblock">
         <div id="{RR}_logo" class="rr_lane_logo"></div>
-        <div id="{RR}_lslot" class="openslot whitebock"></div>
+        <div id="{RR}_lslot" class="openslot"></div>
         <div id="{RR}_station" class="rr_station nice_card"></div>
     </div>
     <!-- END RAILROAD -->

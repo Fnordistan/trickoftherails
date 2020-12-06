@@ -60,6 +60,7 @@ function (dojo, declare) {
             // Player hand
             this.playerHand = new ebg.stock();
             this.playerHand.create( this, $('myhand'), this.cardwidth, this.cardheight );
+            this.playerHand.setSelectionMode(1);
             // card sprites is actually 6x12, but railroads are in first 5 rows, and value cards are in cols 1-10
             this.playerHand.image_items_per_row = 12;
 
@@ -67,7 +68,16 @@ function (dojo, declare) {
             // We specify no weight because we don't want it sorted
             this.trickLane = new ebg.stock();
             this.trickLane.create(this, $('trickrewards'), this.cardwidth, this.cardheight );
+            this.trickLane.setSelectionMode(0);
             this.trickLane.image_items_per_row = 12;
+            // where cards are played for the current trick
+            this.currentTrick = new ebg.stock();
+            this.currentTrick.create(this, $('currenttrick'), this.cardwidth, this.cardheight );
+            this.currentTrick.setSelectionMode(0);
+            this.currentTrick.image_items_per_row = 12;
+            // WARNING: undocumented feature! To be really safe, we should write our own function to preserve weights of items added
+            this.currentTrick.order_items = false;
+
 
             // Create RR and Trick card types:
             for( var rr = 1; rr <= 6; rr++ )
@@ -88,6 +98,7 @@ function (dojo, declare) {
                             this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                         } else {
                             this.playerHand.addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                            this.currentTrick.addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                         }
                     }
                 }
@@ -101,14 +112,14 @@ function (dojo, declare) {
                 this.playerHand.addToStockWithId(this.getUniqueTypeForCard(rr, value), card.id);
             }
 
-            // // Cards played on table
-            // for (i in this.gamedatas.cardsontable) {
-            //     var card = this.gamedatas.cardsontable[i];
-            //     var rr = card.type;
-            //     var value = card.type_arg;
-            //     var player_id = card.location_arg;
-            //     this.playCardOnTable(player_id, rr, value, card.id);
-            // }
+            // Cards played on table
+            for (i in this.gamedatas.currenttrick) {
+                var card = this.gamedatas.currenttrick[i];
+                var rr = card.type;
+                var value = card.type_arg;
+                var player_id = card.location_arg;
+                this.currentTrick.addToStockWithId(this.getUniqueTypeForCard(rr, value), card.id);
+            }
 
             for (var i in this.gamedatas.tricklanecards) {
                 var card = this.gamedatas.tricklanecards[i];
@@ -213,7 +224,7 @@ function (dojo, declare) {
         //// Utility methods
 
         /**
-         * Gets a unique identifier for each  card
+         * Gets a unique identifier for each card. Every card will have this exact number every game, all game.
          * @param int $rr 
          * @param int $v
          * @returns int
@@ -230,30 +241,26 @@ function (dojo, declare) {
          * @param {*} value 
          * @param {*} card_id 
          */
-        playCardOnTable : function(player_id, rr, value, card_id) {
-            // player_id => direction
-            dojo.place(this.format_block('jstpl_cardontable', {
-                x : this.cardwidth * (value - 1),
-                y : this.cardheight * (rr - 1),
-                player_id : player_id
-            }), 'cardsontable');
-
+        playToTrick : function(player_id, rr, value, card_id) {
             if (player_id != this.player_id) {
                 // Some opponent played a card
                 // Move card from player panel
-                this.placeOnObject('cardsontable', 'overall_player_board_' + player_id);
+
             } else {
                 // You played a card. If it exists in your hand, move card from there and remove
                 // corresponding item
 
                 if ($('myhand_item_' + card_id)) {
-                    this.placeOnObject('cardsontable', 'myhand_item_' + card_id);
-                    this.playerHand.removeFromStockById(card_id);
+                    // debugger;
+                    var card_type = this.getUniqueTypeForCard(rr,value);
+
+                    this.currentTrick.addToStockWithId(card_type, card_id, 'myhand_item_'+card_id);
+                    this.playerHand.removeFromStockById(card_id, 'currenttrick_item_'+card_id);
                 }
             }
 
             // In any case: move it to its final destination
-            this.slideToObject('cardsontable', 'playertablecard_' + player_id).play();
+            this.slideToObject('myhand_item_'+card_id, 'currenttrick').play();
         },
 
         ///////////////////////////////////////////////////
@@ -279,10 +286,14 @@ function (dojo, declare) {
 
                 var card_id = items[0].id;
                 console.log("on playCard "+card_id);
+                // type is (rr - 1) * 12 + (value - 1)
+                var type = items[0].type;
+                var rr = Math.floor(type / 12) + 1;
+                var value = type % 12 + 1;
+                    
+                this.playToTrick(this.player_id, rr, value, card_id);
 
                 this.playerHand.unselectAll();
-            } else if (this.checkAction('giveCards')) {
-                // Can give cards => let the player select some cards
             } else {
                 this.playerHand.unselectAll();
             }

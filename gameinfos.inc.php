@@ -25,7 +25,7 @@ $gameinfos = array(
 'year' => 2011,
 
 // Game publisher (use empty string if there is no publisher)
-'publisher' => 'OKAZU Brand, Terra Nova Games',                     
+'publisher' => 'OKAZU Brand',
 
 // Url of game publisher website
 'publisher_website' => 'http://okazubrand.seesaa.net/',
