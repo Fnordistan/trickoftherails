@@ -134,7 +134,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('${you} must add your card to a railway line'),
         "type" => "activeplayer",
         "possibleactions" => array( "addRailwayCard" ),
-        "transitions" => array( "" => STATE_NEXT_RAILWAY_CARD) 
+        "transitions" => array( "" => STATE_NEXT_RAILWAY ) 
     ),
 
     STATE_NEXT_RAILWAY => array(
