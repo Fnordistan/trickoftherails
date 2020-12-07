@@ -48,56 +48,124 @@
 */
 
 //    !! It is not a good idea to modify this file when a game is running !!
-
+// define contants for state ids
+if (!defined('STATE_SETUP')) { // ensure this block is only invoked once, since it is included multiple times
+    define("STATE_SETUP", 1);
+    define("STATE_NEW_TRICK", 2);
+    define("STATE_PLAY_CARD", 3);
+    define("STATE_NEXT_PLAYER", 4);
+    define("STATE_RESOLVE_TRICK", 10);
+    define("STATE_ADD_LOCOMOTIVE", 20);
+    define("STATE_ADD_RAILWAY", 25);
+    define("STATE_NEXT_RAILWAY", 26);
+    define("STATE_ADD_CITY", 30);
+    define("STATE_ADD_SHARES", 40);
+    define("STATE_SCORE", 98);
+    define("STATE_END_GAME", 99);
+ }
+  
  
 $machinestates = array(
 
     // The initial state. Please do not modify.
-    1 => array(
+    STATE_SETUP => array(
         "name" => "gameSetup",
         "description" => "",
         "type" => "manager",
         "action" => "stGameSetup",
-        "transitions" => array( "" => 2 )
+        "transitions" => array( "" => STATE_NEW_TRICK )
     ),
-    
-    // Note: ID=2 => your first state
 
-    2 => array(
-    		"name" => "playerTurn",
-    		"description" => clienttranslate('${actplayer} must play a card or pass'),
-    		"descriptionmyturn" => clienttranslate('${you} must play a card or pass'),
-    		"type" => "activeplayer",
-    		"possibleactions" => array( "playCard", "pass" ),
-    		"transitions" => array( "playCard" => 2, "pass" => 2 )
+    STATE_NEW_TRICK => array(
+    		"name" => "newTrick",
+    		"description" => "",
+            "type" => "game",
+            "action" => "stNewTrick",
+            "updateGameProgression" => true,
+    		"transitions" => array( "" => STATE_PLAY_CARD )
     ),
     
-/*
-    Examples:
-    
-    2 => array(
+    STATE_PLAY_CARD => array(
+        "name" => "playerTurn",
+        "description" => clienttranslate('${actplayer} must play a card'),
+        "descriptionmyturn" => clienttranslate('${you} must play a card'),
+        "type" => "activeplayer",
+        "possibleactions" => array( "playCard" ),
+        "transitions" => array( "" => STATE_NEXT_PLAYER )
+    ),
+
+    STATE_NEXT_PLAYER => array(
         "name" => "nextPlayer",
-        "description" => '',
+        "description" => "",
         "type" => "game",
         "action" => "stNextPlayer",
-        "updateGameProgression" => true,   
-        "transitions" => array( "endGame" => 99, "nextPlayer" => 10 )
+        "transitions" => array( "nextPlayer" => STATE_PLAY_CARD, "resolveTrick" => STATE_RESOLVE_TRICK )
     ),
-    
-    10 => array(
-        "name" => "playerTurn",
-        "description" => clienttranslate('${actplayer} must play a card or pass'),
-        "descriptionmyturn" => clienttranslate('${you} must play a card or pass'),
-        "type" => "activeplayer",
-        "possibleactions" => array( "playCard", "pass" ),
-        "transitions" => array( "playCard" => 2, "pass" => 2 )
-    ), 
 
-*/    
-   
+    STATE_RESOLVE_TRICK => array(
+        "name" => "endTrick",
+        "description" => "",
+        "type" => "game",
+        "action" => "stResolveTrick",
+        "transitions" => array( "locomotive" => STATE_ADD_LOCOMOTIVE, "city" => STATE_ADD_CITY, "share" => STATE_ADD_SHARES )
+    ),
+
+    STATE_ADD_LOCOMOTIVE => array(
+        "name" => "addLocomotive",
+        "description" => clienttranslate('${actplayer} places a Locomotive'),
+        "descriptionmyturn" => clienttranslate('${you} must place a Locomotive'),
+        "type" => "activeplayer",
+        "possibleactions" => array( "placeLocomotive" ),
+        "transitions" => array( "" => STATE_ADD_RAILWAY)
+    ),
+
+    STATE_ADD_CITY => array(
+        "name" => "addCity",
+        "description" => clienttranslate('${actplayer} places a City'),
+        "descriptionmyturn" => clienttranslate('${you} must place a City'),
+        "type" => "activeplayer",
+        "possibleactions" => array( "placeCity" ),
+        "transitions" => array( "" => STATE_ADD_RAILWAY)
+    ),
+
+    STATE_ADD_RAILWAY => array(
+        "name" => "addRailway",
+        "description" => clienttranslate('${actplayer} must add their card to a railway line'),
+        "descriptionmyturn" => clienttranslate('${you} must add your card to a railway line'),
+        "type" => "activeplayer",
+        "possibleactions" => array( "addRailwayCard" ),
+        "transitions" => array( "" => STATE_NEXT_RAILWAY_CARD) 
+    ),
+
+    STATE_NEXT_RAILWAY => array(
+        "name" => "nextRailway",
+        "description" => "",
+        "type" => "game",
+        "action" => "stNextRailway",
+        "transitions" => array( "nextPlayer" => STATE_ADD_RAILWAY, "nextTrick" => STATE_NEW_TRICK, "endGame" =>  STATE_SCORE )
+    ),
+
+    STATE_ADD_SHARES => array(
+        "name" => "addShares",
+        "description" => "",
+        "type" => "game",
+        "action" => "stAddShares",
+        "transitions" => array( "nextTrick" => STATE_NEW_TRICK, "endGame" =>  STATE_SCORE)
+    ),
+
+
+    STATE_SCORE => array(
+        "name" => "scoring",
+        "description" => "Adding scores...",
+        "type" => "game",
+        "action" => "stScoring",
+        "updateGameProgression" => true,
+        "transitions" => array( "" => STATE_END_GAME )
+    ),
+
     // Final state.
     // Please do not modify (and do not overload action/args methods).
-    99 => array(
+    STATE_END_GAME => array(
         "name" => "gameEnd",
         "description" => clienttranslate("End of game"),
         "type" => "manager",
