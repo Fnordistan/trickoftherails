@@ -128,6 +128,8 @@ function (dojo, declare) {
                 this.trickLane.addToStockWithId(this.getUniqueTypeForCard(tt, value), card.id);
             }
 
+            dojo.query('.stockitem').addClass("nice_card");
+
             dojo.connect( this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged' );
 
 
@@ -260,7 +262,8 @@ function (dojo, declare) {
             }
 
             // In any case: move it to its final destination
-            this.slideToObject('myhand_item_'+card_id, 'currenttrick').play();
+            // this.slideToObject('myhand_item_'+card_id, 'currenttrick').play();
+            dojo.addClass('currenttrick_item_'+card_id, "nice_card");
         },
 
         ///////////////////////////////////////////////////
