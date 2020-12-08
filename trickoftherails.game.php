@@ -228,33 +228,40 @@ class TrickOfTheRails extends Table
         (note: each method below must match an input method in trickoftherails.action.php)
     */
 
-    /*
-    
-    Example:
-
     function playCard( $card_id )
     {
-        // Check that this is the player's turn and that it is a "possible action" at this game state (see states.inc.php)
         self::checkAction( 'playCard' ); 
         
         $player_id = self::getActivePlayerId();
         
         // Add your game logic to play a card there 
-        ...
         
-        // Notify all players about the card played
-        self::notifyAllPlayers( "cardPlayed", clienttranslate( '${player_name} plays ${card_name}' ), array(
-            'player_id' => $player_id,
-            'player_name' => self::getActivePlayerName(),
-            'card_name' => $card_name,
-            'card_id' => $card_id
-        ) );
+        // // Notify all players about the card played
+        // self::notifyAllPlayers( "cardPlayed", clienttranslate( '${player_name} plays ${card_name}' ), array(
+        //     'player_id' => $player_id,
+        //     'player_name' => self::getActivePlayerName(),
+        //     'card_name' => $card_name,
+        //     'card_id' => $card_id
+        // ) );
           
     }
-    
-    */
 
+    function placeLocomotive( $card_id ) {
+        self::checkAction( 'placeLocomotive' );
+
+    }
+
+    function placeCity( $card_id ) {
+        self::checkAction( 'placeCity' );
+
+    }
+
+    function addRailwayCard( $card_id ) {
+        self::checkAction( 'addRailwayCard' );
+
+    }
     
+
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state arguments
 ////////////
@@ -291,18 +298,56 @@ class TrickOfTheRails extends Table
         The action method of state X is called everytime the current game state is set to X.
     */
     
-    /*
     
-    Example for game state "MyGameState":
+    function stNewTrick() {
+        // find the current trick reward
 
-    function stMyGameState()
-    {
-        // Do some stuff ...
-        
-        // (very often) go to another gamestate
-        $this->gamestate->nextState( 'some_gamestate_transition' );
-    }    
-    */
+
+        $this->gamestate->nextState( "" );
+    }
+
+    function stNextPlayer() {
+        // if this was the last player
+        // $this->gamestate->nextState( "resolveTrick" );
+        // else
+        $this->gamestate->nextState( "nextPlayer" );
+
+    }
+
+    /**
+     * Determines who won the trick and gives the reward
+     */
+    function stResolveTrick() {
+        // one of these
+        $reward = "locomotive"; // "city" "share"
+
+        $this->gamestate->nextState( $reward );
+    }
+
+    function stNextRailway() {
+        // // if there is another player to play
+        // $this->gamestate->nextState( 'nextPlayer' );
+        // // no more players, not the last trick
+        // $this->gamestate->nextState( 'nextTrick' );
+        // that was the last trick
+        $this->gamestate->nextState( 'endGame' );
+
+    }
+
+    function stAddShares() {
+        // add the shares everyone played to their piles
+
+        // // is there another trick?
+        // $this->gamestate->nextState( "nextTrick" );
+        // go to scoring
+        $this->gamestate->nextState( "endGame" );
+    }
+
+
+    function stScoring() {
+
+        $this->gamestate->nextState( "" );
+    }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Zombie

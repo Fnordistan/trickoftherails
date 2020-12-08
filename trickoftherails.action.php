@@ -63,6 +63,34 @@
     
     */
 
+
+    /**
+     * Either lead or follow
+     */
+    public function playCard() {
+      self::setAjaxMode();     
+      self::ajaxResponse( );
+
+    }
+
+    public function placeLocomotive() {
+      self::setAjaxMode();     
+      self::ajaxResponse( );
+
+    }
+
+    public function placeCity() {
+      self::setAjaxMode();     
+      self::ajaxResponse( );
+
+    }
+
+    public function addRailwayCard() {
+      self::setAjaxMode();     
+      self::ajaxResponse( );
+
+    }
+
   }
   
 
