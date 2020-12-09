@@ -93,7 +93,7 @@ class TrickOfTheRails extends Table
         // Create cards
         $rrcards = array();
         foreach ( $this->railroads as $rr_id => $railroad ) {
-            // Railroad company names
+            // Railroad rows
             for ($value = 1; $value <= 10; $value++) {
                 $rrcards[] = array ('type' => $rr_id, 'type_arg' => $value, 'nbr' => 1 );
             }
@@ -145,6 +145,7 @@ class TrickOfTheRails extends Table
         $this->trickcards->shuffle('deck');
         $tricklane = $this->trickcards->pickCardsForLocation($tricklanelen, 'deck', 'trickrewards');
 
+
         // Shuffle main deck
         $this->rrcards->shuffle('deck');
         // Deal cards to each player
@@ -152,7 +153,6 @@ class TrickOfTheRails extends Table
         foreach ( $players as $player_id => $player ) {
             $rrcards = $this->rrcards->pickCards($tricklanelen, 'deck', $player_id);
         }
-
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
@@ -187,6 +187,12 @@ class TrickOfTheRails extends Table
         $result['currentrick'] = $this->rrcards->getCardsInLocation( 'currenttrick' );
         // Cards in tricklane
         $result['tricklanecards'] = $this->trickcards->getCardsInLocation( 'trickrewards' );
+
+        foreach ( $this->railroads as $rr_id => $rr ) {
+            $result[$rr.'_railway_cards'] = $this->rrcards->getCardsInLocation( $rr.'_railway' );
+            $result[$rr.'_railway_cards'] = $this->trickcards->getCardsInLocation( $rr.'_railway' );
+        }
+
 
         return $result;
     }

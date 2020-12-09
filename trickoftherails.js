@@ -15,6 +15,23 @@
  *
  */
 
+ROWS = 6;
+COLS = 12;
+
+const B_O = 0;
+const C_O = 1;
+const ERIE = 2;
+const NYC = 3;
+const PRR = 4;
+const RR_INDEXES = [B_O, C_O, ERIE, NYC, PRR];
+const RR_PREFIXES = ["b_and_o", "c_and_o", "erie", "nyc", "prr"];
+
+const EXCHANGE = 11;
+const STATION = 12;
+
+const CARD_SPRITES = 'img/cards_sprites.jpg';
+
+
 define([
     "dojo","dojo/_base/declare",
     "ebg/core/gamegui",
@@ -50,7 +67,7 @@ function (dojo, declare) {
             console.log( "Starting game setup" );
             
             // Setting up player boards
-            for( var player_id in gamedatas.players )
+            for( const player_id in gamedatas.players )
             {
                 var player = gamedatas.players[player_id];
                          
@@ -70,6 +87,7 @@ function (dojo, declare) {
             this.trickLane.create(this, $('trickrewards'), this.cardwidth, this.cardheight );
             this.trickLane.setSelectionMode(0);
             this.trickLane.image_items_per_row = 12;
+
             // where cards are played for the current trick
             this.currentTrick = new ebg.stock();
             this.currentTrick.create(this, $('currenttrick'), this.cardwidth, this.cardheight );
@@ -78,54 +96,90 @@ function (dojo, declare) {
             // WARNING: undocumented feature! To be really safe, we should write our own function to preserve weights of items added
             this.currentTrick.order_items = false;
 
-
-            // Create RR and Trick card types:
-            for( var rr = 1; rr <= 6; rr++ )
+            // and create the stocks for all five railways
+            this.railWays = [];
+            for (const rr of RR_PREFIXES)
             {
-                for (var vv = 1; vv <= 11; vv++ )
+                var railway = new ebg.stock();
+                railway.create(this, $(rr+'_railway'), this.cardwidth, this.cardheight );
+                railway.setSelectionMode(0);
+                railway.image_items_per_row = 12;
+                this.railWays.push(railway);
+            }
+
+            // Create card types
+            for( let rr = 1; rr <= ROWS; rr++ )
+            {
+                for (let vv = 1; vv <= COLS; vv++ )
                 {
                     // Build card type id
                     var card_type_id = this.getUniqueTypeForCard( rr, vv );
 
-                    if (rr == 6) {
-                        // only Locomotives, Cities, and Reservation cards on last row
+                    // on last row, only Locomotives, Cities, and Reservation cards
+                    if (rr == ROWS) {
                         if (vv <= 9) {
                             this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                            // railways don't get exchange cards
+                            if (vv < 9) {
+                                // adding the Locomotive and City cards to railways
+                                for (const ri of RR_INDEXES) {
+                                    this.railWays[ri].addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                                }
+                            }
                         }
                     } else {
-                        if (vv == 11) {
+                        if (vv == STATION) {
+                            // add Station to each railway
+                            this.railWays[rr-1].addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                        } else if (vv == EXCHANGE) {
                             // it's an Exchange card
                             this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                         } else {
                             this.playerHand.addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                             this.currentTrick.addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                            this.railWays[rr-1].addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                         }
                     }
                 }
             }
 
             // Cards in player's hand
-            for ( var i in this.gamedatas.hand) {
-                var card = this.gamedatas.hand[i];
-                var rr = card.type;
-                var value = card.type_arg;
+            for ( const i in this.gamedatas.hand ) {
+                let card = this.gamedatas.hand[i];
+                let rr = card.type;
+                let value = card.type_arg;
                 this.playerHand.addToStockWithId(this.getUniqueTypeForCard(rr, value), card.id);
             }
 
             // Cards played on table
-            for (i in this.gamedatas.currenttrick) {
-                var card = this.gamedatas.currenttrick[i];
-                var rr = card.type;
-                var value = card.type_arg;
-                var player_id = card.location_arg;
+            for ( const i in this.gamedatas.currenttrick) {
+                let card = this.gamedatas.currenttrick[i];
+                let rr = card.type;
+                let value = card.type_arg;
+                let player_id = card.location_arg;
                 this.currentTrick.addToStockWithId(this.getUniqueTypeForCard(rr, value), card.id);
             }
 
-            for (var i in this.gamedatas.tricklanecards) {
-                var card = this.gamedatas.tricklanecards[i];
-                var tt = card.type;
-                var value = card.type_arg;
+            // the trick lane
+            for (const i in this.gamedatas.tricklanecards) {
+                let card = this.gamedatas.tricklanecards[i];
+                let tt = card.type;
+                let value = card.type_arg;
                 this.trickLane.addToStockWithId(this.getUniqueTypeForCard(tt, value), card.id);
+            }
+
+            // cards in each railway Station for each railways
+            for (const ri in RR_INDEXES) {
+                for (const rw in RR_PREFIXES) {
+                    let railwaycards = RR_PREFIXES[rw]+'_railway_cards';
+                    console.log(rw + ' = ' + railwaycards);
+                    for (const rr in this.gamedatas.railwaycards) {
+                        let railwaycard = this.gamedatas.railwaycards[rr];
+                        let tt = railwaycard.type;
+                        let value = railwaycard.type_arg;
+                        this.railWays[rw].addToStockWithId(this.getUniqueTypeForCard(tt, value), railwaycard.id);
+                    }
+                }
             }
 
             dojo.query('.stockitem').addClass("nice_card");
@@ -253,7 +307,6 @@ function (dojo, declare) {
                 // corresponding item
 
                 if ($('myhand_item_' + card_id)) {
-                    // debugger;
                     var card_type = this.getUniqueTypeForCard(rr,value);
 
                     this.currentTrick.addToStockWithId(card_type, card_id, 'myhand_item_'+card_id);

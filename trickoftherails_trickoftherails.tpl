@@ -51,8 +51,7 @@
     <!-- BEGIN RAILROAD -->
     <div id="{RR}_lane" class="whiteblock">
         <div id="{RR}_logo" class="rr_lane_logo"></div>
-        <div id="{RR}_lslot" class="openslot"></div>
-        <div id="{RR}_station" class="rr_station nice_card"></div>
+        <div id="{RR}_railway"></div>
     </div>
     <!-- END RAILROAD -->
 

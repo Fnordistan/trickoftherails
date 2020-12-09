@@ -22,16 +22,11 @@
 
 
 $this->railroads = array(
-    1 => array( "name" => clienttranslate('B&O'),
-                'nametr' => self::_('B&O') ),
-    2 => array( "name" => clienttranslate('C&O'),
-                'nametr' => self::_('C&O') ),
-    3 => array( "name" => clienttranslate('Erie'),
-                'nametr' => self::_('Erie') ),
-    4 => array( "name" => clienttranslate('NYC'),
-                'nametr' => self::_('NYC') ),
-    5 => array( "name" => clienttranslate('PRR'),
-                'nametr' => self::_('PRR') )
+    1 => "b_and_o",
+    2 => "c_and_o",
+    3 => "erie",
+    4 => "nyc",
+    5 => "prr"
 );
 
 $this->value_label = array(
