@@ -240,11 +240,14 @@ class TrickOfTheRails extends Table
         
         $player_id = self::getActivePlayerId();
 
-        // $playerhands = $this->cards->getCardsInLocation( 'hand', $player_id );
+        $wt = $this->rrcards->countCardInLocation( 'currenttrick' );
+        $this->rrcards->moveCard( $card_id, 'currenttrick', $wt );
+        // self::DbQuery("
+        // UPDATE CARDS_RR
+        // SET card_location_arg = $wt
+        // WHERE card_id = $card_id
+        // ");
 
-
-        // Checks are done! now we can play our card
-        $this->rrcards->moveCard( $card_id, 'currenttrick', $player_id );
 
         // // Notify all players about the card played
         // self::notifyAllPlayers( "cardPlayed", clienttranslate( '${player_name} plays ${card_name}' ), array(

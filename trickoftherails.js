@@ -289,31 +289,6 @@ function (dojo, declare) {
             return (rr-1)*12+(v-1);
         },
 
-        /**
-         * 
-         * @param {*} player_id 
-         * @param {*} rr 
-         * @param {*} value 
-         * @param {*} card_id 
-         */
-        playToTrick : function(player_id, rr, value, card_id) {
-            if (player_id != this.player_id) {
-                // Some opponent played a card
-
-            } else {
-                // You played a card. If it exists in your hand, move card from there and remove
-                // corresponding item
-
-                if ($('myhand_item_' + card_id)) {
-                    var card_type = this.getUniqueTypeForCard(rr,value);
-
-                    this.currentTrick.addToStockWithId(card_type, card_id, 'myhand_item_'+card_id);
-                    this.playerHand.removeFromStockById(card_id, 'currenttrick_item_'+card_id);
-                }
-            }
-            dojo.addClass('currenttrick_item_'+card_id, "nice_card");
-        },
-
         ///////////////////////////////////////////////////
         //// Player's action
         

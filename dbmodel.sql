@@ -21,22 +21,28 @@
 -- Example 1: create a standard "card" table to be used with the "Deck" tools (see example game "hearts"):
 
 CREATE TABLE IF NOT EXISTS `CARDS_RR` (
-  `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `card_type` varchar(16) NOT NULL COMMENT 'ROW (RR)',
-  `card_type_arg` int(11) NOT NULL COMMENT 'COLUMN',
+  `card_id` TINYINT unsigned NOT NULL AUTO_INCREMENT,
+  `card_type` TINYINT NOT NULL COMMENT 'ROW (RR)',
+  `card_type_arg` TINYINT NOT NULL COMMENT 'COLUMN',
   `card_location` varchar(16) NOT NULL COMMENT 'deck/trickreward/',
-  `card_location_arg` int(11) NOT NULL COMMENT 'NA',
+  `card_location_arg` int(11) NOT NULL COMMENT 'weight to indicate position',
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE IF NOT EXISTS `CARDS_TRICK` (
-  `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `card_type` varchar(16) NOT NULL COMMENT 'ROW (RR)',
-  `card_type_arg` int(11) NOT NULL COMMENT 'COLUMN',
+  `card_id` TINYINT unsigned NOT NULL AUTO_INCREMENT,
+  `card_type` TINYINT NOT NULL COMMENT 'ROW (RR)',
+  `card_type_arg` TINYINT NOT NULL COMMENT 'COLUMN',
   `card_location` varchar(16) NOT NULL COMMENT 'hand/deck',
   `card_location_arg` int(11) NOT NULL COMMENT 'player id or deck position',
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+-- CREATE TABLE IF NOT EXISTS `TRICK_ROW` (
+--  `card_id` TINYINT UNSIGNED NOT NULL,
+--   PRIMARY KEY (`id`)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
  -- add info about first player
  ALTER TABLE `player` ADD `player_first` BOOLEAN NOT NULL DEFAULT '0';
