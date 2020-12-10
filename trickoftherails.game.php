@@ -184,7 +184,7 @@ class TrickOfTheRails extends Table
         $result['hand'] = $this->rrcards->getCardsInLocation( 'hand', $current_player_id );
 
         // Cards played onto the table
-        $result['currentrick'] = $this->rrcards->getCardsInLocation( 'currenttrick' );
+        $result['currenttrick'] = $this->rrcards->getCardsInLocation( 'currenttrick' );
         // Cards in tricklane
         $result['tricklanecards'] = $this->trickcards->getCardsInLocation( 'trickrewards' );
 
@@ -239,9 +239,13 @@ class TrickOfTheRails extends Table
         self::checkAction( 'playCard' ); 
         
         $player_id = self::getActivePlayerId();
-        
-        // Add your game logic to play a card there 
-        
+
+        // $playerhands = $this->cards->getCardsInLocation( 'hand', $player_id );
+
+
+        // Checks are done! now we can play our card
+        $this->rrcards->moveCard( $card_id, 'currenttrick', $player_id );
+
         // // Notify all players about the card played
         // self::notifyAllPlayers( "cardPlayed", clienttranslate( '${player_name} plays ${card_name}' ), array(
         //     'player_id' => $player_id,
@@ -249,6 +253,9 @@ class TrickOfTheRails extends Table
         //     'card_name' => $card_name,
         //     'card_id' => $card_id
         // ) );
+
+        // Next player
+        $this->gamestate->nextState( );
           
     }
 
