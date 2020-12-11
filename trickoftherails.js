@@ -91,7 +91,6 @@ function (dojo, declare) {
             this.cardsPlayed.create(this, $('currenttrick'), this.cardwidth, this.cardheight );
             this.cardsPlayed.setSelectionMode(0);
             this.cardsPlayed.image_items_per_row = COLS;
-            this.cardsPlayed.order_items = false;
 
             // var newitem = { id: id, type: type };  stock.items.push( newitem );    stock.item_type[ type ] .weight = position; stock.sortItems(); stock.updateDisplay(from);
 
@@ -151,21 +150,15 @@ function (dojo, declare) {
                 this.playerHand.addToStockWithId(this.getUniqueTypeForCard(rr, value), card.id);
             }
 
-            // var weights = {};
             // Cards played on table
-            this.cardsPlayed.order_items=true
             for ( const i in this.gamedatas.currenttrick) {
                 let card = this.gamedatas.currenttrick[i];
                 let rr = card.type;
                 let value = card.type_arg;
                 let ctype = this.getUniqueTypeForCard(rr, value);
                 this.cardsPlayed.item_type[ctype].weight = card.location_arg;
-                // weights[ctype] = card.location_arg;
-                // this.cardsPlayed.changeItemsWeight(weights);
                 this.cardsPlayed.addToStockWithId(ctype, card.id);
             }
-            // this.cardsPlayed.order_items=true; this.cardsPlayed.item_type[ type ] .weight = position; this.cardsPlayed.addToStockWidthId(type, card.id);
-            // this.cardsPlayed.changeItemsWeight(weights);
 
             // the trick lane
             for (const i in this.gamedatas.tricklanecards) {
@@ -330,7 +323,7 @@ function (dojo, declare) {
     
                 if ($('myhand_item_' + card_id)) {
                     var card_type = this.getUniqueTypeForCard(rr,value);
-
+                    // have to explicitly set weight while sliding into place or it goes into wrong order before refresh from Db
                     this.cardsPlayed.item_type[card_type].weight = this.cardsPlayed.count();
                     
                     this.cardsPlayed.addToStockWithId(card_type, card_id, 'myhand_item_'+card_id);
