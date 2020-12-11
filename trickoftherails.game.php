@@ -184,7 +184,7 @@ class TrickOfTheRails extends Table
         $result['hand'] = $this->rrcards->getCardsInLocation( 'hand', $current_player_id );
 
         // Cards played onto the table
-        $result['currenttrick'] = $this->rrcards->getCardsInLocation( 'currenttrick' );
+        $result['currenttrick'] = $this->rrcards->getCardsInLocation( 'currenttrick');
         // Cards in tricklane
         $result['tricklanecards'] = $this->trickcards->getCardsInLocation( 'trickrewards' );
 
@@ -240,8 +240,8 @@ class TrickOfTheRails extends Table
         
         $player_id = self::getActivePlayerId();
 
-        $wt = $this->rrcards->countCardInLocation( 'currenttrick' );
-        $this->rrcards->moveCard( $card_id, 'currenttrick', $wt );
+        $wt = $this->rrcards->countCardsInLocation( 'currenttrick' );
+        $this->rrcards->insertCard( $card_id, 'currenttrick', $wt );
         // self::DbQuery("
         // UPDATE CARDS_RR
         // SET card_location_arg = $wt

@@ -31,7 +31,6 @@ const STATION = 12;
 
 const CARD_SPRITES = 'img/cards_sprites.jpg';
 
-
 define([
     "dojo","dojo/_base/declare",
     "ebg/core/gamegui",
@@ -78,23 +77,24 @@ function (dojo, declare) {
             this.playerHand = new ebg.stock();
             this.playerHand.create( this, $('myhand'), this.cardwidth, this.cardheight );
             this.playerHand.setSelectionMode(1);
-            // card sprites is actually 6x12, but railroads are in first 5 rows, and value cards are in cols 1-10
-            this.playerHand.image_items_per_row = 12;
+            this.playerHand.image_items_per_row = COLS;
 
             // Now set up trick lane
             // We specify no weight because we don't want it sorted
             this.trickLane = new ebg.stock();
             this.trickLane.create(this, $('trickrewards'), this.cardwidth, this.cardheight );
             this.trickLane.setSelectionMode(0);
-            this.trickLane.image_items_per_row = 12;
+            this.trickLane.image_items_per_row = COLS;
 
             // where cards are played for the current trick
-            this.currentTrick = new ebg.stock();
-            this.currentTrick.create(this, $('currenttrick'), this.cardwidth, this.cardheight );
-            this.currentTrick.setSelectionMode(0);
-            this.currentTrick.image_items_per_row = 12;
-            // WARNING: undocumented feature! To be really safe, we should write our own function to preserve weights of items added
-            this.currentTrick.order_items = false;
+            this.cardsPlayed = new ebg.stock();
+            this.cardsPlayed.create(this, $('currenttrick'), this.cardwidth, this.cardheight );
+            this.cardsPlayed.setSelectionMode(0);
+            this.cardsPlayed.image_items_per_row = COLS;
+            this.cardsPlayed.order_items = false;
+
+            // var newitem = { id: id, type: type };  stock.items.push( newitem );    stock.item_type[ type ] .weight = position; stock.sortItems(); stock.updateDisplay(from);
+
 
             // and create the stocks for all five railways
             this.railWays = [];
@@ -103,7 +103,7 @@ function (dojo, declare) {
                 var railway = new ebg.stock();
                 railway.create(this, $(rr+'_railway'), this.cardwidth, this.cardheight );
                 railway.setSelectionMode(0);
-                railway.image_items_per_row = 12;
+                railway.image_items_per_row = COLS;
                 this.railWays.push(railway);
             }
 
@@ -136,7 +136,7 @@ function (dojo, declare) {
                             this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                         } else {
                             this.playerHand.addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
-                            this.currentTrick.addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                            this.cardsPlayed.addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                             this.railWays[rr-1].addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                         }
                     }
@@ -151,14 +151,21 @@ function (dojo, declare) {
                 this.playerHand.addToStockWithId(this.getUniqueTypeForCard(rr, value), card.id);
             }
 
+            // var weights = {};
             // Cards played on table
+            this.cardsPlayed.order_items=true
             for ( const i in this.gamedatas.currenttrick) {
                 let card = this.gamedatas.currenttrick[i];
                 let rr = card.type;
                 let value = card.type_arg;
-                let player_id = card.location_arg;
-                this.currentTrick.addToStockWithId(this.getUniqueTypeForCard(rr, value), card.id);
+                let ctype = this.getUniqueTypeForCard(rr, value);
+                this.cardsPlayed.item_type[ctype].weight = card.location_arg;
+                // weights[ctype] = card.location_arg;
+                // this.cardsPlayed.changeItemsWeight(weights);
+                this.cardsPlayed.addToStockWithId(ctype, card.id);
             }
+            // this.cardsPlayed.order_items=true; this.cardsPlayed.item_type[ type ] .weight = position; this.cardsPlayed.addToStockWidthId(type, card.id);
+            // this.cardsPlayed.changeItemsWeight(weights);
 
             // the trick lane
             for (const i in this.gamedatas.tricklanecards) {
@@ -317,15 +324,18 @@ function (dojo, declare) {
                 var type = items[0].type;
                 var rr = Math.floor(type / 12) + 1;
                 var value = type % 12 + 1;
-                    // You played a card. If it exists in your hand, move card from there and remove
-                    // corresponding item
+                // You played a card. If it exists in your hand, move card from there and remove
+                // corresponding item
+
     
-                    if ($('myhand_item_' + card_id)) {
-                        var card_type = this.getUniqueTypeForCard(rr,value);
-    
-                        this.currentTrick.addToStockWithId(card_type, card_id, 'myhand_item_'+card_id);
-                        this.playerHand.removeFromStockById(card_id, 'currenttrick_item_'+card_id);
-                    }
+                if ($('myhand_item_' + card_id)) {
+                    var card_type = this.getUniqueTypeForCard(rr,value);
+
+                    this.cardsPlayed.item_type[card_type].weight = this.cardsPlayed.count();
+                    
+                    this.cardsPlayed.addToStockWithId(card_type, card_id, 'myhand_item_'+card_id);
+                    this.playerHand.removeFromStockById(card_id, 'currenttrick_item_'+card_id);
+                }
 
                 dojo.addClass('currenttrick_item_'+card_id, "nice_card");
     
