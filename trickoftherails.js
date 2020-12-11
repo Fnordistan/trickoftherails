@@ -129,30 +129,30 @@ function (dojo, declare) {
                     } else {
                         if (vv == STATION) {
                             // add Station to each railway
-                            this.railWays[rr-1].addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                            this.railWays[rr-1].addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                         } else if (vv == EXCHANGE) {
                             // it's an Exchange card
                             this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                         } else {
                             this.playerHand.addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                             this.cardsPlayed.addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
-                            this.railWays[rr-1].addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                            this.railWays[rr-1].addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                         }
                     }
                 }
             }
 
             // Cards in player's hand
-            for ( const i in this.gamedatas.hand ) {
-                let card = this.gamedatas.hand[i];
+            for ( const i in gamedatas.hand ) {
+                let card = gamedatas.hand[i];
                 let rr = card.type;
                 let value = card.type_arg;
                 this.playerHand.addToStockWithId(this.getUniqueTypeForCard(rr, value), card.id);
             }
 
             // Cards played on table
-            for ( const i in this.gamedatas.currenttrick) {
-                let card = this.gamedatas.currenttrick[i];
+            for ( const i in gamedatas.currenttrick) {
+                let card = gamedatas.currenttrick[i];
                 let rr = card.type;
                 let value = card.type_arg;
                 let ctype = this.getUniqueTypeForCard(rr, value);
@@ -161,24 +161,53 @@ function (dojo, declare) {
             }
 
             // the trick lane
-            for (const i in this.gamedatas.tricklanecards) {
-                let card = this.gamedatas.tricklanecards[i];
+            for (const i in gamedatas.tricklanecards) {
+                let card = gamedatas.tricklanecards[i];
                 let tt = card.type;
                 let value = card.type_arg;
                 this.trickLane.addToStockWithId(this.getUniqueTypeForCard(tt, value), card.id);
             }
 
             // cards in each railway Station for each railways
-            for (const ri in RR_INDEXES) {
-                for (const rw in RR_PREFIXES) {
-                    let railwaycards = RR_PREFIXES[rw]+'_railway_cards';
-                    for (const rr in this.gamedatas.railwaycards) {
-                        let railwaycard = this.gamedatas.railwaycards[rr];
-                        let tt = railwaycard.type;
-                        let value = railwaycard.type_arg;
-                        this.railWays[rw].addToStockWithId(this.getUniqueTypeForCard(tt, value), railwaycard.id);
-                    }
-                }
+            for (const i in gamedatas.b_and_o_railway_cards) {
+                let railwaycard = gamedatas.b_and_o_railway_cards[i];
+                let tt = railwaycard.type;
+                let value = railwaycard.type_arg;
+                let ctype = this.getUniqueTypeForCard(tt, value);
+                this.railWays[0].item_type[ctype].weight = railwaycard.location_arg;
+                this.railWays[0].addToStockWithId(ctype, railwaycard.id);
+            }
+            for (const i in gamedatas.c_and_o_railway_cards) {
+                let railwaycard = gamedatas.c_and_o_railway_cards[i];
+                let tt = railwaycard.type;
+                let value = railwaycard.type_arg;
+                let ctype = this.getUniqueTypeForCard(tt, value);
+                this.railWays[1].item_type[ctype].weight = railwaycard.location_arg;
+                this.railWays[1].addToStockWithId(ctype, railwaycard.id);
+            }
+            for (const i in gamedatas.erie_railway_cards) {
+                let railwaycard = gamedatas.erie_railway_cards[i];
+                let tt = railwaycard.type;
+                let value = railwaycard.type_arg;
+                let ctype = this.getUniqueTypeForCard(tt, value);
+                this.railWays[2].item_type[ctype].weight = railwaycard.location_arg;
+                this.railWays[2].addToStockWithId(ctype, railwaycard.id);
+            }
+            for (const i in gamedatas.nyc_railway_cards) {
+                let railwaycard = gamedatas.nyc_railway_cards[i];
+                let tt = railwaycard.type;
+                let value = railwaycard.type_arg;
+                let ctype = this.getUniqueTypeForCard(tt, value);
+                this.railWays[3].item_type[ctype].weight = railwaycard.location_arg;
+                this.railWays[3].addToStockWithId(ctype, railwaycard.id);
+            }
+            for (const i in gamedatas.prr_railway_cards) {
+                let railwaycard = gamedatas.prr_railway_cards[i];
+                let tt = railwaycard.type;
+                let value = railwaycard.type_arg;
+                let ctype = this.getUniqueTypeForCard(tt, value);
+                this.railWays[4].item_type[ctype].weight = railwaycard.location_arg;
+                this.railWays[4].addToStockWithId(ctype, railwaycard.id);
             }
 
             dojo.query('.stockitem').addClass("nice_card");

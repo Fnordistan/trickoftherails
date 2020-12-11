@@ -110,6 +110,8 @@ class TrickOfTheRails extends Table
             $trickcards[] = array('type' => 6, 'type_arg' => $ix, 'nbr' => 1);
             // exchange cards
             $trickcards[] = array('type' => $ix, 'type_arg' => 11, 'nbr' => 1);
+            //  also stick Station cards here, though we'll immediately move them
+            $trickcards[] = array('type' => $ix, 'type_arg' => 12, 'nbr' => 1);
         }
 
         // number of cards in trick lane, and also starting hand size
@@ -140,12 +142,6 @@ class TrickOfTheRails extends Table
                 throw new BgaVisibleSystemException("Invalid player count: {$players_nbr}");
         }
 
-        // shuffle trick deck
-        $this->trickcards->createCards($trickcards, 'deck');
-        $this->trickcards->shuffle('deck');
-        $tricklane = $this->trickcards->pickCardsForLocation($tricklanelen, 'deck', 'trickrewards');
-
-
         // Shuffle main deck
         $this->rrcards->shuffle('deck');
         // Deal cards to each player
@@ -153,6 +149,23 @@ class TrickOfTheRails extends Table
         foreach ( $players as $player_id => $player ) {
             $rrcards = $this->rrcards->pickCards($tricklanelen, 'deck', $player_id);
         }
+
+
+        // create trick deck
+        $this->trickcards->createCards($trickcards, 'deck');
+        // before shuffling trick deck remove Stations and put them in railway lines
+        foreach ( $this->railroads as $rr_id => $railroad ) {
+            $stations = $this->trickcards->getCardsOfType($rr_id, 12);
+            // annoying iteration through a one-element assocative array...
+            foreach ($stations as $station) {
+                $this->trickcards->moveCard($station['id'], $railroad.'_railway');
+            }
+        }
+
+        // now shuffle
+        $this->trickcards->shuffle('deck');
+        $tricklane = $this->trickcards->pickCardsForLocation($tricklanelen, 'deck', 'trickrewards');
+
 
         // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
