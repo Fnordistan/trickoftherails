@@ -269,7 +269,7 @@ class TrickOfTheRails extends Table
             'rr_name' => $this->railroads [$cardPlayed ['type']] ['name'],
             'rr_color' => $this->railroads [$cardPlayed ['type']] ['color'] ));
         // Next player
-        $this->gamestate->nextState( );
+        $this->gamestate->nextState();
           
     }
 
@@ -335,9 +335,18 @@ class TrickOfTheRails extends Table
 
     function stNextPlayer() {
         // if this was the last player
-        // $this->gamestate->nextState( "resolveTrick" );
-        // else
-        $this->gamestate->nextState( "nextPlayer" );
+        if ( $this->rrcards->countCardInLocation( 'currenttrick' ) == self::getPlayersNumber() ) {
+            // end of trick
+            // Who won?
+
+            $this->gamestate->nextState( 'resolveTrick' );        
+        } else {
+            $player_id = self::activeNextPlayer();
+            self::giveExtraTime( $player_id );
+
+            $this->gamestate->nextState( 'nextPlayer' );        
+
+        }
 
     }
 
