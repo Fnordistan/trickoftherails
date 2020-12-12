@@ -58,16 +58,29 @@
     filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
 }
 
+.rr_lane {
+    display: flex;
+    flex-direction: row;
+}
+
 .rr_lane_logo {
     margin-top: 5px;
     background-position: top;
     background-image: url(img/railroad_sprites.png);
-    background-repeat: none;
+    background-repeat: no-repeat;
 }
 
-.rr_lane {
-    display: flex;
-    flex-direction: row;
+.locomotive_slot {
+    background-size: 110px 51px;
+    background-position: center;
+    background-image: url(img/locomotive.png);
+    background-repeat: no-repeat;
+    background-color: lightgray;
+    opacity: 0.5;
+    width: 114px;
+    height: 171px;
+    border-radius: 5px;
+    border-style: groove;
 }
 
 #b_and_o_logo {
