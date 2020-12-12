@@ -288,38 +288,34 @@ function (dojo, declare) {
             return (rr-1)*12+(v-1);
         },
 
+        /**
+         * Someone played a trick card.
+         * @param {*} player_id 
+         * @param {*} card_id 
+         * @param {*} rr number indicating rr type (row)
+         * @param {*} card_value 
+         */
         playTrickCard: function(player_id, card_id, rr, card_value ) {
+            var card_type = this.getUniqueTypeForCard(rr, card_value);
+            // have to explicitly set weight while sliding into place or it goes into wrong order before refresh from Db
+            this.cardsPlayed.item_type[card_type].weight = this.cardsPlayed.count();
+
             if( player_id != this.player_id )
             {
                 // Some opponent played a card
-                var card_type = this.getUniqueTypeForCard(rr, card_value);
-                // have to explicitly set weight while sliding into place or it goes into wrong order before refresh from Db
-                this.cardsPlayed.item_type[card_type].weight = this.cardsPlayed.count();
-                    
-                this.cardsPlayed.addToStockWithId(card_type, card_id);
-                dojo.addClass('currenttrick_item_'+card_id, "nice_card");
+                this.cardsPlayed.addToStockWithId(card_type, card_id, 'player_board_'+player_id);
             }
             else
             {
                 // You played a card. If it exists in your hand, move card from there and remove
                 // corresponding item
-                
-                // You played a card. If it exists in your hand, move card from there and remove
-                // corresponding item
-
-    
                 if ($('myhand_item_' + card_id)) {
-                    var card_type = this.getUniqueTypeForCard(rr, card_value);
-                    // have to explicitly set weight while sliding into place or it goes into wrong order before refresh from Db
-                    this.cardsPlayed.item_type[card_type].weight = this.cardsPlayed.count();
-                    
                     this.cardsPlayed.addToStockWithId(card_type, card_id, 'myhand_item_'+card_id);
                     this.playerHand.removeFromStockById(card_id, 'currenttrick_item_'+card_id);
-                    dojo.addClass('currenttrick_item_'+card_id, "nice_card");
+                }
             }
 
-            }
-
+            dojo.addClass('currenttrick_item_'+card_id, "nice_card");
         },
 
 

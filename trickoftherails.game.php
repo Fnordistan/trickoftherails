@@ -92,7 +92,7 @@ class TrickOfTheRails extends Table
 
         // Create cards
         $rrcards = array();
-        foreach ( $this->railroads as $rr_id => $rrarr ) {
+        foreach ( $this->railroads as $rr_id => $railroad ) {
             // Railroad rows
             for ($value = 1; $value <= 10; $value++) {
                 $rrcards[] = array ('type' => $rr_id, 'type_arg' => $value, 'nbr' => 1 );
@@ -158,7 +158,7 @@ class TrickOfTheRails extends Table
             $stations = $this->trickcards->getCardsOfType($rr_id, 12);
             // annoying iteration through a one-element assocative array...
             foreach ($stations as $station) {
-                $this->trickcards->moveCard($station['id'], $railroad.'_railway');
+                $this->trickcards->moveCard($station['id'], $railroad['abbr'].'_railway');
             }
         }
 
@@ -201,9 +201,9 @@ class TrickOfTheRails extends Table
         // Cards in tricklane
         $result['tricklanecards'] = $this->trickcards->getCardsInLocation( 'trickrewards' );
 
-        foreach ( $this->railroads as $rr_id => $rr ) {
-            $result[$rr['abbr'].'_railway_cards'] = $this->rrcards->getCardsInLocation( $rr['abbr'].'_railway' );
-            $result[$rr['abbr'].'_railway_cards'] = $this->trickcards->getCardsInLocation( $rr['abbr'].'_railway' );
+        foreach ( $this->railroads as $rr_id => $railroad ) {
+            $result[$railroad['abbr'].'_railway_cards'] = $this->rrcards->getCardsInLocation( $railroad['abbr'].'_railway' );
+            $result[$railroad['abbr'].'_railway_cards'] = $this->trickcards->getCardsInLocation( $railroad['abbr'].'_railway' );
         }
 
 
