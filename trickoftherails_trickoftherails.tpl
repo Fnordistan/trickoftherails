@@ -49,7 +49,7 @@
     <h3>Railroads</h3>
 
     <!-- BEGIN RAILROAD -->
-    <div id="{RR}_lane" class="whiteblock">
+    <div id="{RR}_lane" class="whiteblock rr_lane">
         <div id="{RR}_logo" class="rr_lane_logo"></div>
         <div id="{RR}_railway"></div>
     </div>
@@ -62,8 +62,8 @@
 
 // Javascript HTML templates
 
-var jstpl_cardontable = '<div class="cardontable nice_card" style="background-position:-${x}px -${y}px">\
-                        </div>';
-</script>  
+// var jstpl_cardontable = '<div class="cardontable nice_card" style="background-position:-${x}px -${y}px">\
+//                         </div>';
+// </script>  
 
 {OVERALL_GAME_FOOTER}

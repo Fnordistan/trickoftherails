@@ -58,35 +58,16 @@
     filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
 }
 
-.cardontable {
-    display: inline-block;
-    width: 114px;
-    height: 171px;
-    background-image: url('img/cards_sprites.jpg'); 
-}
-
-.openslot {
-    display: inline-block;
-    margin-top: 5px;
-    width: 114px;
-    height: 171px;
-    border-radius: 10px;
-    border: 1px black solid;
-}
-
 .rr_lane_logo {
-    display: inline-block;
     margin-top: 5px;
+    background-position: top;
     background-image: url(img/railroad_sprites.png);
     background-repeat: none;
 }
 
-.rr_station {
-    display: inline-block;
-    margin-top: 5px;
-    width: 114px;
-    height: 171px;
-    background-image: url('img/cards_sprites.jpg'); 
+.rr_lane {
+    display: flex;
+    flex-direction: row;
 }
 
 #b_and_o_logo {
@@ -96,19 +77,11 @@
     background-position: 0px 0px;
 }
 
-#b_and_o_station {
-    background-position: -1254px 0px;
-}
-
 #c_and_o_logo {
     background-size: 705px 125px;
     width: 125px;
     height: 125px;
     background-position: -125px 0px;
-}
-
-#c_and_o_station {
-    background-position: -1254px -171px;
 }
 
 #erie_logo {
@@ -118,10 +91,6 @@
     background-position: -250px 0px;
 }
 
-#erie_station {
-    background-position: -1254px -342px;
-}
-
 #nyc_logo {
     background-size: 438px 78px;
     width: 125px;
@@ -129,17 +98,9 @@
     background-position: -312px 0px;
 }
 
-#nyc_station {
-    background-position: -1254px -513px;
-}
-
 #prr_logo {
     background-size: 705px 125px;
     width: 126.5px;
     height: 125px;
     background-position: -375px 0px;
-}
-
-#prr_station {
-    background-position: -1254px -684px;
 }
