@@ -33,6 +33,7 @@ class TrickOfTheRails extends Table
         
         self::initGameStateLabels( array( 
             "trickRR" => 10,
+            "wonLastTrick" => 20,
         ) );
 
         $this->rrcards = self::getNew("module.common.deck");
@@ -81,9 +82,9 @@ class TrickOfTheRails extends Table
         /************ Start the game initialization *****/
 
         // Init global values with their initial values
-        //self::setGameStateInitialValue( 'my_first_global_variable', 0 );
          // Set current trick color to zero (= no trick color)
          self::setGameStateInitialValue( 'trickRR', 0 );
+         self::setGameStateInitialValue( 'wonLastTrick', 0 );
 
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
@@ -250,24 +251,40 @@ class TrickOfTheRails extends Table
     function playCard( $card_id )
     {
         self::checkAction( 'playCard' ); 
-        
-        $player_id = self::getActivePlayerId();
 
+        $card_played = $this->rrcards->getCard($card_id);
+        $player_id = self::getActivePlayerId();
+        
+
+        // am I the first to play this trick?
+        // note: 'color' is really the railroad number (1-5)
+        $trick_color = self::getGameStateValue( 'trickRR' );
+        if ($trick_color == 0) {
+            self::setGameStateValue( 'trickRR', $card_played['type']);
+        } else {
+            if ($card_played['type'] != $trick_color) {
+                // do I have a card of that color in my hand?
+                $cards_in_hand = $this->rrcards->getCardsInLocation( 'hand', $player_id );
+                foreach ($cards_in_hand as $card) {
+                    if ($card['type'] == $trick_color) {
+                        throw new BgaUserException ( self::_( "You must play a ".$this->railroads[$trick_color]['name']." (".$this->railroads[$trick_color]['color'].") card" ));
+                    }
+                }
+            }
+        }
+        
         $wt = $this->rrcards->countCardsInLocation( 'currenttrick' );
         $this->rrcards->insertCard( $card_id, 'currenttrick', $wt );
-
-        $cardPlayed = $this->rrcards->getCard($card_id);
-
         // Notify all players about the card played
         self::notifyAllPlayers('playCard', clienttranslate('${player_name} plays ${rr_name} (${rr_color}) ${card_value}'), array (
             'i18n' => array ('rr_name', 'rr_color','card_value' ),
             'card_id' => $card_id,
-            'player_id' => $player_id,
-            'player_name' => self::getActivePlayerName(),
-            'card_value' => $this->values_label [$cardPlayed ['type_arg']],
-            'rr' => $cardPlayed['type'],
-            'rr_name' => $this->railroads [$cardPlayed ['type']] ['name'],
-            'rr_color' => $this->railroads [$cardPlayed ['type']] ['color'] ));
+            'player_id' => self::getActivePlayerId(),
+            'player_name' => $player_id,
+            'card_value' => $this->values_label [$card_played ['type_arg']],
+            'rr' => $card_played['type'],
+            'rr_name' => $this->railroads [$card_played ['type']] ['name'],
+            'rr_color' => $this->railroads [$card_played ['type']] ['color'] ));
         // Next player
         $this->gamestate->nextState();
           
@@ -328,7 +345,12 @@ class TrickOfTheRails extends Table
     
     function stNewTrick() {
         // find the current trick reward
+        self::setGameStateValue( 'trickRR', 0 );
 
+        $leadPlayer = self::getGameStateValue( 'wonLastTrick' );
+        if ($leadPlayer != 0) {
+            $this->gamestate->changeActivePlayer( $leadPlayer );
+        }
 
         $this->gamestate->nextState( "" );
     }
@@ -338,6 +360,24 @@ class TrickOfTheRails extends Table
         if ( $this->rrcards->countCardInLocation( 'currenttrick' ) == self::getPlayersNumber() ) {
             // end of trick
             // Who won?
+            $color = self::getGameStateValue( 'trickRR' );
+
+            $bestCard = 0;
+            $bestVal = 0;
+            foreach ($this->rrcards->getCardsInLocation( 'currenttrick') as $cardPlayed) {
+                if ($cardPlayed['type'] == $color) {
+                    if ($cardPlayed['type_arg'] > $bestVal) {
+                        $bestCard = $cardPlayed;
+                        $bestVal = $cardPlayed['type_arg'];
+                    }
+                }
+            }
+            // should not happen!
+            if ($bestCard == 0) {
+                throw new BgaVisibleSystemException( "no winner of trick determined!" );
+            } else {
+
+            }
 
             $this->gamestate->nextState( 'resolveTrick' );        
         } else {
@@ -345,15 +385,17 @@ class TrickOfTheRails extends Table
             self::giveExtraTime( $player_id );
 
             $this->gamestate->nextState( 'nextPlayer' );        
-
         }
-
     }
 
     /**
      * Determines who won the trick and gives the reward
      */
     function stResolveTrick() {
+        $trickCards = $this->rrcards->getCardsInLocation('currenttrick');
+
+
+
         // one of these
         $reward = "locomotive"; // "city" "share"
 
@@ -423,7 +465,7 @@ class TrickOfTheRails extends Table
             return;
         }
 
-        throw new feException( "Zombie mode not supported at this game state: ".$statename );
+        throw new BgaVisibleSystemException( "Zombie mode not supported at this game state: ".$statename );
     }
     
 ///////////////////////////////////////////////////////////////////////////////////:

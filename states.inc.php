@@ -63,7 +63,6 @@ if (!defined('STATE_SETUP')) { // ensure this block is only invoked once, since 
     define("STATE_SCORE", 98);
     define("STATE_END_GAME", 99);
  }
-  
  
 $machinestates = array(
 
