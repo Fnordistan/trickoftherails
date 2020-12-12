@@ -92,7 +92,7 @@ class TrickOfTheRails extends Table
 
         // Create cards
         $rrcards = array();
-        foreach ( $this->railroads as $rr_id => $railroad ) {
+        foreach ( $this->railroads as $rr_id => $rrarr ) {
             // Railroad rows
             for ($value = 1; $value <= 10; $value++) {
                 $rrcards[] = array ('type' => $rr_id, 'type_arg' => $value, 'nbr' => 1 );
@@ -202,8 +202,8 @@ class TrickOfTheRails extends Table
         $result['tricklanecards'] = $this->trickcards->getCardsInLocation( 'trickrewards' );
 
         foreach ( $this->railroads as $rr_id => $rr ) {
-            $result[$rr.'_railway_cards'] = $this->rrcards->getCardsInLocation( $rr.'_railway' );
-            $result[$rr.'_railway_cards'] = $this->trickcards->getCardsInLocation( $rr.'_railway' );
+            $result[$rr['abbr'].'_railway_cards'] = $this->rrcards->getCardsInLocation( $rr['abbr'].'_railway' );
+            $result[$rr['abbr'].'_railway_cards'] = $this->trickcards->getCardsInLocation( $rr['abbr'].'_railway' );
         }
 
 
@@ -255,21 +255,19 @@ class TrickOfTheRails extends Table
 
         $wt = $this->rrcards->countCardsInLocation( 'currenttrick' );
         $this->rrcards->insertCard( $card_id, 'currenttrick', $wt );
-        // self::DbQuery("
-        // UPDATE CARDS_RR
-        // SET card_location_arg = $wt
-        // WHERE card_id = $card_id
-        // ");
 
+        $cardPlayed = $this->rrcards->getCard($card_id);
 
-        // // Notify all players about the card played
-        // self::notifyAllPlayers( "cardPlayed", clienttranslate( '${player_name} plays ${card_name}' ), array(
-        //     'player_id' => $player_id,
-        //     'player_name' => self::getActivePlayerName(),
-        //     'card_name' => $card_name,
-        //     'card_id' => $card_id
-        // ) );
-
+        // Notify all players about the card played
+        self::notifyAllPlayers('playCard', clienttranslate('${player_name} plays ${rr_name} (${rr_color}) ${card_value}'), array (
+            'i18n' => array ('rr_name', 'rr_color','card_value' ),
+            'card_id' => $card_id,
+            'player_id' => $player_id,
+            'player_name' => self::getActivePlayerName(),
+            'card_value' => $this->values_label [$cardPlayed ['type_arg']],
+            'rr' => $cardPlayed['type'],
+            'rr_name' => $this->railroads [$cardPlayed ['type']] ['name'],
+            'rr_color' => $this->railroads [$cardPlayed ['type']] ['color'] ));
         // Next player
         $this->gamestate->nextState( );
           

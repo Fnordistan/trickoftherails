@@ -22,14 +22,34 @@
 
 
 $this->railroads = array(
-    1 => "b_and_o",
-    2 => "c_and_o",
-    3 => "erie",
-    4 => "nyc",
-    5 => "prr"
+    1 => array( 'name' => clienttranslate('B&O'),
+    'nametr' => self::_('B&O'),
+    'color' => clienttranslate('Blue'),
+    'colortr' => self::_('Blue'),
+    'abbr' => 'b_and_o' ),
+    2 => array( 'name' => clienttranslate('C&O'),
+    'nametr' => self::_('C&O'),
+    'color' => clienttranslate('Green'),
+    'colortr' => self::_('Green'),
+    'abbr' => 'c_and_o' ),
+    3 => array( 'name' => clienttranslate('Erie'),
+    'nametr' => self::_('Erie'),
+    'color' => clienttranslate('Yellow'),
+    'colortr' => self::_('Yellow'),
+    'abbr' => 'erie' ),
+    4 => array( 'name' => clienttranslate('NYC'),
+    'nametr' => self::_('NYC'),
+    'color' => clienttranslate('Gray'),
+    'colortr' => self::_('Gray'),
+    'abbr' => 'nyc' ),
+    5 => array( 'name' => clienttranslate('PRR'),
+    'nametr' => self::_('PRR'),
+    'color' => clienttranslate('Red'),
+    'colortr' => self::_('Red'),
+    'abbr' => 'prr' ),
 );
 
-$this->value_label = array(
+$this->values_label = array(
   1 => '1',
   2 => '2',
   3 => '3',
@@ -43,14 +63,14 @@ $this->value_label = array(
 );
 
 $this->trick_type = array(
-    1 => array( "name" => clienttranslate('Exchange'),
+    1 => array( 'name' => clienttranslate('Exchange'),
     'nametr' => self::_('Exchange') ),
-    2 => array( "name" => clienttranslate('Reservation'),
+    2 => array( 'name' => clienttranslate('Reservation'),
     'nametr' => self::_('Reservation') ),
-    3 => array( "name" => clienttranslate('Locomotive'),
+    3 => array( 'name' => clienttranslate('Locomotive'),
     'nametr' => self::_('Locomotive') ),
-    4 => array( "name" => clienttranslate('City'),
+    4 => array( 'name' => clienttranslate('City'),
     'nametr' => self::_('City') ),
-    5 => array( "name" => clienttranslate('Railway'),
+    5 => array( 'name' => clienttranslate('Railway'),
     'nametr' => self::_('Railway') ),
 );
