@@ -95,8 +95,11 @@ class TrickOfTheRails extends Table
         $rrcards = array();
         foreach ( $this->railroads as $rr_id => $railroad ) {
             // Railroad rows
-            for ($value = 1; $value <= 10; $value++) {
-                $rrcards[] = array ('type' => $rr_id, 'type_arg' => $value, 'nbr' => 1 );
+            //  also stick Station cards here, though we'll immediately move them
+            for ($value = 1; $value <= 12; $value++) {
+                if ($value != 11) {
+                    $rrcards[] = array ('type' => $rr_id, 'type_arg' => $value, 'nbr' => 1 );
+                }
             }
         }
         $this->rrcards->createCards( $rrcards, 'deck' );
@@ -105,14 +108,11 @@ class TrickOfTheRails extends Table
         $players_nbr = count( $players );
         
         $trickcards = array();
-
         for ($ix = 1; $ix <= 5; $ix++) {
             // locomotives
             $trickcards[] = array('type' => 6, 'type_arg' => $ix, 'nbr' => 1);
             // exchange cards
             $trickcards[] = array('type' => $ix, 'type_arg' => 11, 'nbr' => 1);
-            //  also stick Station cards here, though we'll immediately move them
-            $trickcards[] = array('type' => $ix, 'type_arg' => 12, 'nbr' => 1);
         }
 
         // number of cards in trick lane, and also starting hand size
@@ -143,32 +143,36 @@ class TrickOfTheRails extends Table
                 throw new BgaVisibleSystemException("Invalid player count: {$players_nbr}");
         }
 
-        // Shuffle main deck
+        // before shuffling mian rr deck, remove Stations and put them in railway lines
+        foreach ( $this->railroads as $rr_id => $railroad ) {
+            $stations = $this->rrcards->getCardsOfType($rr_id, 12);
+            // annoying iteration through a one-element assocative array...
+            foreach ($stations as $station) {
+                $this->rrcards->moveCard($station['id'], $railroad['abbr'].'_railway');
+            }
+        }
+
+        // now shuffle
         $this->rrcards->shuffle('deck');
         // Deal cards to each player
         $players = self::loadPlayersBasicInfos();
         foreach ( $players as $player_id => $player ) {
             $rrcards = $this->rrcards->pickCards($tricklanelen, 'deck', $player_id);
         }
-
+        // deal out remaining cards to appropriate railway line
+        foreach ($this->rrcards->getCardsInLocation( 'deck') as $rrcard) {
+            $railway = $this->railroads[$rrcard['type']]['abbr'];
+            $this->rrcards->moveCard($rrcard['id'], "{$railway}_railway");
+        }
 
         // create trick deck
         $this->trickcards->createCards($trickcards, 'deck');
-        // before shuffling trick deck remove Stations and put them in railway lines
-        foreach ( $this->railroads as $rr_id => $railroad ) {
-            $stations = $this->trickcards->getCardsOfType($rr_id, 12);
-            // annoying iteration through a one-element assocative array...
-            foreach ($stations as $station) {
-                $this->trickcards->moveCard($station['id'], $railroad['abbr'].'_railway');
-            }
-        }
-
-        // now shuffle
+        // shuffle
         $this->trickcards->shuffle('deck');
+        // deal out to trick lane
         $tricklane = $this->trickcards->pickCardsForLocation($tricklanelen, 'deck', 'trickrewards');
 
-
-        // Activate first player (which is in general a good idea :) )
+        // Activate first player
         $this->activeNextPlayer();
 
         /************ End of the game initialization *****/
@@ -203,8 +207,9 @@ class TrickOfTheRails extends Table
         $result['tricklanecards'] = $this->trickcards->getCardsInLocation( 'trickrewards' );
 
         foreach ( $this->railroads as $rr_id => $railroad ) {
-            $result[$railroad['abbr'].'_railway_cards'] = $this->rrcards->getCardsInLocation( $railroad['abbr'].'_railway' );
-            $result[$railroad['abbr'].'_railway_cards'] = $this->trickcards->getCardsInLocation( $railroad['abbr'].'_railway' );
+            $result[$railroad['abbr'].'_railway_cards'] = array_merge(
+                $this->rrcards->getCardsInLocation( $railroad['abbr'].'_railway' ),
+                $this->trickcards->getCardsInLocation( $railroad['abbr'].'_railway' ));
         }
 
 

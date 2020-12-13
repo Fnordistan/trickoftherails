@@ -97,10 +97,7 @@ function (dojo, declare) {
             this.cardsPlayed.image_items_per_row = COLS;
             this.cardsPlayed.onItemCreate = dojo.hitch(this, this.setUpNewCard);
 
-            // var newitem = { id: id, type: type };  stock.items.push( newitem );    stock.item_type[ type ] .weight = position; stock.sortItems(); stock.updateDisplay(from);
-
-
-            // and create the stocks for all five railways
+            // and create the Stock items for all five railways
             this.railWays = [];
             for (const rr of RR_PREFIXES)
             {
