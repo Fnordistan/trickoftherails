@@ -148,7 +148,8 @@ class TrickOfTheRails extends Table
             $stations = $this->rrcards->getCardsOfType($rr_id, 12);
             // annoying iteration through a one-element assocative array...
             foreach ($stations as $station) {
-                $this->rrcards->moveCard($station['id'], $railroad['abbr'].'_railway');
+                // set station at location 0
+                $this->rrcards->moveCard($station['id'], $railroad['abbr'].'_railway', 0);
             }
         }
 
@@ -162,7 +163,8 @@ class TrickOfTheRails extends Table
         // deal out remaining cards to appropriate railway line
         foreach ($this->rrcards->getCardsInLocation( 'deck') as $rrcard) {
             $railway = $this->railroads[$rrcard['type']]['abbr'];
-            $this->rrcards->moveCard($rrcard['id'], "{$railway}_railway");
+            $pos = $this->rrcards->countCardInLocation("{$railway}_railway");
+            $this->rrcards->moveCard($rrcard['id'], "{$railway}_railway", $pos);
         }
 
         // create trick deck
@@ -280,7 +282,7 @@ class TrickOfTheRails extends Table
                 }
             }
         }
-        
+        // assign incrementing weights to ensure they stay in order
         $wt = $this->rrcards->countCardsInLocation( 'currenttrick' );
         $this->rrcards->insertCard( $card_id, 'currenttrick', $wt );
         // update our trick table
