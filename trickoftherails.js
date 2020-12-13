@@ -25,6 +25,8 @@ const NYC = 3;
 const PRR = 4;
 const RR_INDEXES = [B_O, C_O, ERIE, NYC, PRR];
 const RR_PREFIXES = ["b_and_o", "c_and_o", "erie", "nyc", "prr"];
+const RAILROADS = ["B&O", "C&O", "Erie", "NYC", "PRR"];
+
 
 const EXCHANGE = 11;
 const STATION = 12;
@@ -78,6 +80,8 @@ function (dojo, declare) {
             this.playerHand.create( this, $('myhand'), this.cardwidth, this.cardheight );
             this.playerHand.setSelectionMode(1);
             this.playerHand.image_items_per_row = COLS;
+            // hitch adding railroad as a class to each hand
+            this.playerHand.onItemCreate = dojo.hitch(this, this.setUpNewCard);
 
             // Now set up trick lane
             // We specify no weight because we don't want it sorted
@@ -91,6 +95,7 @@ function (dojo, declare) {
             this.cardsPlayed.create(this, $('currenttrick'), this.cardwidth, this.cardheight );
             this.cardsPlayed.setSelectionMode(0);
             this.cardsPlayed.image_items_per_row = COLS;
+            this.cardsPlayed.onItemCreate = dojo.hitch(this, this.setUpNewCard);
 
             // var newitem = { id: id, type: type };  stock.items.push( newitem );    stock.item_type[ type ] .weight = position; stock.sortItems(); stock.updateDisplay(from);
 
@@ -289,6 +294,16 @@ function (dojo, declare) {
         },
 
         /**
+         * Reverse of above function
+         * @param {*} card_id 
+         * @returns two-member array, type and type_arg (rr/value)
+         */
+        getTypeAndValue: function(card_id) {
+            return [Math.floor(card_id/12)+1, (card_id % 12) +1];
+        },
+
+
+        /**
          * Someone played a trick card.
          * @param {*} player_id 
          * @param {*} card_id 
@@ -304,6 +319,8 @@ function (dojo, declare) {
             {
                 // Some opponent played a card
                 this.cardsPlayed.addToStockWithId(card_type, card_id, 'player_board_'+player_id);
+                // // highlight all my cards of that color
+                // dojo.query('#myhand .'+RAILROADS[rr-1]).style('opacity', 0.5);
             }
             else
             {
@@ -318,6 +335,19 @@ function (dojo, declare) {
             dojo.addClass('currenttrick_item_'+card_id, "nice_card");
         },
 
+        /**
+         * Each card invokes this when added to a player hand
+         * @param {*} card_div 
+         * @param {*} card_id 
+         * @param {*} myhand_item 
+         */
+        setUpNewCard: function(card_div, card_id, myhand_item) {
+               // Add a special tooltip on the card:
+               [$type, $type_arg] = this.getTypeAndValue(card_id);
+               this.addTooltip( card_div.id, _(RAILROADS[$type-1] + " - " + $type_arg), '');
+                // add RR name to every class
+               dojo.addClass( card_div, RAILROADS[$type-1]);
+        },
 
         ///////////////////////////////////////////////////
         //// Player's action

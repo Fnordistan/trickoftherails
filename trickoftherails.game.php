@@ -316,22 +316,20 @@ class TrickOfTheRails extends Table
         game state.
     */
 
-    /*
-    
-    Example for game state "MyGameState":
-    
-    function argMyGameState()
+    function argPlayCards()
     {
-        // Get some values from the current game situation in database...
-    
-        // return values:
+        $cardToPlay = 0;
+        $currentTrick = self::getGameStateValue( 'trickRR' );
+        if ($currentTrick == 0) {
+            $cardToPlay = clienttranslate("lead the trick (play any card)");
+        } else {
+            $cardToPlay = clienttranslate("play a ".$this->railroads[$currentTrick]['name']." (".$this->railroads[$currentTrick]['color'].") card if possible");
+        }
         return array(
-            'variable1' => $value1,
-            'variable2' => $value2,
-            ...
+            "i18n" => array( 'cardToPlay'),
+            'cardToPlay' => $cardToPlay,
         );
     }    
-    */
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state actions
