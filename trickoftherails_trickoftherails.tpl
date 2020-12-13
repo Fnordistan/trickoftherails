@@ -49,7 +49,7 @@
     <h3>Railroads</h3>
 
     <!-- BEGIN RAILROAD -->
-    <div id="{RR}_lane" class="whiteblock">
+    <div id="{RR}_lane" class="whiteblock rr_lane">
         <div id="{RR}_logo" class="rr_lane_logo"></div>
         <div id="{RR}_locomotive" class="locomotive_slot"></div>
         <div id="{RR}_railway"></div>

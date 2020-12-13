@@ -121,6 +121,7 @@ class TrickOfTheRails extends Table
         switch ($players_nbr) {
             case 3:
                 // use 3 Reservation and City cards
+                //  E C E C E C E 3 E 4 R 5 R 6/* R
                 $trickcards[] = array('type' => 6, 'type_arg' => 9, 'nbr' => 3);
                 for ($col = 6; $col <= 8; $col++) {
                     $trickcards[] = array('type' => 6, 'type_arg' => $col, 'nbr' => 1);
@@ -129,6 +130,7 @@ class TrickOfTheRails extends Table
                 break;
             case 4:
                 // only 1 Reservation and City card
+                // E C E 3 E 4 E 5 E 6/* R
                 $trickcards[] = array('type' => 6, 'type_arg' => 9, 'nbr' => 1);
                 // the City card used is randomly determined
                 $trickcards[] = array('type' => 6, 'type_arg' => bga_rand(6,8), 'nbr' => 1);
@@ -136,6 +138,7 @@ class TrickOfTheRails extends Table
                 break;
             case 5:
                 // no Reservation or City cards
+                // E 3 E 4 E 5 E 6/* E
                 $tricklanelen = 9;
                 break;
             default:
@@ -143,7 +146,7 @@ class TrickOfTheRails extends Table
                 throw new BgaVisibleSystemException("Invalid player count: {$players_nbr}");
         }
 
-        // before shuffling mian rr deck, remove Stations and put them in railway lines
+        // before shuffling main rr deck, remove Stations and put them in railway lines
         foreach ( $this->railroads as $rr_id => $railroad ) {
             $stations = $this->rrcards->getCardsOfType($rr_id, 12);
             // annoying iteration through a one-element assocative array...

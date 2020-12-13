@@ -58,9 +58,8 @@
     filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
 }
 
-.rr_lane {
-    display: flex;
-    flex-direction: row;
+.rr_lane > * {
+    display: inline-block;
 }
 
 .rr_lane_logo {
