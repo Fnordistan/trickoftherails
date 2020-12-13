@@ -105,6 +105,7 @@ function (dojo, declare) {
                 railway.create(this, $(rr+'_railway'), this.cardwidth, this.cardheight );
                 railway.setSelectionMode(0);
                 railway.image_items_per_row = COLS;
+                railway.autowidth = true;
                 this.railWays.push(railway);
             }
 

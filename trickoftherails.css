@@ -60,6 +60,7 @@
 
 .rr_lane > * {
     display: inline-block;
+    position: relative;
 }
 
 .rr_lane_logo {

@@ -172,6 +172,10 @@ class TrickOfTheRails extends Table
 
         // create trick deck
         $this->trickcards->createCards($trickcards, 'deck');
+        // lay out the trick lane
+
+
+
         // shuffle
         $this->trickcards->shuffle('deck');
         // deal out to trick lane
