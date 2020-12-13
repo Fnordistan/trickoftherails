@@ -179,7 +179,7 @@ class TrickOfTheRails extends Table
         // shuffle
         $this->trickcards->shuffle('deck');
         // deal out to trick lane
-        $tricklane = $this->trickcards->pickCardsForLocation($tricklanelen, 'deck', 'trickrewards');
+        $tricklane = $this->trickcards->pickCardsForLocation($tricklanelen, 'deck', 'tricklane');
 
         // Activate first player
         $this->activeNextPlayer();
@@ -213,7 +213,7 @@ class TrickOfTheRails extends Table
         // Cards played onto the table
         $result['currenttrick'] = $this->rrcards->getCardsInLocation( 'currenttrick');
         // Cards in tricklane
-        $result['tricklanecards'] = $this->trickcards->getCardsInLocation( 'trickrewards' );
+        $result['tricklanecards'] = $this->trickcards->getCardsInLocation( 'tricklane' );
 
         foreach ( $this->railroads as $rr_id => $railroad ) {
             $result[$railroad['abbr'].'_railway_cards'] = array_merge(
@@ -433,7 +433,7 @@ class TrickOfTheRails extends Table
      * Winner gets reward
      */
     function stResolveTrick() {
-        $trickCard = $this->trickcards->getCardOnTop('trickrewards', 0);
+        $trickCard = $this->trickcards->getCardOnTop('tricklane', 0);
 
         if ($trickCard['type'] == 6) {
             if ($trickCard['type_arg'] <= 5) {

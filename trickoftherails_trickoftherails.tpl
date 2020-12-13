@@ -28,24 +28,20 @@
 
 <div id="myhand_wrap" class="whiteblock">
     <h3>{MY_HAND}</h3>
-    <div id="myhand">
-
-    </div>
+    <div id="myhand"></div>
 </div>
 
-<div id="biddinglane" class="whiteblock">
+<div id="currenttrick_wrap" class="whiteblock">
     <h3>Trick Lead</h3>
     <div id="currenttrick"></div>
 </div>
 
-<div id="tricklane" class="whiteblock">
+<div id="tricklane_wrap" class="whiteblock">
     <h3>Trick Lane</h3>
-    <div id="trickrewards">
-
-    </div>
+    <div id="tricklane"></div>
 </div>
 
-<div id="rr_lanes">
+<div id="rr_lanes_container">
     <h3>Railroads</h3>
 
     <!-- BEGIN RAILROAD -->

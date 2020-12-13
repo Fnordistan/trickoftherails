@@ -86,7 +86,7 @@ function (dojo, declare) {
             // Now set up trick lane
             // We specify no weight because we don't want it sorted
             this.trickLane = new ebg.stock();
-            this.trickLane.create(this, $('trickrewards'), this.cardwidth, this.cardheight );
+            this.trickLane.create(this, $('tricklane'), this.cardwidth, this.cardheight );
             this.trickLane.setSelectionMode(0);
             this.trickLane.image_items_per_row = COLS;
 

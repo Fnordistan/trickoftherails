@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `CARDS_RR` (
   `card_id` TINYINT unsigned NOT NULL AUTO_INCREMENT,
   `card_type` TINYINT NOT NULL COMMENT 'ROW (RR)',
   `card_type_arg` TINYINT NOT NULL COMMENT 'COLUMN',
-  `card_location` varchar(16) NOT NULL COMMENT 'deck/trickreward/',
+  `card_location` varchar(16) NOT NULL COMMENT 'deck/tricklane/',
   `card_location_arg` int(11) NOT NULL COMMENT 'weight to indicate position',
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
