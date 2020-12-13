@@ -38,16 +38,12 @@ CREATE TABLE IF NOT EXISTS `CARDS_TRICK` (
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
--- CREATE TABLE IF NOT EXISTS `TRICK_ROW` (
---  `card_id` TINYINT UNSIGNED NOT NULL,
---   PRIMARY KEY (`id`)
--- ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
+-- tracked only for each trick
+CREATE TABLE IF NOT EXISTS `TRICK_ROW` (
+  `card_id` TINYINT unsigned NOT NULL,
+  `player_id` INT(11) NOT NULL COMMENT 'player who played it',
+  PRIMARY KEY (`card_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
  -- add info about first player
  ALTER TABLE `player` ADD `player_first` BOOLEAN NOT NULL DEFAULT '0';
-
-
--- Example 2: add a custom field to the standard "player" table
--- ALTER TABLE `player` ADD `player_my_custom_field` INT UNSIGNED NOT NULL DEFAULT '0';
-

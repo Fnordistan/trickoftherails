@@ -336,6 +336,13 @@ function (dojo, declare) {
         },
 
         /**
+         * Someone won a trick.
+         */
+        winTrick: function(player_id) {
+
+        },
+
+        /**
          * Each card invokes this when added to a player hand
          * @param {*} card_div 
          * @param {*} card_id 
@@ -386,41 +393,6 @@ function (dojo, declare) {
     },
 
 
-        /* Example:
-        
-        onMyMethodToCall1: function( evt )
-        {
-            console.log( 'onMyMethodToCall1' );
-            
-            // Preventing default browser reaction
-            dojo.stopEvent( evt );
-
-            // Check that this action is possible (see "possibleactions" in states.inc.php)
-            if( ! this.checkAction( 'myAction' ) )
-            {   return; }
-
-            this.ajaxcall( "/trickoftherails/trickoftherails/myAction.html", { 
-                                                                    lock: true, 
-                                                                    myArgument1: arg1, 
-                                                                    myArgument2: arg2,
-                                                                    ...
-                                                                 }, 
-                         this, function( result ) {
-                            
-                            // What to do after the server call if it succeeded
-                            // (most of the time: nothing)
-                            
-                         }, function( is_error) {
-
-                            // What to do after the server call in anyway (success or failure)
-                            // (most of the time: nothing)
-
-                         } );        
-        },        
-        
-        */
-
-        
         ///////////////////////////////////////////////////
         //// Reaction to cometD notifications
 
@@ -449,6 +421,7 @@ function (dojo, declare) {
             // this.notifqueue.setSynchronous( 'cardPlayed', 3000 );
             // 
             dojo.subscribe('playCard', this, "notif_playCard");
+            dojo.subscribe('winTrick', this, "notif_winTrick");
         },  
         
         /**
@@ -458,6 +431,14 @@ function (dojo, declare) {
         notif_playCard : function(notif) {
             // Play a trick on the table
             this.playTrickCard(notif.args.player_id, notif.args.card_id, notif.args.rr, notif.args.card_value);
+        },
+
+        /**
+         * Someone won a trick.
+         * @param {*} notif 
+         */
+        notif_winTrick : function(notif) {
+            this.winTrick(notif.args.player_id);
         },
    });             
 });

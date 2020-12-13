@@ -248,6 +248,9 @@ class TrickOfTheRails extends Table
         (note: each method below must match an input method in trickoftherails.action.php)
     */
 
+    /**
+     * When someone plays a card to a trick.
+     */
     function playCard( $card_id )
     {
         self::checkAction( 'playCard' ); 
@@ -275,12 +278,17 @@ class TrickOfTheRails extends Table
         
         $wt = $this->rrcards->countCardsInLocation( 'currenttrick' );
         $this->rrcards->insertCard( $card_id, 'currenttrick', $wt );
+        // update our trick table
+        self::DbQuery("
+        INSERT INTO TRICK_ROW (player_id, card_id) VALUES (".$player_id.",".$card_id.")
+        ");
+
         // Notify all players about the card played
         self::notifyAllPlayers('playCard', clienttranslate('${player_name} plays ${rr_name} (${rr_color}) ${card_value}'), array (
             'i18n' => array ('rr_name', 'rr_color','card_value' ),
             'card_id' => $card_id,
             'player_id' => self::getActivePlayerId(),
-            'player_name' => $player_id,
+            'player_name' => self::getActivePlayerName(),
             'card_value' => $this->values_label [$card_played ['type_arg']],
             'rr' => $card_played['type'],
             'rr_name' => $this->railroads [$card_played ['type']] ['name'],
@@ -339,12 +347,18 @@ class TrickOfTheRails extends Table
         Here, you can create methods defined as "game state actions" (see "action" property in states.inc.php).
         The action method of state X is called everytime the current game state is set to X.
     */
-    
-    
+
+    /**
+     * Start a new trick.
+     */
     function stNewTrick() {
-        // find the current trick reward
+        // clear previous tricks played
+        self::DbQuery("DELETE FROM TRICK_ROW");
+
+        // reset trick
         self::setGameStateValue( 'trickRR', 0 );
 
+        // who leads the new trick?
         $leadPlayer = self::getGameStateValue( 'wonLastTrick' );
         if ($leadPlayer != 0) {
             $this->gamestate->changeActivePlayer( $leadPlayer );
@@ -353,6 +367,9 @@ class TrickOfTheRails extends Table
         $this->gamestate->nextState( "" );
     }
 
+    /**
+     * Next card played in trick.
+     */
     function stNextPlayer() {
         // if this was the last player
         if ( $this->rrcards->countCardInLocation( 'currenttrick' ) == self::getPlayersNumber() ) {
@@ -374,8 +391,20 @@ class TrickOfTheRails extends Table
             if ($bestCard == 0) {
                 throw new BgaVisibleSystemException( "no winner of trick determined!" );
             } else {
-
+                $winner = self::getUniqueValueFromDB("
+                    SELECT player_id FROM TRICK_ROW
+                    WHERE card_id =".$bestCard['id']
+                );
             }
+            $this->gamestate->changeActivePlayer( $winner );
+
+            self::notifyAllPlayers('winTrick', clienttranslate('${player_name} wins the trick with ${rr_name} ${card_value}'), array (
+                'i18n' => array ('rr_name', 'rr_color','card_value' ),
+                'player_id' => self::getActivePlayerId(),
+                'player_name' => self::getActivePlayerName(),
+                'card_value' => $this->values_label [$bestCard ['type_arg']],
+                'rr_name' => $this->railroads [$bestCard ['type']] ['name'],
+                'rr_color' => $this->railroads [$bestCard ['type']] ['color'] ));
 
             $this->gamestate->nextState( 'resolveTrick' );        
         } else {
@@ -387,16 +416,24 @@ class TrickOfTheRails extends Table
     }
 
     /**
-     * Determines who won the trick and gives the reward
+     * Winner gets reward
      */
     function stResolveTrick() {
-        $trickCards = $this->rrcards->getCardsInLocation('currenttrick');
+        $trickCard = $this->trickcards->getCardOnTop('trickrewards', 0);
 
-
-
-        // one of these
-        $reward = "locomotive"; // "city" "share"
-
+        if ($trickCard['type'] == 6) {
+            if ($trickCard['type_arg'] <= 5) {
+                $reward = "locomotive";
+            } else if ($trickCard['type_arg']  <= 8) {
+                $reward = "city";
+            } else {
+                // shouldn't get here!
+                throw new BgaVisibleSystemException("Invalid Trick Lane Card");
+            }
+        } else {
+            // if it's not the last row, it's either an Exchange or Railway card
+            $reward = "share";
+        }
         $this->gamestate->nextState( $reward );
     }
 
