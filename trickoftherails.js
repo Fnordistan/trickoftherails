@@ -81,10 +81,9 @@ function (dojo, declare) {
             this.playerHand.setSelectionMode(1);
             this.playerHand.image_items_per_row = COLS;
             // hitch adding railroad as a class to each hand
-            this.playerHand.onItemCreate = dojo.hitch(this, this.setUpNewCard);
+            this.playerHand.onItemCreate = dojo.hitch(this, this.setUpRRCard);
 
             // Now set up trick lane
-            // We specify no weight because we don't want it sorted
             this.trickLane = new ebg.stock();
             this.trickLane.create(this, $('tricklane'), this.cardwidth, this.cardheight );
             this.trickLane.setSelectionMode(0);
@@ -95,7 +94,8 @@ function (dojo, declare) {
             this.cardsPlayed.create(this, $('currenttrick'), this.cardwidth, this.cardheight );
             this.cardsPlayed.setSelectionMode(0);
             this.cardsPlayed.image_items_per_row = COLS;
-            this.cardsPlayed.onItemCreate = dojo.hitch(this, this.setUpNewCard);
+            // hitch adding railroad as a class to each hand
+            this.cardsPlayed.onItemCreate = dojo.hitch(this, this.setUpRRCard);
 
             // and create the Stock items for all five railways
             this.railWays = [];
@@ -105,6 +105,7 @@ function (dojo, declare) {
                 railway.create(this, $(rr+'_railway'), this.cardwidth, this.cardheight );
                 railway.setSelectionMode(0);
                 railway.image_items_per_row = COLS;
+                // for some reason they display vertically in rr_lane if this isn't set
                 railway.autowidth = true;
                 this.railWays.push(railway);
             }
@@ -135,11 +136,14 @@ function (dojo, declare) {
                             this.railWays[rr-1].addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                         } else if (vv == EXCHANGE) {
                             // it's an Exchange card
+                            // We actually need to add THREE duplicates here because in a 3-player game, they will have different weights
                             this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                         } else {
                             this.playerHand.addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                             this.cardsPlayed.addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                             this.railWays[rr-1].addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                            // tricklanes can also hold RR cards
+                            this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                         }
                     }
                 }
@@ -147,28 +151,31 @@ function (dojo, declare) {
 
             // Cards in player's hand
             for ( const i in gamedatas.hand ) {
-                let card = gamedatas.hand[i];
-                let rr = card.type;
-                let value = card.type_arg;
-                this.playerHand.addToStockWithId(this.getUniqueTypeForCard(rr, value), card.id);
+                let mycard = gamedatas.hand[i];
+                let rr = mycard.type;
+                let value = mycard.type_arg;
+                this.playerHand.addToStockWithId(this.getUniqueTypeForCard(rr, value), mycard.id);
             }
 
             // Cards played on table
             for ( const i in gamedatas.currenttrick) {
-                let card = gamedatas.currenttrick[i];
-                let rr = card.type;
-                let value = card.type_arg;
+                let tcard = gamedatas.currenttrick[i];
+                let rr = tcard.type;
+                let value = tcard.type_arg;
                 let ctype = this.getUniqueTypeForCard(rr, value);
-                this.cardsPlayed.item_type[ctype].weight = card.location_arg;
-                this.cardsPlayed.addToStockWithId(ctype, card.id);
+                this.cardsPlayed.item_type[ctype].weight = parseInt(tcard.location_arg);
+                this.cardsPlayed.addToStockWithId(ctype, tcard.id);
             }
 
             // the trick lane
+            debugger;
             for (const i in gamedatas.tricklanecards) {
-                let card = gamedatas.tricklanecards[i];
-                let tt = card.type;
-                let value = card.type_arg;
-                this.trickLane.addToStockWithId(this.getUniqueTypeForCard(tt, value), card.id);
+                let tlcard = gamedatas.tricklanecards[i];
+                let tt = tlcard.type;
+                let value = tlcard.type_arg;
+                let ctype = this.getUniqueTypeForCard(tt, value);
+                this.trickLane.item_type[ctype].weight = parseInt(tlcard.location_arg);
+                this.trickLane.addToStockWithId(ctype, tlcard.id);
             }
 
             let rw = 0;
@@ -178,7 +185,7 @@ function (dojo, declare) {
                     let tt = railwaycard.type;
                     let value = railwaycard.type_arg;
                     let ctype = this.getUniqueTypeForCard(tt, value);
-                    this.railWays[rw].item_type[ctype].weight = railwaycard.location_arg;
+                    this.railWays[rw].item_type[ctype].weight = parseInt(railwaycard.location_arg);
                     this.railWays[rw].addToStockWithId(ctype, railwaycard.id);
                 }
                 rw++;
@@ -282,17 +289,19 @@ function (dojo, declare) {
 
         /**
          * Gets a unique identifier for each card. Every card will have this exact number every game, all game.
+         * 
          * @param int $rr 
          * @param int $v
-         * @returns int
+         * @returns int card_id
          */
         getUniqueTypeForCard: function(rr, v)
         {
-            return (rr-1)*12+(v-1);
+            return ((rr-1)*12)+(v-1);
         },
 
         /**
-         * Reverse of above function
+         * Reverse of above function. Gets the Type/Arg from the card id.
+         * 
          * @param {*} card_id 
          * @returns two-member array, type and type_arg (rr/value)
          */
@@ -341,12 +350,13 @@ function (dojo, declare) {
         },
 
         /**
-         * Each card invokes this when added to a player hand
+         * Each card invokes this when added to a player hand or the RR.
+         * Adds tooltips and a class equal to the name of the RR.
          * @param {*} card_div 
          * @param {*} card_id 
          * @param {*} myhand_item 
          */
-        setUpNewCard: function(card_div, card_id, myhand_item) {
+        setUpRRCard: function(card_div, card_id, myhand_item) {
                // Add a special tooltip on the card:
                [$type, $type_arg] = this.getTypeAndValue(card_id);
                this.addTooltip( card_div.id, _(RAILROADS[$type-1] + " - " + $type_arg), '');
