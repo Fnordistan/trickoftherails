@@ -27,9 +27,13 @@ const RR_INDEXES = [B_O, C_O, ERIE, NYC, PRR];
 const RR_PREFIXES = ["b_and_o", "c_and_o", "erie", "nyc", "prr"];
 const RAILROADS = ["B&O", "C&O", "Erie", "NYC", "PRR"];
 
-
+const RESERVATION = 9;
 const EXCHANGE = 11;
 const STATION = 12;
+
+// this is kind of a hack - we know this specific
+// card type is the Reservation card (row 6, position 9)
+const RESERVATION_CARD_TYPE = 68;
 
 const CARD_SPRITES = 'img/cards_sprites.jpg';
 
@@ -116,14 +120,23 @@ function (dojo, declare) {
                 for (let vv = 1; vv <= COLS; vv++ )
                 {
                     // Build card type id
-                    var card_type_id = this.getUniqueTypeForCard( rr, vv );
+                    // we can use 0 value for card id here, it only really matters
+                    // later for specific Reservation cards
+                    var card_type_id = this.getUniqueTypeForCard(rr, vv );
 
                     // on last row, only Locomotives, Cities, and Reservation cards
                     if (rr == ROWS) {
                         if (vv <= 9) {
                             this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
-                            // railways don't get exchange cards
-                            if (vv < 9) {
+                            if (vv == RESERVATION) {
+                                // we need to handle special case of Reservation cards
+                                // We create three cards with different item types but the same image position
+                                // we can just increment up because we know Reservation card is the LAST id
+                                // (need to change this if we start using card back)
+                                for (let rv = 0; rv < 3; rv++) {
+                                    this.trickLane.addItemType( card_type_id+rv, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                                }
+                            }else {
                                 // adding the Locomotive and City cards to railways
                                 for (const ri of RR_INDEXES) {
                                     this.railWays[ri].addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
@@ -136,7 +149,6 @@ function (dojo, declare) {
                             this.railWays[rr-1].addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                         } else if (vv == EXCHANGE) {
                             // it's an Exchange card
-                            // We actually need to add THREE duplicates here because in a 3-player game, they will have different weights
                             this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
                         } else {
                             this.playerHand.addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
@@ -168,12 +180,16 @@ function (dojo, declare) {
             }
 
             // the trick lane
-            debugger;
+            // Special counter for Reservation cards
+            let rsv = 0;
             for (const i in gamedatas.tricklanecards) {
                 let tlcard = gamedatas.tricklanecards[i];
                 let tt = tlcard.type;
                 let value = tlcard.type_arg;
                 let ctype = this.getUniqueTypeForCard(tt, value);
+                if (ctype == RESERVATION_CARD_TYPE) {
+                    ctype += rsv++;
+                }
                 this.trickLane.item_type[ctype].weight = parseInt(tlcard.location_arg);
                 this.trickLane.addToStockWithId(ctype, tlcard.id);
             }
@@ -296,7 +312,7 @@ function (dojo, declare) {
          */
         getUniqueTypeForCard: function(rr, v)
         {
-            return ((rr-1)*12)+(v-1);
+            return ((rr-1)*12) + (v-1);
         },
 
         /**
@@ -306,6 +322,7 @@ function (dojo, declare) {
          * @returns two-member array, type and type_arg (rr/value)
          */
         getTypeAndValue: function(card_id) {
+            // we assume we'll never have to deal with RESERVATION cards here...
             return [Math.floor(card_id/12)+1, (card_id % 12) +1];
         },
 
