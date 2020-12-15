@@ -92,6 +92,7 @@ function (dojo, declare) {
             this.trickLane.create(this, $('tricklane'), this.cardwidth, this.cardheight );
             this.trickLane.setSelectionMode(0);
             this.trickLane.image_items_per_row = COLS;
+            this.trickLane.onItemCreate = dojo.hitch(this, this.setUpTrickLaneCard);
 
             // where cards are played for the current trick
             this.cardsPlayed = new ebg.stock();
@@ -109,6 +110,7 @@ function (dojo, declare) {
                 railway.create(this, $(rr+'_railway'), this.cardwidth, this.cardheight );
                 railway.setSelectionMode(0);
                 railway.image_items_per_row = COLS;
+                railway.onItemCreate = dojo.hitch(this, this.setUpRRCard);
                 // for some reason they display vertically in rr_lane if this isn't set
                 railway.autowidth = true;
                 this.railWays.push(railway);
@@ -322,7 +324,9 @@ function (dojo, declare) {
          * @returns two-member array, type and type_arg (rr/value)
          */
         getTypeAndValue: function(card_id) {
-            // we assume we'll never have to deal with RESERVATION cards here...
+            if (card_id >= RESERVATION_CARD_TYPE) {
+                return [ROWS, RESERVATION];
+            }
             return [Math.floor(card_id/12)+1, (card_id % 12) +1];
         },
 
@@ -375,10 +379,68 @@ function (dojo, declare) {
          */
         setUpRRCard: function(card_div, card_id, myhand_item) {
                // Add a special tooltip on the card:
-               [$type, $type_arg] = this.getTypeAndValue(card_id);
-               this.addTooltip( card_div.id, _(RAILROADS[$type-1] + " - " + $type_arg), '');
+               [type, type_arg] = this.getTypeAndValue(card_id);
+               var tooltip;
+               if (type_arg == STATION) {
+                   tooltip = RAILROADS[type-1]+ " Station";
+               } else {
+                   tooltip = RAILROADS[type-1] + " (" + type_arg + ")";
+               }
+               this.addTooltip( card_div.id, _(tooltip), '');
                 // add RR name to every class
-               dojo.addClass( card_div, RAILROADS[$type-1]);
+               dojo.addClass( card_div, RAILROADS[type-1]);
+        },
+
+        /**
+         * Add tooltip for the TrickLane cards
+         * @param {*} card_div 
+         * @param {*} card_id 
+         * @param {*} myhand_item 
+         */
+        setUpTrickLaneCard: function(card_div, card_id, myhand_item) {
+               // Add a special tooltip on the card:
+               [type, type_arg] = this.getTypeAndValue(card_id);
+                // may be Exchange, Locomotive, City, or Reservation cards
+                var tooltip;
+                if (type == ROWS) {
+                    switch (type_arg) {
+                        case 1:
+                            tooltip = "Locomotive [3]";
+                            break;
+                        case 2:
+                            tooltip = "Locomotive [4]";
+                            break;
+                        case 3:
+                            tooltip = "Locomotive [5]";
+                            break;
+                        case 4:
+                            tooltip = "Locomotive [6]";
+                            break;
+                        case 5:
+                            tooltip = "Locomotive [∞]";
+                            break;
+                        case 6:
+                            tooltip = "City (Pittsburgh)";
+                            break;
+                        case 7:
+                            tooltip = "City (Baltimore)";
+                            break;
+                        case 8:
+                            tooltip = "City (New York)";
+                            break;
+                        case 9:
+                            tooltip = "Reservation Card";
+                            break;
+                        default:
+                            throw new Error("Unexpected Trick Lane Card: type="+type+", type_arg="+type_arg+")");
+                    }
+                } else if (type_arg == EXCHANGE) {
+                    tooltip = RAILROADS[type-1]+ " Exchange Card";
+                } else {
+                    // Whoops! Something happened here
+                    throw new Error("Unexpected Trick Lane Card: type="+type+", type_arg="+type_arg+")");
+                }
+                this.addTooltip( card_div.id, _(tooltip), '');
         },
 
         ///////////////////////////////////////////////////
@@ -465,5 +527,7 @@ function (dojo, declare) {
         notif_winTrick : function(notif) {
             this.winTrick(notif.args.player_id);
         },
-   });             
+
+    });             
 });
+
