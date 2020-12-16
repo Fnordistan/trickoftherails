@@ -364,6 +364,13 @@ function (dojo, declare) {
         },
 
         /**
+         * Shares were added after a trick.
+         */
+        addShares: function(player_id) {
+
+        },
+
+        /**
          * Someone won a trick.
          */
         winTrick: function(player_id) {
@@ -509,6 +516,7 @@ function (dojo, declare) {
             // 
             dojo.subscribe('playCard', this, "notif_playCard");
             dojo.subscribe('winTrick', this, "notif_winTrick");
+            dojo.subscribe('addShares', this, "notif_addShares");
         },  
         
         /**
@@ -527,6 +535,14 @@ function (dojo, declare) {
         notif_winTrick : function(notif) {
             this.winTrick(notif.args.player_id);
         },
+
+        /**
+         * 
+         * @param {*} notif 
+         */
+        notif_addShares : function(notif) {
+            this.addShares(notif.args.player_id);
+        }
 
     });             
 });

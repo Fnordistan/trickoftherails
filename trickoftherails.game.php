@@ -408,12 +408,13 @@ class TrickOfTheRails extends Table
         $card_played = $this->rrcards->getCard($card_id);
         $player_id = self::getActivePlayerId();
         
-
         // am I the first to play this trick?
         // note: 'color' is really the railroad number (1-5)
+        $plays_card = "plays";
         $trick_color = self::getGameStateValue( 'trickRR' );
         if ($trick_color == 0) {
             self::setGameStateValue( 'trickRR', $card_played['type']);
+            $plays_card = "leads the trick with";
         } else {
             if ($card_played['type'] != $trick_color) {
                 // do I have a card of that color in my hand?
@@ -434,10 +435,11 @@ class TrickOfTheRails extends Table
         ");
 
         // Notify all players about the card played
-        self::notifyAllPlayers('playCard', clienttranslate('${player_name} plays ${rr_name} (${rr_color}) ${card_value}'), array (
+        self::notifyAllPlayers('playCard', clienttranslate('${player_name} ${action_verb} ${rr_name} (${rr_color}) ${card_value}'), array (
             'i18n' => array ('rr_name', 'rr_color','card_value' ),
             'card_id' => $card_id,
             'player_id' => self::getActivePlayerId(),
+            'action_verb' => $plays_card,
             'player_name' => self::getActivePlayerName(),
             'card_value' => $this->values_label [$card_played ['type_arg']],
             'rr' => $card_played['type'],
@@ -598,16 +600,20 @@ class TrickOfTheRails extends Table
 
     }
 
+    /**
+     * Triggered after winning a RR or Exchange from Trick Lane.
+     */
     function stAddShares() {
         $rewardCard = current($this->trickcards->getCardsInLocation('tricklane', 0));
-        // winner adds it to his shares
         $winner = self::getGameStateValue( 'wonLastTrick' );
-        $this->trickcards->moveCard($rewardCard['id'], 'shares', $winner);
-
         // assoc player => cardplayed
         $tricksPlayed = self::getCollectionFromDB( "SELECT player_id player, card_id id FROM TRICK_ROW", true );
 
+        $players = self::loadPlayersBasicInfos();
+        // add the shares everyone played to their piles
         foreach ($tricksPlayed as $player => $trick_id) {
+            $share_rr = "";
+            $share_val = "";
             if ($player == $winner) {
                 // the card the winner played is exchanged or discarded
                 $remaining = $this->trickcards->countCardInLocation('tricklane');
@@ -628,16 +634,24 @@ class TrickOfTheRails extends Table
                     $this->trickcards->moveCard($reservation['id'], 'discard');
                     $this->rrcards->moveCard($trick_id, 'tricklane', $reserve_slot);
                 }
+                // winner adds card from tricklane to his shares
+                $this->trickcards->moveCard($rewardCard['id'], 'shares', $winner);
+                $share_rr = $rewardCard['type'];
+                $share_val = $this->trick_type[$rewardCard['type_arg']]['name'];
             } else {
                 // for other players, their card played gets added to shares
                 $this->rrcards->moveCard($trick_id, 'shares', $player);
+                $share = $this->rrcards->getCard($trick_id);
+                $share_rr = $share['type'];
+                $share_val = $this->values_label[$share['type_arg']];
             }
+            self::notifyAllPlayers('addShare', clienttranslate('${player_name} adds ${rr_name} ${card_value} to ${rr_name} shares'), array (
+                'i18n' => array ('rr_name', 'card_value' ),
+                'player_id' => $player,
+                'player_name' => $players[$player]['player_name'],
+                'card_value' => $share_val,
+                'rr_name' => $this->railroads [$share_rr] ['name']));
         }
-
-
-
-
-        // add the shares everyone played to their piles
 
         // is there another trick?
         if ($this->trickcards->countCardInLocation('tricklane') > 0) {
