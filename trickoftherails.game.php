@@ -136,11 +136,10 @@ class TrickOfTheRails extends Table
         // before shuffling main rr deck, remove Stations and put them in railway lines
         foreach ( $this->railroads as $rr_id => $railroad ) {
             $stations = $this->rrcards->getCardsOfType($rr_id, RAILROAD_STATION);
-            // annoying iteration through a one-element assocative array...
-            foreach ($stations as $station) {
-                // set station at location 0
-                $this->rrcards->moveCard($station['id'], $railroad['abbr'].'_railway', 0);
-            }
+            // a one-element assocative array...
+            $station = current($stations);
+            // set station at location 0
+            $this->rrcards->moveCard($station['id'], $railroad['abbr'].'_railway', 0);
         }
 
         switch ($players_nbr) {
@@ -251,14 +250,13 @@ class TrickOfTheRails extends Table
         shuffle($exchange_rand);
         for ($e = 0; $e < 5; $e++) {
             // one-member array
-            foreach($this->trickcards->getCardsOfType($exchange_rand[$e], EXCHANGE) as $x_card) {
-                $slot = $e*2;
-                // 5-player games, last exchange card is pushed to the end
-                if (($players_nbr == 5) && ($e == 4)) {
-                    $slot = 9;
-                }
-                $this->trickcards->moveCard($x_card['id'], "tricklane", $slot);
+            $x_card = current($this->trickcards->getCardsOfType($exchange_rand[$e], EXCHANGE));
+            $slot = $e*2;
+            // 5-player games, last exchange card is pushed to the end
+            if (($players_nbr == 5) && ($e == 4)) {
+                $slot = 9;
             }
+            $this->trickcards->moveCard($x_card['id'], "tricklane", $slot);
         }
 
         // For a 3-player game, cities are shuffled and put in slots 1, 3, and 5
