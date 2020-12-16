@@ -33,16 +33,16 @@ CREATE TABLE IF NOT EXISTS `CARDS_TRICK` (
   `card_id` TINYINT unsigned NOT NULL AUTO_INCREMENT,
   `card_type` TINYINT NOT NULL COMMENT 'ROW (RR)',
   `card_type_arg` TINYINT NOT NULL COMMENT 'COLUMN',
-  `card_location` varchar(16) NOT NULL COMMENT 'hand/deck',
+  `card_location` varchar(16) NOT NULL COMMENT 'hand/deck/shares',
   `card_location_arg` int(11) NOT NULL COMMENT 'player id or deck position',
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- tracked only for each trick
 CREATE TABLE IF NOT EXISTS `TRICK_ROW` (
-  `card_id` TINYINT unsigned NOT NULL,
   `player_id` INT(11) NOT NULL COMMENT 'player who played it',
-  PRIMARY KEY (`card_id`)
+  `card_id` TINYINT unsigned NOT NULL,
+  PRIMARY KEY (`player_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
  -- add info about first player

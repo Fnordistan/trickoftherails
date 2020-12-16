@@ -19,6 +19,7 @@
 
 require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
 
+define('LASTROW', 6);
 define('RESERVATION', 9);
 define('EXCHANGE', 11);
 define('RAILROAD_STATION', 12);
@@ -180,7 +181,7 @@ class TrickOfTheRails extends Table
         $trick_cards = array();
         for ($ix = 1; $ix <= 5; $ix++) {
             // locomotives
-            $trick_cards[] = array('type' => 6, 'type_arg' => $ix, 'nbr' => 1);
+            $trick_cards[] = array('type' => LASTROW, 'type_arg' => $ix, 'nbr' => 1);
             // exchange cards
             $trick_cards[] = array('type' => $ix, 'type_arg' => EXCHANGE, 'nbr' => 1);
         }
@@ -188,16 +189,16 @@ class TrickOfTheRails extends Table
         switch ($players_nbr) {
             case 3:
                 // use 3 Reservation and City cards
-                $trick_cards[] = array('type' => 6, 'type_arg' => RESERVATION, 'nbr' => 3);
+                $trick_cards[] = array('type' => LASTROW, 'type_arg' => RESERVATION, 'nbr' => 3);
                 for ($col = 6; $col <= 8; $col++) {
-                    $trick_cards[] = array('type' => 6, 'type_arg' => $col, 'nbr' => 1);
+                    $trick_cards[] = array('type' => LASTROW, 'type_arg' => $col, 'nbr' => 1);
                 }
                 break;
             case 4:
                 // only 1 Reservation and City card
-                $trick_cards[] = array('type' => 6, 'type_arg' => RESERVATION, 'nbr' => 1);
+                $trick_cards[] = array('type' => LASTROW, 'type_arg' => RESERVATION, 'nbr' => 1);
                 // the City card used is randomly determined
-                $trick_cards[] = array('type' => 6, 'type_arg' => bga_rand(6,8), 'nbr' => 1);
+                $trick_cards[] = array('type' => LASTROW, 'type_arg' => bga_rand(6,8), 'nbr' => 1);
                 break;
             case 5:
                 // no Reservation or City cards
@@ -274,16 +275,16 @@ class TrickOfTheRails extends Table
         // 3 => 7,9,11,13,14
         // 4 => 3,5,7,9,10
         // 5 => 1,3,5,7,8
-        foreach ($this->trickcards->getCardsOfType(6) as $row6) {
-            switch ($row6['type_arg']) {
+        foreach ($this->trickcards->getCardsOfType(LASTROW) as $lastrow) {
+            switch ($lastrow['type_arg']) {
                 case 1: // Loco 3
                 case 2: // Loco 4
                 case 3: // Loco 5
                 case 4: // Loco 6
-                    $this->trickcards->moveCard($row6['id'], "tricklane", $first_loco_card+(2*($row6['type_arg']-1)));
+                    $this->trickcards->moveCard($lastrow['id'], "tricklane", $first_loco_card+(2*($lastrow['type_arg']-1)));
                     break;
                 case 5: // Loco ∞
-                    $this->trickcards->moveCard($row6['id'], "tricklane", $first_loco_card+7);
+                    $this->trickcards->moveCard($lastrow['id'], "tricklane", $first_loco_card+7);
                     break;
                 case 6: // City cards - put them in random slots
                 case 7:
@@ -291,12 +292,12 @@ class TrickOfTheRails extends Table
                     switch ($players_nbr) {
                         case 3:
                             // insert next shuffled city card
-                            $this->trickcards->moveCard($row6['id'], "tricklane", $city_rand[$cityx++]);
+                            $this->trickcards->moveCard($lastrow['id'], "tricklane", $city_rand[$cityx++]);
                             break;
                         case 4:
                             // There's only one city card in 4-player games (type_arg should have been selected randomly 6-8)
                             // It always goes in slot 1
-                            $this->trickcards->moveCard($row6['id'], "tricklane", 1);
+                            $this->trickcards->moveCard($lastrow['id'], "tricklane", 1);
                             break;
                         default:
                             // shouldn't be any City cards in 5-player game!
@@ -306,11 +307,11 @@ class TrickOfTheRails extends Table
                 case 9: // Reservation cards
                     switch ($players_nbr) {
                         case 3:
-                            $this->trickcards->moveCard($row6['id'], "tricklane", $reserves[$reservx++]);
+                            $this->trickcards->moveCard($lastrow['id'], "tricklane", $reserves[$reservx++]);
                             break;
                         case 4:
                             // only 1 Reservation card in a 4-player game
-                            $this->trickcards->moveCard($row6['id'], "tricklane", $reserve_slot_4);
+                            $this->trickcards->moveCard($lastrow['id'], "tricklane", $reserve_slot_4);
                             break;
                         default:
                             // shouldn't be any Reservation cards in 5-player game!
@@ -318,7 +319,7 @@ class TrickOfTheRails extends Table
                     }
                     break;
                 default:
-                    throw new BgaVisibleSystemException("Invalid Card found! {$row6['id']}");
+                    throw new BgaVisibleSystemException("Invalid Card found! {$lastrow['id']}");
             }
        }
     }
@@ -486,7 +487,7 @@ class TrickOfTheRails extends Table
             "i18n" => array( 'cardToPlay'),
             'cardToPlay' => $cardToPlay,
         );
-    }    
+    }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state actions
@@ -545,6 +546,7 @@ class TrickOfTheRails extends Table
                     WHERE card_id =".$bestCard['id']
                 );
             }
+            self::setGameStateValue( 'wonLastTrick', $winner);
             $this->gamestate->changeActivePlayer( $winner );
 
             self::notifyAllPlayers('winTrick', clienttranslate('${player_name} wins the trick with ${rr_name} ${card_value}'), array (
@@ -568,16 +570,16 @@ class TrickOfTheRails extends Table
      * Winner gets reward
      */
     function stResolveTrick() {
-        $trickCard = $this->trickcards->getCardOnTop('tricklane', 0);
+        $rewardCard = current($this->trickcards->getCardsInLocation('tricklane', 0));
 
-        if ($trickCard['type'] == 6) {
-            if ($trickCard['type_arg'] <= 5) {
+        if ($rewardCard['type'] == LASTROW) {
+            if ($rewardCard['type_arg'] <= 5) {
                 $reward = "locomotive";
-            } else if ($trickCard['type_arg']  <= 8) {
+            } else if ($rewardCard['type_arg']  <= 8) {
                 $reward = "city";
             } else {
                 // shouldn't get here!
-                throw new BgaVisibleSystemException("Invalid Trick Lane Card");
+                throw new BgaVisibleSystemException("Invalid Trick Lane Card: type={$rewardCard['type']}, type_arg={$rewardCard['type_arg']}");
             }
         } else {
             // if it's not the last row, it's either an Exchange or Railway card
@@ -597,12 +599,53 @@ class TrickOfTheRails extends Table
     }
 
     function stAddShares() {
+        $rewardCard = current($this->trickcards->getCardsInLocation('tricklane', 0));
+        // winner adds it to his shares
+        $winner = self::getGameStateValue( 'wonLastTrick' );
+        $this->trickcards->moveCard($rewardCard['id'], 'shares', $winner);
+
+        // assoc player => cardplayed
+        $tricksPlayed = self::getCollectionFromDB( "SELECT player_id player, card_id id FROM TRICK_ROW", true );
+
+        foreach ($tricksPlayed as $player => $trick_id) {
+            if ($player == $winner) {
+                // the card the winner played is exchanged or discarded
+                $remaining = $this->trickcards->countCardInLocation('tricklane');
+                $reservation = null;
+                for ($t = 0; $t < $remaining; $t++) {
+                    $tl_t = current($this->trickcards->getCardsInLocation('tricklane', $t));
+                    if ($tl_t['type'] == LASTROW && $tl_t['type_arg'] == RESERVATION) {
+                        $reservation = $tl_t;
+                        break;
+                    }
+                }
+                if ($reservation == null) {
+                    // no reservation card, so card winner played is discarded
+                    $this->rrcards->moveCard($trick_id, 'discard');
+                } else {
+                    // replace the Reservation card with the card played,
+                    $reserve_slot = $reservation['location_arg'];
+                    $this->trickcards->moveCard($reservation['id'], 'discard');
+                    $this->rrcards->moveCard($trick_id, 'tricklane', $reserve_slot);
+                }
+            } else {
+                // for other players, their card played gets added to shares
+                $this->rrcards->moveCard($trick_id, 'shares', $player);
+            }
+        }
+
+
+
+
         // add the shares everyone played to their piles
 
-        // // is there another trick?
-        // $this->gamestate->nextState( "nextTrick" );
-        // go to scoring
-        $this->gamestate->nextState( "endGame" );
+        // is there another trick?
+        if ($this->trickcards->countCardInLocation('tricklane') > 0) {
+            $this->gamestate->nextState( "nextTrick" );
+        } else {
+            // go to scoring
+            $this->gamestate->nextState( "endGame" );
+        }
     }
 
 
