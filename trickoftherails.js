@@ -330,53 +330,6 @@ function (dojo, declare) {
             return [Math.floor(card_id/12)+1, (card_id % 12) +1];
         },
 
-
-        /**
-         * Someone played a trick card.
-         * @param {*} player_id 
-         * @param {*} card_id 
-         * @param {*} rr number indicating rr type (row)
-         * @param {*} card_value 
-         */
-        playTrickCard: function(player_id, card_id, rr, card_value ) {
-            var card_type = this.getUniqueTypeForCard(rr, card_value);
-            // have to explicitly set weight while sliding into place or it goes into wrong order before refresh from Db
-            this.cardsPlayed.item_type[card_type].weight = this.cardsPlayed.count();
-
-            if( player_id != this.player_id )
-            {
-                // Some opponent played a card
-                this.cardsPlayed.addToStockWithId(card_type, card_id, 'player_board_'+player_id);
-                // // highlight all my cards of that color
-                // dojo.query('#myhand .'+RAILROADS[rr-1]).style('opacity', 0.5);
-            }
-            else
-            {
-                // You played a card. If it exists in your hand, move card from there and remove
-                // corresponding item
-                if ($('myhand_item_' + card_id)) {
-                    this.cardsPlayed.addToStockWithId(card_type, card_id, 'myhand_item_'+card_id);
-                    this.playerHand.removeFromStockById(card_id, 'currenttrick_item_'+card_id);
-                }
-            }
-
-            dojo.addClass('currenttrick_item_'+card_id, "nice_card");
-        },
-
-        /**
-         * Shares were added after a trick.
-         */
-        addShares: function(player_id) {
-
-        },
-
-        /**
-         * Someone won a trick.
-         */
-        winTrick: function(player_id) {
-
-        },
-
         /**
          * Each card invokes this when added to a player hand or the RR.
          * Adds tooltips and a class equal to the name of the RR.
@@ -450,6 +403,7 @@ function (dojo, declare) {
                 this.addTooltip( card_div.id, _(tooltip), '');
         },
 
+
         ///////////////////////////////////////////////////
         //// Player's action
         
@@ -488,7 +442,7 @@ function (dojo, declare) {
 
 
         ///////////////////////////////////////////////////
-        //// Reaction to cometD notifications
+        //// Client-side reactions to notifications.
 
         /*
             setupNotifications:
@@ -514,34 +468,58 @@ function (dojo, declare) {
             // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
             // this.notifqueue.setSynchronous( 'cardPlayed', 3000 );
             // 
-            dojo.subscribe('playCard', this, "notif_playCard");
-            dojo.subscribe('winTrick', this, "notif_winTrick");
-            dojo.subscribe('addShares', this, "notif_addShares");
+            dojo.subscribe('cardPlayed', this, "notif_cardPlayed");
+            dojo.subscribe('discardedShare', this, "notif_discardedShare");
+            dojo.subscribe('shareAdded', this, "notif_shareAdded");
         },  
         
         /**
-         * When someone plays to a trick
+         * Someone played a trick card.
          * @param {*} notif 
          */
-        notif_playCard : function(notif) {
+        notif_cardPlayed : function(notif) {
             // Play a trick on the table
-            this.playTrickCard(notif.args.player_id, notif.args.card_id, notif.args.rr, notif.args.card_value);
+            var card_id = notif.args.card_id;
+
+            var card_type = this.getUniqueTypeForCard(notif.args.rr, notif.args.card_value);
+            // have to explicitly set weight while sliding into place or it goes into wrong order before refresh from Db
+            this.cardsPlayed.item_type[card_type].weight = this.cardsPlayed.count();
+
+            if( notif.args.player_id != this.player_id )
+            {
+                // Some opponent played a card
+                this.cardsPlayed.addToStockWithId(card_type, card_id, 'player_board_'+notif.args.player_id);
+                // // highlight all my cards of that color
+                // dojo.query('#myhand .'+RAILROADS[rr-1]).style('opacity', 0.5);
+            }
+            else
+            {
+                // You played a card. If it exists in your hand, move card from there and remove
+                // corresponding item
+                if ($('myhand_item_' + card_id)) {
+                    this.cardsPlayed.addToStockWithId(card_type, card_id, 'myhand_item_'+card_id);
+                    this.playerHand.removeFromStockById(card_id, 'currenttrick_item_'+card_id);
+                }
+            }
+
+            dojo.addClass('currenttrick_item_'+card_id, "nice_card");
+
         },
 
         /**
-         * Someone won a trick.
+         * A share was discarded by the winner.
          * @param {*} notif 
          */
-        notif_winTrick : function(notif) {
-            this.winTrick(notif.args.player_id);
+        notif_discardedShare : function(notif) {
+            console.log(notif.args.player_id+" discarded a share");
         },
 
         /**
-         * 
+         * A share was added.
          * @param {*} notif 
          */
-        notif_addShares : function(notif) {
-            this.addShares(notif.args.player_id);
+        notif_shareAdded : function(notif) {
+            console.log(notif.args.player_id+" adding a share");
         }
 
     });             

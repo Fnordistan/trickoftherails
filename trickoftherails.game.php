@@ -433,7 +433,7 @@ class TrickOfTheRails extends Table
         ");
 
         // Notify all players about the card played
-        self::notifyAllPlayers('playCard', clienttranslate('${player_name} ${action_verb} ${rr_name} (${rr_color}) ${card_value}'), array (
+        self::notifyAllPlayers('cardPlayed', clienttranslate('${player_name} ${action_verb} ${rr_name} (${rr_color}) ${card_value}'), array (
             'i18n' => array ('rr_name', 'rr_color','card_value' ),
             'card_id' => $card_id,
             'player_id' => self::getActivePlayerId(),
@@ -610,17 +610,15 @@ class TrickOfTheRails extends Table
         $players = self::loadPlayersBasicInfos();
         // add the shares everyone played to their piles
         foreach ($tricksPlayed as $player => $trick_id) {
-            $share_rr = "";
-            $share_val = "";
+            // the card the winner played is exchanged or discarded
             if ($player == $winner) {
-                // the card the winner played is exchanged or discarded
+                // Are there any Reservation cards?
                 $remaining = $this->trickcards->countCardInLocation('tricklane');
                 $reservation = null;
-                for ($t = 0; $t < $remaining; $t++) {
+                for ($t = 0; $t < $remaining && $reservation == null; $t++) {
                     $tl_t = current($this->trickcards->getCardsInLocation('tricklane', $t));
                     if ($tl_t['type'] == LASTROW && $tl_t['type_arg'] == RESERVATION) {
                         $reservation = $tl_t;
-                        break;
                     }
                 }
                 if ($reservation == null) {
@@ -632,23 +630,39 @@ class TrickOfTheRails extends Table
                     $this->trickcards->moveCard($reservation['id'], 'discard');
                     $this->rrcards->moveCard($trick_id, 'tricklane', $reserve_slot);
                 }
+                // notify everyone winner discarded a card (and maybe exchanged with Reservation)
+                $discarded = $this->rrcards->getCard($trick_id);
+
+                self::notifyAllPlayers('discardedShare', clienttranslate('${player_name} discards ${rr_name} ${card_value}'), array (
+                    'i18n' => array ('rr_name', 'card_value' ),
+                    'player_id' => $player,
+                    'player_name' => $players[$player]['player_name'],
+                    'card_id' => $discarded['id'],
+                    'card_value' => $this->values_label[$discarded['type_arg']],
+                    'rr_name' => $this->railroads [$discarded['type']] ['name']));
                 // winner adds card from tricklane to his shares
-                $this->trickcards->moveCard($rewardCard['id'], 'shares', $winner);
-                $share_rr = $rewardCard['type'];
-                $share_val = $this->trick_type[$rewardCard['type_arg']]['name'];
+                // THIS COULD BE A RR card or an Exchange Card!
+                $share = $rewardCard;
+                if ($share['type_arg'] == EXCHANGE) {
+                    $this->trickcards->moveCard($share['id'], 'shares', $winner);
+                    $share_val = $this->trick_type[EXCHANGE]['name'];
+                } else {
+                    $this->rrcards->moveCard($share['id'], 'shares', $winner);
+                    $share_val = $this->values_label[$share['type_arg']];
+                }
             } else {
                 // for other players, their card played gets added to shares
                 $this->rrcards->moveCard($trick_id, 'shares', $player);
                 $share = $this->rrcards->getCard($trick_id);
-                $share_rr = $share['type'];
                 $share_val = $this->values_label[$share['type_arg']];
             }
-            self::notifyAllPlayers('addShare', clienttranslate('${player_name} adds ${rr_name} ${card_value} to ${rr_name} shares'), array (
+            self::notifyAllPlayers('shareAdded', clienttranslate('${player_name} adds ${rr_name} ${card_value} to ${rr_name} shares'), array (
                 'i18n' => array ('rr_name', 'card_value' ),
                 'player_id' => $player,
                 'player_name' => $players[$player]['player_name'],
+                'card_id' => $share['id'],
                 'card_value' => $share_val,
-                'rr_name' => $this->railroads [$share_rr] ['name']));
+                'rr_name' => $this->railroads[$share['type']] ['name']));
         }
 
         // is there another trick?
