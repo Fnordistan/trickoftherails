@@ -362,6 +362,7 @@ function (dojo, declare) {
                [type, type_arg] = this.getTypeAndValue(card_id);
                 // may be Exchange, Locomotive, City, or Reservation cards
                 var tooltip;
+                var is_rr = false;
                 if (type == ROWS) {
                     switch (type_arg) {
                         case 1:
@@ -397,10 +398,13 @@ function (dojo, declare) {
                 } else if (type_arg == EXCHANGE) {
                     tooltip = RAILROADS[type-1]+ " Exchange Card";
                 } else {
-                    // Whoops! Something happened here
-                    throw new Error("Unexpected Trick Lane Card: type="+type+", type_arg="+type_arg+")");
+                    // This is a RR card added to Trick Lane
+                    this.setUpRRCard(card_div, card_id, myhand_item);
+                    is_rr = true;
                 }
-                this.addTooltip( card_div.id, _(tooltip), '');
+                if (!is_rr) {
+                    this.addTooltip( card_div.id, _(tooltip), '');
+                }
         },
 
 
@@ -470,6 +474,7 @@ function (dojo, declare) {
             // 
             dojo.subscribe('cardPlayed', this, "notif_cardPlayed");
             dojo.subscribe('discardedShare', this, "notif_discardedShare");
+            dojo.subscribe('reservationSwapped', this, "notif_reservationSwapped");
             dojo.subscribe('shareAdded', this, "notif_shareAdded");
         },  
         
@@ -480,7 +485,6 @@ function (dojo, declare) {
         notif_cardPlayed : function(notif) {
             // Play a trick on the table
             var card_id = notif.args.card_id;
-
             var card_type = this.getUniqueTypeForCard(notif.args.rr, notif.args.card_value);
             // have to explicitly set weight while sliding into place or it goes into wrong order before refresh from Db
             this.cardsPlayed.item_type[card_type].weight = this.cardsPlayed.count();
@@ -507,11 +511,29 @@ function (dojo, declare) {
         },
 
         /**
+         * Card swapped for Reservation card in Trick Lane.
+         * @param {*} notif 
+         */
+        notif_reservationSwapped : function(notif) {
+            var card_id = notif.args.card_id;
+            var card_type = this.getUniqueTypeForCard(notif.args.rr, notif.args.card_value);
+
+            var [rr, vv] = this.getTypeAndValue(card_id);
+            // remove the Reservation card
+            this.trickLane.removeFromStockById(notif.args.reservation_id);
+            // move the card played from the Trick Lane to the Reservation Labe
+            this.cardsPlayed.removeFromStockById(card_id, 'tricklane_item_'+notif.args.reservation_id);
+
+            this.trickLane.addToStockWithId(card_type, card_id, 'currenttrick_item_'+card_id)
+            this.trickLane.item_type[card_type].weight = notif.args.reservation_loc;
+        },
+
+        /**
          * A share was discarded by the winner.
          * @param {*} notif 
          */
         notif_discardedShare : function(notif) {
-            console.log(notif.args.player_id+" discarded a share");
+            this.cardsPlayed.removeFromStockById(notif.args.card_id);
         },
 
         /**
