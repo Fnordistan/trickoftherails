@@ -310,7 +310,7 @@ function (dojo, declare) {
          * 
          * @param int $rr 
          * @param int $v
-         * @returns int card_id
+         * @returns int card_type
          */
         getUniqueTypeForCard: function(rr, v)
         {
@@ -320,10 +320,10 @@ function (dojo, declare) {
         /**
          * Reverse of above function. Gets the Type/Arg from the card id.
          * 
-         * @param {*} card_id 
+         * @param {*} card_type 
          * @returns two-member array, type and type_arg (rr/value)
          */
-        getTypeAndValue: function(card_id) {
+        getTypeAndValue: function(card_type) {
             if (card_id >= RESERVATION_CARD_TYPE) {
                 return [ROWS, RESERVATION];
             }
@@ -518,14 +518,18 @@ function (dojo, declare) {
             var card_id = notif.args.card_id;
             var card_type = this.getUniqueTypeForCard(notif.args.rr, notif.args.card_value);
 
-            var [rr, vv] = this.getTypeAndValue(card_id);
+            // where the trick came from
+            var trick_div = this.trickLane.getItemDivId(card_id);
+            // where the Reservation card came from
+            var reserve_div = this.trickLane.getItemDivId(notif.args.reservation_id);
             // remove the Reservation card
             this.trickLane.removeFromStockById(notif.args.reservation_id);
-            // move the card played from the Trick Lane to the Reservation Labe
-            this.cardsPlayed.removeFromStockById(card_id, 'tricklane_item_'+notif.args.reservation_id);
-
-            this.trickLane.addToStockWithId(card_type, card_id, 'currenttrick_item_'+card_id)
-            this.trickLane.item_type[card_type].weight = notif.args.reservation_loc;
+            // move the (winning) trick card from the play area to the Trick Lane
+            this.cardsPlayed.removeFromStockById(card_id, reserve_div);
+            // set the weight to that of the replaced Reservation card
+            this.trickLane.item_type[card_type].weight = parseInt(notif.args.reservation_loc);
+            this.trickLane.addToStockWithId(card_type, card_id, trick_div);
+            dojo.addClass("tricklane_item_"+card_id, "nice_card");
         },
 
         /**
@@ -533,6 +537,7 @@ function (dojo, declare) {
          * @param {*} notif 
          */
         notif_discardedShare : function(notif) {
+            console.log(notif.args.player_id + " discarded " + notif.args.card_id);
             this.cardsPlayed.removeFromStockById(notif.args.card_id);
         },
 
@@ -541,7 +546,13 @@ function (dojo, declare) {
          * @param {*} notif 
          */
         notif_shareAdded : function(notif) {
-            console.log(notif.args.player_id+" adding a share");
+            var card_id = notif.args.card_id;
+            // it was either in the cards played area, or won from the Trick Lane.
+            if (this.cardsPlayed.getItemById(card_id) != null) {
+                this.cardsPlayed.removeFromStockById(card_id);
+            } else {
+                this.trickLane.removeFromStockById(card_id);
+            }
         }
 
     });             
