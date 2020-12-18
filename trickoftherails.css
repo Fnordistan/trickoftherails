@@ -83,6 +83,15 @@
     border-style: groove;
 }
 
+.railway_endpoint {
+    background-size: 50px 50px;
+    background-position: center;
+    background-image: url(img/game_icon.png);
+    background-repeat: no-repeat;
+    width: 114px;
+    height: 171px;
+}
+
 #b_and_o_logo {
     background-size: 705px 125px;
     width: 125px;
