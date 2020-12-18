@@ -324,10 +324,10 @@ function (dojo, declare) {
          * @returns two-member array, type and type_arg (rr/value)
          */
         getTypeAndValue: function(card_type) {
-            if (card_id >= RESERVATION_CARD_TYPE) {
+            if (card_type >= RESERVATION_CARD_TYPE) {
                 return [ROWS, RESERVATION];
             }
-            return [Math.floor(card_id/12)+1, (card_id % 12) +1];
+            return [Math.floor(card_type/12)+1, (card_type % 12) +1];
         },
 
         /**
