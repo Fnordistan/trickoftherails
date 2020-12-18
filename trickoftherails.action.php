@@ -76,8 +76,9 @@
 
     public function placeLocomotive() {
       self::setAjaxMode();     
+      $rr_id = self::getArg( "id", AT_posint, true );
+      $this->game->placeLocomotive( $rr_id );
       self::ajaxResponse( );
-
     }
 
     public function placeCity() {

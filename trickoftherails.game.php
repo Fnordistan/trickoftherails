@@ -38,8 +38,9 @@ class TrickOfTheRails extends Table
         parent::__construct();
         
         self::initGameStateLabels( array( 
-            "trickRR" => 10,
-            "wonLastTrick" => 20,
+            "handSize" => 5,// number of cards and tricklane cards dealt
+            "trickRR" => 10,// color of current trick
+            "wonLastTrick" => 20, // player id who won last trick
         ) );
 
         // it's going to start with two "decks" - 'deck' is the railroad deck, while 'trickdeck' is the tricklane cards
@@ -89,15 +90,32 @@ class TrickOfTheRails extends Table
          self::setGameStateInitialValue( 'trickRR', 0 );
          self::setGameStateInitialValue( 'wonLastTrick', 0 );
 
-        // Create the trick deck, which varies by number of players
+        /**** Stats */
+        self::initStat('table', 'turns_number', 0);
+
         $players_nbr = count( $players );
-        
+        switch ($players_nbr) {
+            case 3:
+                $handsize = 15;
+                break;
+            case 4:
+                $handsize = 11;
+                break;
+            case 5:
+                $handsize = 9;
+                break;
+            default:
+                // WTF happened?
+                throw new BgaVisibleSystemException("Invalid player count: {$players_nbr}");
+        }
+        self::setGameStateInitialValue( 'handSize', $handsize );
+
+        // Create the Railroad cards deck
         $railroad_cards = $this->createRailroadCards();
+        $this->setupRailroadDeck($railroad_cards);
 
-        $this->setupRailroadDeck($players_nbr, $railroad_cards);
-
+        // Create the trick deck, which varies by number of players
         $trick_cards = $this->createTrickCards($players_nbr);
-
         $this->setupTrickDeck($players_nbr, $trick_cards);
 
         // Activate first player
@@ -127,7 +145,7 @@ class TrickOfTheRails extends Table
     /**
      * Setup the Railroad Deck. Deal cards to each player, and remaining to the Railways.
      */
-    protected function setupRailroadDeck($players_nbr, $railroad_cards) {
+    protected function setupRailroadDeck($railroad_cards) {
         $this->cards->createCards( $railroad_cards, 'deck' );
 
         // before shuffling main rr deck, remove Stations and put them in railway lines
@@ -139,25 +157,11 @@ class TrickOfTheRails extends Table
             $this->cards->moveCard($station['id'], $railroad['abbr'].'_railway', 0);
         }
 
-        switch ($players_nbr) {
-            case 3:
-                $handsize = 15;
-                break;
-            case 4:
-                $handsize = 11;
-                break;
-            case 5:
-                $handsize = 9;
-                break;
-            default:
-                // WTF happened?
-                throw new BgaVisibleSystemException("Invalid player count: {$players_nbr}");
-        }
-
         // now shuffle
         $this->cards->shuffle('deck');
         // Deal cards to each player
         $players = self::loadPlayersBasicInfos();
+        $handsize = self::getGameStateValue('handSize');
         foreach ( $players as $player_id => $player ) {
             $rrcards = $this->cards->pickCards($handsize, 'deck', $player_id);
         }
@@ -366,9 +370,9 @@ class TrickOfTheRails extends Table
     */
     function getGameProgression()
     {
-        // TODO: compute and return the game progression
-
-        return 0;
+        $initialTricks = self::getGameStateValue('handSize');
+        $tricksLeft = $this->cards->countCardsInLocation( 'tricklane' );
+        return 100*($initialTricks-$tricksLeft)/$initialTricks;
     }
 
 
@@ -443,6 +447,9 @@ class TrickOfTheRails extends Table
           
     }
 
+    /**
+     * Player chooses a place to play Locomotive
+     */
     function placeLocomotive( $card_id ) {
         self::checkAction( 'placeLocomotive' );
 
@@ -469,8 +476,7 @@ class TrickOfTheRails extends Table
         game state.
     */
 
-    function argPlayCards()
-    {
+    function argPlayCards() {
         $cardToPlay = 0;
         $currentTrick = self::getGameStateValue( 'trickRR' );
         if ($currentTrick == 0) {
@@ -481,6 +487,26 @@ class TrickOfTheRails extends Table
         return array(
             "i18n" => array( 'cardToPlay'),
             'cardToPlay' => $cardToPlay,
+        );
+    }
+
+    function argPlaceLocomotive() {
+        $lococard = current($this->cards->getCardsInLocation('tricklane', self::getStat('turns_number')-1));
+        $locomotive = $this->trick_type[$lococard['type_arg']]['name'];
+
+        return array(
+            "i18n" => array( 'locomotive'),
+            'locomotive' => $locomotive,
+        );
+    }
+
+    function argPlaceCity() {
+        $citycard = current($this->cards->getCardsInLocation('tricklane', self::getStat('turns_number')-1));
+        $city = $this->trick_type[$lococard['type_arg']]['name'];
+
+        return array(
+            "i18n" => array( 'city'),
+            'locomotive' => $city,
         );
     }
 
@@ -502,6 +528,9 @@ class TrickOfTheRails extends Table
 
         // reset trick
         self::setGameStateValue( 'trickRR', 0 );
+
+        // 
+        self::incStat(1, 'turns_number');
 
         // who leads the new trick?
         $leadPlayer = self::getGameStateValue( 'wonLastTrick' );
@@ -565,7 +594,7 @@ class TrickOfTheRails extends Table
      * Winner gets reward
      */
     function stResolveTrick() {
-        $rewardCard = current($this->cards->getCardsInLocation('tricklane', 0));
+        $rewardCard = current($this->cards->getCardsInLocation('tricklane', self::getStat('turns_number')-1));
 
         if ($rewardCard['type'] == LASTROW) {
             if ($rewardCard['type_arg'] <= 5) {
@@ -574,7 +603,7 @@ class TrickOfTheRails extends Table
                 $reward = "city";
             } else {
                 // shouldn't get here!
-                throw new BgaVisibleSystemException("Invalid Trick Lane Card: type={$rewardCard['type']}, type_arg={$rewardCard['type_arg']}");
+                throw new BgaVisibleSystemException("Invalid Trick Lane Card: type=".$rewardCard['type'].", type_arg=".$rewardCard['type_arg']);
             }
         } else {
             // if it's not the last row, it's either an Exchange or Railway card
@@ -597,7 +626,7 @@ class TrickOfTheRails extends Table
      * Triggered after winning a RR or Exchange from Trick Lane.
      */
     function stAddShares() {
-        $rewardCard = current($this->cards->getCardsInLocation('tricklane', 0));
+        $rewardCard = current($this->cards->getCardsInLocation('tricklane', self::getStat('turns_number')-1));
         $winner = self::getGameStateValue( 'wonLastTrick' );
         // assoc player => cardplayed
         $tricksPlayed = self::getCollectionFromDB( "SELECT player_id player, card_id id FROM TRICK_ROW", true );
@@ -651,17 +680,16 @@ class TrickOfTheRails extends Table
                 // winner adds card from tricklane to his shares
                 // THIS COULD BE A RR card or an Exchange Card!
                 $share = $rewardCard;
+                $this->cards->moveCard($share['id'], 'shares', $winner);
                 if ($share['type_arg'] == EXCHANGE) {
-                    $this->cards->moveCard($share['id'], 'shares', $winner);
                     $share_val = $this->trick_type[EXCHANGE]['name'];
                 } else {
-                    $this->cards->moveCard($share['id'], 'shares', $winner);
                     $share_val = $this->values_label[$share['type_arg']];
                 }
             } else {
                 // for other players, their card played gets added to shares
-                $this->cards->moveCard($trick_id, 'shares', $player);
                 $share = $this->cards->getCard($trick_id);
+                $this->cards->moveCard($share['id'], 'shares', $player);
                 $share_val = $this->values_label[$share['type_arg']];
             }
             self::notifyAllPlayers('shareAdded', clienttranslate('${player_name} adds ${rr_name} ${card_value} to ${rr_name} shares'), array (

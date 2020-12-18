@@ -112,19 +112,21 @@ $machinestates = array(
 
     STATE_ADD_LOCOMOTIVE => array(
         "name" => "addLocomotive",
-        "description" => clienttranslate('${actplayer} places a Locomotive'),
-        "descriptionmyturn" => clienttranslate('${you} must place a Locomotive'),
+        "description" => clienttranslate('${actplayer} places ${locomotive}'),
+        "descriptionmyturn" => clienttranslate('${you} must place ${locomotive}'),
         "type" => "activeplayer",
         "possibleactions" => array( "placeLocomotive" ),
+        "args" => "argPlaceLocomotive",
         "transitions" => array( "" => STATE_ADD_RAILWAY)
     ),
 
     STATE_ADD_CITY => array(
         "name" => "addCity",
-        "description" => clienttranslate('${actplayer} places a City'),
-        "descriptionmyturn" => clienttranslate('${you} must place a City'),
+        "description" => clienttranslate('${actplayer} places ${city}'),
+        "descriptionmyturn" => clienttranslate('${you} must place ${city}'),
         "type" => "activeplayer",
         "possibleactions" => array( "placeCity" ),
+        "args" => "argPlaceCity",
         "transitions" => array( "" => STATE_ADD_RAILWAY)
     ),
 

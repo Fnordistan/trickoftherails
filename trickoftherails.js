@@ -213,6 +213,9 @@ function (dojo, declare) {
 
             dojo.connect( this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged' );
 
+            for (loconode of dojo.query('.locomotive_slot')) {
+                dojo.connect(loconode, 'onclick', this, 'onLocomotiveSelected');
+            }
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
@@ -423,26 +426,31 @@ function (dojo, declare) {
         */
         
        onPlayerHandSelectionChanged : function() {
-        var items = this.playerHand.getSelectedItems();
+            var items = this.playerHand.getSelectedItems();
 
-        if (items.length > 0) {
-            if (this.checkAction('playCard', true)) {
-                // Can play a card
+            if (items.length > 0) {
+                if (this.checkAction('playCard', true)) {
+                    // Can play a card
 
-                var card_id = items[0].id;
-                console.log("selected card "+card_id);
+                    var card_id = items[0].id;
+                    console.log("selected card "+card_id);
 
-                this.ajaxcall( "/trickoftherails/trickoftherails/playCard.html", { 
-                    id: card_id,
-                    lock: true 
-                    }, this, function( result ) {  }, function( is_error) { } );                        
+                    this.ajaxcall( "/trickoftherails/trickoftherails/playCard.html", { 
+                        id: card_id,
+                        lock: true 
+                        }, this, function( result ) {  }, function( is_error) { } );                        
 
-                this.playerHand.unselectAll();
-            } else {
-                this.playerHand.unselectAll();
+                    this.playerHand.unselectAll();
+                } else {
+                    this.playerHand.unselectAll();
+                }
             }
-        }
-    },
+        },
+
+
+        onLocomotiveSelected : function() {
+            console.log('clicked loco');
+        },
 
 
         ///////////////////////////////////////////////////
