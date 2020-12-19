@@ -74,10 +74,13 @@
       self::ajaxResponse( );
     }
 
+    /**
+     * Place locomotive. Passed int represeting rr#
+     */
     public function placeLocomotive() {
       self::setAjaxMode();     
-      $rr_id = self::getArg( "id", AT_posint, true );
-      $this->game->placeLocomotive( $rr_id );
+      $rr = self::getArg( "rr", AT_posint, true );
+      $this->game->placeLocomotive( $rr );
       self::ajaxResponse( );
     }
 

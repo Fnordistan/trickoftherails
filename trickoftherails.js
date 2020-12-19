@@ -202,9 +202,14 @@ function (dojo, declare) {
                     let railwaycard = railwaycards[i];
                     let tt = railwaycard.type;
                     let value = railwaycard.type_arg;
-                    let ctype = this.getUniqueTypeForCard(tt, value);
-                    this.railWays[rw].item_type[ctype].weight = parseInt(railwaycard.location_arg);
-                    this.railWays[rw].addToStockWithId(ctype, railwaycard.id);
+                    if (railwaycard.location_arg == 0) {
+                        // Locomotives go to the loco slot
+                        console.log('found Locomotive on '+tt);
+                    } else {
+                        var ctype = this.getUniqueTypeForCard(tt, value);
+                        this.railWays[rw].item_type[ctype].weight = parseInt(railwaycard.location_arg);
+                        this.railWays[rw].addToStockWithId(ctype, railwaycard.id);
+                        }
                 }
                 rw++;
             }
@@ -448,8 +453,27 @@ function (dojo, declare) {
         },
 
 
-        onLocomotiveSelected : function() {
-            console.log('clicked loco');
+        onLocomotiveSelected : function(ev) {
+            if (this.checkAction('placeLocomotive', true)) {
+                debugger;
+
+                var loc_id = ev.target.id;
+                // find index
+                var li = 1;
+                for (var rr of RR_PREFIXES) {
+                    if (loc_id.startsWith(rr)) {
+                        break;
+                    } else {
+                        li++;
+                    }
+                }
+
+                this.ajaxcall( "/trickoftherails/trickoftherails/placeLocomotive.html", { 
+                    rr: li,
+                    lock: true 
+                    }, this, function( result ) {  }, function( is_error) { } );                        
+
+            }
         },
 
 
@@ -484,6 +508,7 @@ function (dojo, declare) {
             dojo.subscribe('discardedShare', this, "notif_discardedShare");
             dojo.subscribe('reservationSwapped', this, "notif_reservationSwapped");
             dojo.subscribe('shareAdded', this, "notif_shareAdded");
+            dojo.subscribe('locomotivePlaced', this, "notif_locomotivePlaced");
         },  
         
         /**
@@ -561,7 +586,17 @@ function (dojo, declare) {
             } else {
                 this.trickLane.removeFromStockById(card_id);
             }
-        }
+        },
+
+        /**
+         * A Locomotive was placed.
+         * @param {*} notif 
+         */
+        notif_locomotivePlaced : function(notif) {
+            var card_id = notif.args.card_id;
+            // remove locomotive from Trick Lane, move to Railroad
+
+        },
 
     });             
 });

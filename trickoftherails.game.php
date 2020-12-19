@@ -153,8 +153,9 @@ class TrickOfTheRails extends Table
             $stations = $this->cards->getCardsOfType($rr_id, RAILROAD_STATION);
             // a one-element assocative array...
             $station = current($stations);
-            // set station at location 0
-            $this->cards->moveCard($station['id'], $railroad['abbr'].'_railway', 0);
+            // Locomotive will be location 0
+            // set station at location 1
+            $this->cards->moveCard($station['id'], $railroad['abbr'].'_railway', 1);
         }
 
         // now shuffle
@@ -169,7 +170,7 @@ class TrickOfTheRails extends Table
         // deal out remaining cards to appropriate railway line
         foreach ($this->cards->getCardsInLocation( 'deck') as $rrcard) {
             $railway = $this->railroads[$rrcard['type']]['abbr'];
-            $pos = $this->cards->countCardInLocation("{$railway}_railway");
+            $pos = 1+$this->cards->countCardInLocation("{$railway}_railway");
             $this->cards->moveCard($rrcard['id'], "{$railway}_railway", $pos);
         }
     }
@@ -450,9 +451,36 @@ class TrickOfTheRails extends Table
     /**
      * Player chooses a place to play Locomotive
      */
-    function placeLocomotive( $card_id ) {
+    function placeLocomotive( $rr ) {
         self::checkAction( 'placeLocomotive' );
+        $lococard = current($this->cards->getCardsInLocation('tricklane', self::getStat('turns_number')-1));
+        $locomotive = $this->trick_type[$lococard['type_arg']]['name'];
+        $railway = $this->railroads[$rr]['abbr']."_railway";
 
+        // is the one chosen already occupied
+        $isloc = self::getObjectFromDB("
+        SELECT * FROM CARDS
+        WHERE card_location = '${railway}' AND card_location_arg = 0
+        ");
+
+        if ($isloc != null) {
+            throw new BgaUserException ( self::_( "You must place the locomotive on railway that does not already have one." ));
+        }
+        // otherwise we're good
+        // place it on location 0
+        $this->cards->moveCard($lococard['id'], $railway, 0);
+
+        // Notify all players about Locomotive placement
+        self::notifyAllPlayers('locomotivePlaced', clienttranslate('${player_name} placed ${locomotive} on ${railroad}'), array (
+            'i18n' => array ('locomotive', 'railroad'),
+            'player_id' => self::getActivePlayerId(),
+            'player_name' => self::getActivePlayerName(),
+            'card_id' => $lococard['id'],
+            'locomotive' => $locomotive,
+            'railroad' => $this->railroads[$rr]['name']));
+
+        // other players add their cards to railway
+        $this->gamestate->nextState();
     }
 
     function placeCity( $card_id ) {
