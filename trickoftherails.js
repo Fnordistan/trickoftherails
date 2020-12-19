@@ -129,35 +129,35 @@ function (dojo, declare) {
                     // on last row, only Locomotives, Cities, and Reservation cards
                     if (rr == ROWS) {
                         if (vv <= 9) {
-                            this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                            this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+CARD_SPRITES, card_type_id );
                             if (vv == RESERVATION) {
                                 // we need to handle special case of Reservation cards
                                 // We create three cards with different item types but the same image position
                                 // we can just increment up because we know Reservation card is the LAST id
                                 // (need to change this if we start using card back)
                                 for (let rv = 0; rv < 3; rv++) {
-                                    this.trickLane.addItemType( card_type_id+rv, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                                    this.trickLane.addItemType( card_type_id+rv, 0, g_gamethemeurl+CARD_SPRITES, card_type_id );
                                 }
                             }else {
                                 // adding the Locomotive and City cards to railways
                                 for (const ri of RR_INDEXES) {
-                                    this.railWays[ri].addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                                    this.railWays[ri].addItemType( card_type_id, card_type_id, g_gamethemeurl+CARD_SPRITES, card_type_id );
                                 }
                             }
                         }
                     } else {
                         if (vv == STATION) {
                             // add Station to each railway
-                            this.railWays[rr-1].addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                            this.railWays[rr-1].addItemType( card_type_id, 0, g_gamethemeurl+CARD_SPRITES, card_type_id );
                         } else if (vv == EXCHANGE) {
                             // it's an Exchange card
-                            this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                            this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+CARD_SPRITES, card_type_id );
                         } else {
-                            this.playerHand.addItemType( card_type_id, card_type_id, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
-                            this.cardsPlayed.addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
-                            this.railWays[rr-1].addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                            this.playerHand.addItemType( card_type_id, card_type_id, g_gamethemeurl+CARD_SPRITES, card_type_id );
+                            this.cardsPlayed.addItemType( card_type_id, 0, g_gamethemeurl+CARD_SPRITES, card_type_id );
+                            this.railWays[rr-1].addItemType( card_type_id, 0, g_gamethemeurl+CARD_SPRITES, card_type_id );
                             // tricklanes can also hold RR cards
-                            this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+'img/cards_sprites.jpg', card_type_id );
+                            this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+CARD_SPRITES, card_type_id );
                         }
                     }
                 }
@@ -204,12 +204,12 @@ function (dojo, declare) {
                     let value = railwaycard.type_arg;
                     if (railwaycard.location_arg == 0) {
                         // Locomotives go to the loco slot
-                        console.log('found Locomotive on '+tt);
+                        this.placeLocomotiveCard(value, rw);
                     } else {
                         var ctype = this.getUniqueTypeForCard(tt, value);
                         this.railWays[rw].item_type[ctype].weight = parseInt(railwaycard.location_arg);
                         this.railWays[rw].addToStockWithId(ctype, railwaycard.id);
-                        }
+                    }
                 }
                 rw++;
             }
@@ -359,6 +359,35 @@ function (dojo, declare) {
                dojo.addClass( card_div, RAILROADS[type-1]);
         },
 
+
+        /**
+         * For tooltips for Locomotive cards
+         * @param {*} type_arg 
+         */
+        getLocomotiveLabel: function(type_arg) {
+            var label;
+            switch (type_arg) {
+                case 1:
+                    label = "Locomotive [3]";
+                    break;
+                case 2:
+                    label = "Locomotive [4]";
+                    break;
+                case 3:
+                    label = "Locomotive [5]";
+                    break;
+                case 4:
+                    label = "Locomotive [6]";
+                    break;
+                case 5:
+                    label = "Locomotive [∞]";
+                    break;
+                default:
+                    throw new Error("Unexpected Locomotive value: "+type_arg);
+            }
+            return label;
+        },
+
         /**
          * Add tooltip for the TrickLane cards
          * @param {*} card_div 
@@ -374,19 +403,11 @@ function (dojo, declare) {
                 if (type == ROWS) {
                     switch (type_arg) {
                         case 1:
-                            tooltip = "Locomotive [3]";
-                            break;
                         case 2:
-                            tooltip = "Locomotive [4]";
-                            break;
                         case 3:
-                            tooltip = "Locomotive [5]";
-                            break;
                         case 4:
-                            tooltip = "Locomotive [6]";
-                            break;
                         case 5:
-                            tooltip = "Locomotive [∞]";
+                            tooltip = this.getLocomotiveLabel(type_arg);
                             break;
                         case 6:
                             tooltip = "City (Pittsburgh)";
@@ -415,6 +436,29 @@ function (dojo, declare) {
                 }
         },
 
+        /**
+         * Put a Locomotive card in its railway.
+         * @param {*} card_id 
+         * @param {*} loc index of locomotive (type_arg)
+         */
+        placeLocomotiveCard: function(loc, rr) {
+            // the id of the locomotive slot
+            var loconode = RR_PREFIXES[rr]+'_locomotive';
+            var x = -1 * (loc-1) * this.cardwidth;
+            var y = -5 * this.cardheight;
+
+            dojo.style(loconode, {
+                "width": this.cardwidth + "px",
+                "height": this.cardheight+"px",
+                "background": "url("+g_gamethemeurl+CARD_SPRITES+") "+x+"px "+y +"px",
+                "z-index": 1,
+            });
+            dojo.removeClass(loconode, "locomotive_slot");
+            dojo.addClass(loconode, "nice_card");
+            dojo.addClass( loconode, RAILROADS[rr]);
+            var tooltip = this.getLocomotiveLabel(rr+1);
+            this.addTooltip( loconode, _(tooltip), '');
+        },
 
         ///////////////////////////////////////////////////
         //// Player's action
@@ -452,12 +496,14 @@ function (dojo, declare) {
             }
         },
 
-
-        onLocomotiveSelected : function(ev) {
+        /**
+         * When player clicks a Locomotive slot.
+         * @param {*} event
+         */
+        onLocomotiveSelected : function(event) {
             if (this.checkAction('placeLocomotive', true)) {
-                debugger;
 
-                var loc_id = ev.target.id;
+                var loc_id = event.target.id;
                 // find index
                 var li = 1;
                 for (var rr of RR_PREFIXES) {
