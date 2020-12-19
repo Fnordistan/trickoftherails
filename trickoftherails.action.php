@@ -75,7 +75,7 @@
     }
 
     /**
-     * Place locomotive. Passed int represeting rr#
+     * Place locomotive. Passed int representing rr#
      */
     public function placeLocomotive() {
       self::setAjaxMode();     

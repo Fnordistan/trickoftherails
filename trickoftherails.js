@@ -342,12 +342,12 @@ function (dojo, declare) {
          * Each card invokes this when added to a player hand or the RR.
          * Adds tooltips and a class equal to the name of the RR.
          * @param {*} card_div 
-         * @param {*} card_id 
+         * @param {*} card_type
          * @param {*} myhand_item 
          */
-        setUpRRCard: function(card_div, card_id, myhand_item) {
+        setUpRRCard: function(card_div, card_type, myhand_item) {
                // Add a special tooltip on the card:
-               [type, type_arg] = this.getTypeAndValue(card_id);
+               var [type, type_arg] = this.getTypeAndValue(card_type);
                var tooltip;
                if (type_arg == STATION) {
                    tooltip = RAILROADS[type-1]+ " Station";
@@ -395,8 +395,8 @@ function (dojo, declare) {
          * @param {*} myhand_item 
          */
         setUpTrickLaneCard: function(card_div, card_id, myhand_item) {
-               // Add a special tooltip on the card:
-               [type, type_arg] = this.getTypeAndValue(card_id);
+                // Add a special tooltip on the card:
+                var [type, type_arg] = this.getTypeAndValue(card_id);
                 // may be Exchange, Locomotive, City, or Reservation cards
                 var tooltip;
                 var is_rr = false;
@@ -438,12 +438,12 @@ function (dojo, declare) {
 
         /**
          * Put a Locomotive card in its railway.
-         * @param {*} card_id 
          * @param {*} loc index of locomotive (type_arg)
+         * @param {*} rr index of railway
          */
         placeLocomotiveCard: function(loc, rr) {
             // the id of the locomotive slot
-            var loconode = RR_PREFIXES[rr]+'_locomotive';
+            var loconode = RR_PREFIXES[rr-1]+'_locomotive';
             var x = -1 * (loc-1) * this.cardwidth;
             var y = -5 * this.cardheight;
 
@@ -455,8 +455,8 @@ function (dojo, declare) {
             });
             dojo.removeClass(loconode, "locomotive_slot");
             dojo.addClass(loconode, "nice_card");
-            dojo.addClass( loconode, RAILROADS[rr]);
-            var tooltip = this.getLocomotiveLabel(rr+1);
+            dojo.addClass( loconode, RAILROADS[rr-1]);
+            var tooltip = this.getLocomotiveLabel(loc);
             this.addTooltip( loconode, _(tooltip), '');
         },
 
@@ -641,7 +641,8 @@ function (dojo, declare) {
         notif_locomotivePlaced : function(notif) {
             var card_id = notif.args.card_id;
             // remove locomotive from Trick Lane, move to Railroad
-
+            this.trickLane.removeFromStockById(card_id);
+            this.placeLocomotiveCard(parseInt(notif.args.loc_num), parseInt(notif.args.railroad));
         },
 
     });             
