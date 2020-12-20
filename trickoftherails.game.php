@@ -469,7 +469,6 @@ class TrickOfTheRails extends Table
             'rr_color' => $this->railroads [$card_played ['type']] ['color'] ));
         // Next player
         $this->gamestate->nextState();
-          
     }
 
     /**
@@ -537,20 +536,41 @@ class TrickOfTheRails extends Table
         return $lococard['type_arg'];
     }
 
-    function addRailwayCard( $endpoint ) {
+    /**
+     * pass true for start of railray, false for end
+     */
+    function addRailwayCard( $is_start ) {
         self::checkAction( 'addRailwayCard' );
         // get the card I played to tricklane
-        // assoc player => cardplayed
-        $tricksPlayed = self::getCollectionFromDB( "SELECT player_id player, card_id id FROM TRICK_ROW", true );
-        $mycard = self::getActivePlayersCard();
-        $railwaycard = $this->cards->getCard($mycard);
+        $mycard_id = $this->getActivePlayersCard();
+        // card we're going to insert in front or back
+        $railwaycard = $this->cards->getCard($mycard_id);
 
-        self::dump('railwaycard', $railwaycard);
+        $railway = $this->railroads[$railwaycard['type']]['abbr']."_railway";
+        $railroad = $this->railroads[$railwaycard['type']]['name'];
+        $val = $this->values_label[$railwaycard['type_arg']];
 
-        //"_start"
-        //"_end"
+        // self::dump('mycard_id', $mycard_id);
+        // self::dump('is_start', $is_start);
+        // self::dump('railway', $railway);
 
+        // insert it at the beginning
+        $this->cards->insertCardOnExtremePosition( $railwaycard['id'], $railway, !$is_start );
 
+        // Notify all players about Locomotive placement
+        self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} added (${value}) to ${endpoint} of ${railroad}'), array (
+            'i18n' => array ('locomotive', 'railroad'),
+            'player_id' => self::getActivePlayerId(),
+            'player_name' => self::getActivePlayerName(),
+            'card_id' => $mycard_id,
+            'value' => $val,
+            'rr' => $railwaycard['type'],
+            'railroad' => $railroad,
+            'endpoint' => $is_start ? 'start' : 'end',
+            'railway' => $railway));
+
+        // Next player
+        $this->gamestate->nextState();
     }
     
 
@@ -607,9 +627,9 @@ class TrickOfTheRails extends Table
     }
 
     function argAddRailway() {
-        $mycard = self::getActivePlayersCard();
+        $mycard_id = $this->getActivePlayersCard();
         
-        $rrcard = $this->cards->getCard($mycard);
+        $rrcard = $this->cards->getCard($mycard_id);
 
         $rr = $this->railroads[$rrcard['type']]['name'];
         // $color = $this->railroads[$mycard['card_type']]['color'];
@@ -698,7 +718,7 @@ class TrickOfTheRails extends Table
 
             $this->gamestate->nextState( 'resolveTrick' );        
         } else {
-            $player_id = self::activeNextPlayer();
+            $player_id = $this->activeNextPlayer();
             self::giveExtraTime( $player_id );
 
             $this->gamestate->nextState( 'nextPlayer' );        
@@ -728,13 +748,25 @@ class TrickOfTheRails extends Table
     }
 
     function stNextRailway() {
-        // // if there is another player to play
-        // $this->gamestate->nextState( 'nextPlayer' );
-        // // no more players, not the last trick
-        // $this->gamestate->nextState( 'nextTrick' );
-        // that was the last trick
-        $this->gamestate->nextState( 'endGame' );
+        // are there still cards to play?
+        $to_state = "";
 
+        $remaining = $this->cards->countCardInLocation('currenttrick');
+        if ($remaining > 0) {
+            $to_state = 'nextPlayer';
+            $player_id = $this->activeNextPlayer();
+            self::giveExtraTime( $player_id );
+        } else {
+            // is there another trick?
+            if ($this->cards->countCardInLocation('tricklane') > 0) {
+                $to_state = "nextTrick";
+            } else {
+                // go to scoring
+                $to_state = "endGame";
+            }
+        }
+
+        $this->gamestate->nextState( $to_state );
     }
 
     /**

@@ -92,8 +92,8 @@
 
     public function addRailwayCard() {
       self::setAjaxMode();
-      $endpoint = self::getArg( "endpoint", AT_alphanum, true);
-      $this->game->addRailwayCard( $endpoint );
+      $start = self::getArg( "bStart", AT_bool, true);
+      $this->game->addRailwayCard( $start );
       self::ajaxResponse( );
     }
 

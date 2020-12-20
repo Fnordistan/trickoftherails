@@ -532,10 +532,10 @@ function (dojo, declare) {
         onEndpointSelected : function(event) {
             if (this.checkAction('addRailwayCard', true)) {
                 var endpoint_id = event.target.id;
-                console.log('clicked '+endpoint_id);
+                var is_start = endpoint_id.endsWith("start");
 
                 this.ajaxcall( "/trickoftherails/trickoftherails/addRailwayCard.html", { 
-                    endpoint: endpoint_id,
+                    bStart: is_start,
                     lock: true 
                     }, this, function( result ) {  }, function( is_error) { } );                        
             }
@@ -574,6 +574,7 @@ function (dojo, declare) {
             dojo.subscribe('reservationSwapped', this, "notif_reservationSwapped");
             dojo.subscribe('shareAdded', this, "notif_shareAdded");
             dojo.subscribe('locomotivePlaced', this, "notif_locomotivePlaced");
+            dojo.subscribe('railwayCardAdded', this, "notif_railwayCardAdded");
         },  
         
         /**
@@ -662,6 +663,21 @@ function (dojo, declare) {
             // remove locomotive from Trick Lane, move to Railroad
             this.trickLane.removeFromStockById(card_id);
             this.placeLocomotiveCard(parseInt(notif.args.loc_num), parseInt(notif.args.railroad));
+        },
+
+        /**
+         * Card was moved from trick area to railway line.
+         * @param {*} notif 
+         */
+        notif_railwayCardAdded : function(notif) {
+            var card_id = notif.args.card_id;
+            var rr = notif.args.rr;
+            var v = notif.args.value;
+            this.cardsPlayed.removeFromStockById(card_id);
+            var card_type = this.getUniqueTypeForCard(rr, v);
+            var card_div = this.cardsPlayed.getItemDivId(card_id);
+            this.railWays[rr-1].addToStockWithId(card_type, card_id, card_div);
+            dojo.addClass(notif.args.railway+"_item_"+card_id, "nice_card");
         },
 
     });             
