@@ -426,6 +426,13 @@ class TrickOfTheRails extends Table
         ");
     }
 
+    /**
+     * Returns true if this is a Reservation card
+     */
+    function isReservationCard($card) {
+        return $card['type'] == LASTROW && $card['type_arg'] == RESERVATION;
+    }
+
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Player actions
@@ -607,17 +614,6 @@ class TrickOfTheRails extends Table
                 break;
             }
         }
-        // rgs:
-        // card_id: "65"
-        // city: "City (Baltimore)"
-        // city_type: "7"
-        // endpoint: "start"
-        // i18n: (3) ["city", "endpoint", "railroad"]
-        // player_id: "2307217"
-        // player_name: "<!--PNS--><span class="playername" style="color:#ff0000;">AmadanNaBriona0</span><!--PNE-->"
-        // railroad: {name: "PRR", nametr: "PRR", color: "Red", colortr: "Red", abbr: "prr"}
-        // railway: "c_and_o_railway"
-        // rr: -1
 
         // Notify all players about City placement
         self::notifyAllPlayers('cityAdded', clienttranslate('${player_name} added ${city} to ${endpoint} of ${railroad}'), array (
@@ -841,12 +837,10 @@ class TrickOfTheRails extends Table
             // the card the winner played is exchanged or discarded
             if ($player == $winner) {
                 // Are there any Reservation cards?
-                $remaining = $this->cards->countCardInLocation('tricklane');
                 $reservation = null;
-                for ($t = 0; $t < $remaining && $reservation == null; $t++) {
-                    $tl_t = current($this->cards->getCardsInLocation('tricklane', $t));
-                    if ($tl_t['type'] == LASTROW && $tl_t['type_arg'] == RESERVATION) {
-                        $reservation = $tl_t;
+                foreach ($this->cards->getCardsInLocation('tricklane', null, 'location_arg') as $tricklanecard) {
+                    if ($this->isReservationCard($tricklanecard)) {
+                        $reservation = $tricklanecard;
                     }
                 }
                 if ($reservation == null) {
