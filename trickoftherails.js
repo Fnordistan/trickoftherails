@@ -38,7 +38,7 @@ const RESERVATION_CARD_TYPE = 68;
 const CARD_SPRITES = 'img/cards_sprites.jpg';
 
 define([
-    "dojo","dojo/_base/declare",
+    "dojo","dojo/_base/declare","dojo/on",
     "ebg/core/gamegui",
     "ebg/counter",
     "ebg/stock"
@@ -214,12 +214,16 @@ function (dojo, declare) {
                 rw++;
             }
 
+            // removable handlers
+            this._locohandlers = [];
+
             dojo.query('.stockitem').addClass("nice_card");
 
             dojo.connect( this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged' );
 
             for (loconode of dojo.query('.locomotive_slot')) {
-                dojo.connect(loconode, 'onclick', this, 'onLocomotiveSelected');
+                var handle = dojo.connect(loconode, 'onclick', this, 'onLocomotiveSelected');
+                this._locohandlers[loconode] = handle;
             }
 
             for (endnode of dojo.query('.railway_endpoint')) {
@@ -457,9 +461,10 @@ function (dojo, declare) {
                 "background": "url("+g_gamethemeurl+CARD_SPRITES+") "+x+"px "+y +"px",
                 "z-index": 1,
             });
-            dojo.removeClass(loconode, "locomotive_slot");
             dojo.addClass(loconode, "nice_card");
             dojo.addClass( loconode, RAILROADS[rr-1]);
+            dojo.removeClass(loconode, "locomotive_slot");
+            dojo.disconnect(this._locohandlers[loconode]);
             var tooltip = this.getLocomotiveLabel(loc);
             this.addTooltip( loconode, _(tooltip), '');
         },
