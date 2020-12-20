@@ -124,7 +124,7 @@ class TrickOfTheRails extends Table
         $this->setupTrickDeck($players_nbr, $trick_cards);
 
         // Activate first player
-        $this->activeNextPlayer();
+        self::activeNextPlayer();
 
         /************ End of the game initialization *****/
     }
@@ -413,6 +413,19 @@ class TrickOfTheRails extends Table
         return $mycard;
     }
 
+    /**
+     * Checks whether a locomotive has already been placed here.
+     * Given a "_railway" location.
+     * Returns null if there is no locomotive already there, 
+     */
+    function checkLocomotiveSlot( $railway ) {
+        return self::getUniqueValueFromDB("
+            SELECT card_id
+            FROM CARDS
+            WHERE card_location ='".$railway."' AND card_location_arg = 0
+        ");
+    }
+
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Player actions
@@ -443,7 +456,7 @@ class TrickOfTheRails extends Table
         } else {
             if ($card_played['type'] != $trick_color) {
                 // do I have a card of that color in my hand?
-                if (self::hasCurrentTrick($player_id)) {
+                if ($this->hasCurrentTrick($player_id)) {
                     throw new BgaUserException ( self::_( "You must play a ".$this->railroads[$trick_color]['name']." (".$this->railroads[$trick_color]['color'].") card" ));
                 }
             }
@@ -516,8 +529,9 @@ class TrickOfTheRails extends Table
         $locomotive = $this->trick_type[$lococard['type_arg']]['name'];
         $railway = $this->railroads[$rr]['abbr']."_railway";
 
-        /** THIS SHOULD NO LONGER BE NEEDED - in the js, we remove .location_slot class after placement. */
-        // $this->checkLocomotiveSlot($railway);
+        if ($this->checkLocomotiveSlot($railway) != null) {
+            throw new BgaUserException( self::_( "You must choose a railway that does not already have a locomotive." ));
+        }
 
         // place it on location 0
         $this->cards->moveCard($lococard['id'], $railway, 0);
@@ -595,7 +609,7 @@ class TrickOfTheRails extends Table
         $currentTrick = self::getGameStateValue( 'trickRR' );
         if ($currentTrick == 0) {
             $cardToPlay = clienttranslate("lead the trick");
-        } else if (self::hasCurrentTrick(self::getActivePlayerId())) {
+        } else if ($this->hasCurrentTrick(self::getActivePlayerId())) {
             $cardToPlay = clienttranslate("play a ".$this->railroads[$currentTrick]['name']." (".$this->railroads[$currentTrick]['color'].") card");
         } else {
             $cardToPlay = clienttranslate("play any card (no ".$this->railroads[$currentTrick]['name']." (".$this->railroads[$currentTrick]['color'].") cards in hand)");
@@ -718,7 +732,7 @@ class TrickOfTheRails extends Table
 
             $this->gamestate->nextState( 'resolveTrick' );        
         } else {
-            $player_id = $this->activeNextPlayer();
+            $player_id = self::activeNextPlayer();
             self::giveExtraTime( $player_id );
 
             $this->gamestate->nextState( 'nextPlayer' );        
@@ -754,7 +768,7 @@ class TrickOfTheRails extends Table
         $remaining = $this->cards->countCardInLocation('currenttrick');
         if ($remaining > 0) {
             $to_state = 'nextPlayer';
-            $player_id = $this->activeNextPlayer();
+            $player_id = self::activeNextPlayer();
             self::giveExtraTime( $player_id );
         } else {
             // is there another trick?
