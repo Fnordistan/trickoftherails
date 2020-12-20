@@ -78,16 +78,18 @@
      * Place locomotive. Passed int representing rr#
      */
     public function placeLocomotive() {
-      self::setAjaxMode();     
+      self::setAjaxMode();
       $rr = self::getArg( "rr", AT_posint, true );
       $this->game->placeLocomotive( $rr );
       self::ajaxResponse( );
     }
 
     public function placeCity() {
-      self::setAjaxMode();     
+      self::setAjaxMode();
+      $railway = self::getArg( "sRR", AT_alphanum, true);
+      $start = self::getArg( "bStart", AT_bool, true);
+      $this->game->placeCity( $railway, $start );
       self::ajaxResponse( );
-
     }
 
     public function addRailwayCard() {

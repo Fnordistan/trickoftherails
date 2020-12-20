@@ -535,14 +535,22 @@ function (dojo, declare) {
          * @param {*} event 
          */
         onEndpointSelected : function(event) {
-            if (this.checkAction('addRailwayCard', true)) {
-                var endpoint_id = event.target.id;
-                var is_start = endpoint_id.endsWith("start");
+            var endpoint_id = event.target.id;
+            var ix = endpoint_id.lastIndexOf('_');
+            var is_start = endpoint_id.endsWith("start");
+            var railway = endpoint_id.substring(0, ix);
 
+            if (this.checkAction('addRailwayCard', true)) {
                 this.ajaxcall( "/trickoftherails/trickoftherails/addRailwayCard.html", { 
                     bStart: is_start,
                     lock: true 
-                    }, this, function( result ) {  }, function( is_error) { } );                        
+                    }, this, function( result ) {  }, function( is_error) { } );
+            } else if (this.checkAction('placeCity', true)) {
+                this.ajaxcall( "/trickoftherails/trickoftherails/placeCity.html", { 
+                    sRR: railway,
+                    bStart: is_start,
+                    lock: true 
+                    }, this, function( result ) {  }, function( is_error) { } );
             }
         },
 
@@ -580,6 +588,7 @@ function (dojo, declare) {
             dojo.subscribe('shareAdded', this, "notif_shareAdded");
             dojo.subscribe('locomotivePlaced', this, "notif_locomotivePlaced");
             dojo.subscribe('railwayCardAdded', this, "notif_railwayCardAdded");
+            dojo.subscribe('cityAdded', this, "notif_cityAdded");
         },  
         
         /**
@@ -688,6 +697,31 @@ function (dojo, declare) {
             this.railWays[rr-1].item_type[card_type].weight = wt;
 
             this.railWays[rr-1].addToStockWithId(card_type, card_id, card_div);
+            dojo.addClass(notif.args.railway+"_item_"+card_id, "nice_card");
+        },
+
+        /**
+         * A City card was added to a railway line.
+         * @param {*} notif 
+         */
+        notif_cityAdded : function(notif) {
+            var card_id = notif.args.card_id;
+            var type_arg = parseInt(notif.args.city_type);
+            var card_type = this.getUniqueTypeForCard(ROWS, type_arg);
+
+            var railway = notif.args.railway;
+            var rr = parseInt(notif.args.rr);
+            var trick_div = this.trickLane.getItemDivId(card_id);
+
+            // remove City from Trick Lane
+            this.trickLane.removeFromStockById(card_id);
+            // move it to the chosen Railroad lane
+            // have to explicitly set weight while sliding into place or it goes into wrong order before refresh from Db
+            // We add increasingly negative weights when inserted in front, because otherwise 0 wts get unordered
+            var wt = (notif.args.endpoint == "start") ? (-1*this.railWays[rr-1].count()) : this.railWays[rr-1].count();
+            this.railWays[rr-1].item_type[card_type].weight = wt;
+
+            this.railWays[rr-1].addToStockWithId(card_type, card_id, trick_div);
             dojo.addClass(notif.args.railway+"_item_"+card_id, "nice_card");
         },
 

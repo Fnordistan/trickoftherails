@@ -555,7 +555,7 @@ class TrickOfTheRails extends Table
      */
     function addRailwayCard( $is_start ) {
         self::checkAction( 'addRailwayCard' );
-        // get the card I played to tricklane
+        // get the card I played to play area
         $mycard_id = $this->getActivePlayersCard();
         // card we're going to insert in front or back
         $railwaycard = $this->cards->getCard($mycard_id);
@@ -572,7 +572,7 @@ class TrickOfTheRails extends Table
 
         // Notify all players about Locomotive placement
         self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} added (${value}) to ${endpoint} of ${railroad}'), array (
-            'i18n' => array ('locomotive', 'railroad'),
+            'i18n' => array ('endpoint', 'railroad'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
             'card_id' => $mycard_id,
@@ -585,11 +585,55 @@ class TrickOfTheRails extends Table
         // Next player
         $this->gamestate->nextState();
     }
-    
 
-    function placeCity( $card_id ) {
+    /**
+     * Passed the railway to add it to, and whether at start or end of line.
+     */
+    function placeCity( $railroad, $is_start ) {
         self::checkAction( 'placeCity' );
+        $citycard = current($this->cards->getCardsInLocation('tricklane', self::getGameStateValue('currentTrickIndex')));
+        $railway = $railroad.'_railway';
 
+        if ($is_start) {
+            $this->cards->insertCard($citycard['id'], $railway, 1);
+        } else {
+            $this->cards->insertCardOnExtremePosition( $citycard['id'], $railway, true );
+        }
+        $rr = -1;
+        // which rr# is this?
+        foreach ($this->railroads as $rri => $rw) {
+            if ($rw['abbr'] == $railroad) {
+                $rr = $rri;
+                break;
+            }
+        }
+        // rgs:
+        // card_id: "65"
+        // city: "City (Baltimore)"
+        // city_type: "7"
+        // endpoint: "start"
+        // i18n: (3) ["city", "endpoint", "railroad"]
+        // player_id: "2307217"
+        // player_name: "<!--PNS--><span class="playername" style="color:#ff0000;">AmadanNaBriona0</span><!--PNE-->"
+        // railroad: {name: "PRR", nametr: "PRR", color: "Red", colortr: "Red", abbr: "prr"}
+        // railway: "c_and_o_railway"
+        // rr: -1
+
+        // Notify all players about City placement
+        self::notifyAllPlayers('cityAdded', clienttranslate('${player_name} added ${city} to ${endpoint} of ${railroad}'), array (
+            'i18n' => array ('city', 'endpoint', 'railroad'),
+            'player_id' => self::getActivePlayerId(),
+            'player_name' => self::getActivePlayerName(),
+            'card_id' => $citycard['id'],
+            'city' => $this->trick_type[$citycard['type_arg']]['name'],
+            'city_type' => $citycard['type_arg'],
+            'rr' => $rr,
+            'railroad' => $railroad,
+            'endpoint' => $is_start ? 'start' : 'end',
+            'railway' => $railway));
+
+        // go to placing trick cards played
+        $this->gamestate->nextState();
     }
 
 
@@ -631,11 +675,11 @@ class TrickOfTheRails extends Table
 
     function argPlaceCity() {
         $citycard = current($this->cards->getCardsInLocation('tricklane', self::getGameStateValue('currentTrickIndex')));
-        $city = $this->trick_type[$lococard['type_arg']]['name'];
+        $city = $this->trick_type[$citycard['type_arg']]['name'];
 
         return array(
             "i18n" => array( 'city'),
-            'locomotive' => $city
+            'city' => $city
         );
     }
 
