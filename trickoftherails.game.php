@@ -564,12 +564,11 @@ class TrickOfTheRails extends Table
         $railroad = $this->railroads[$railwaycard['type']]['name'];
         $val = $this->values_label[$railwaycard['type_arg']];
 
-        // self::dump('mycard_id', $mycard_id);
-        // self::dump('is_start', $is_start);
-        // self::dump('railway', $railway);
-
-        // insert it at the beginning
-        $this->cards->insertCardOnExtremePosition( $railwaycard['id'], $railway, !$is_start );
+        if ($is_start) {
+            $this->cards->insertCard($railwaycard['id'], $railway, 1);
+        } else {
+            $this->cards->insertCardOnExtremePosition( $railwaycard['id'], $railway, true );
+        }
 
         // Notify all players about Locomotive placement
         self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} added (${value}) to ${endpoint} of ${railroad}'), array (

@@ -676,6 +676,12 @@ function (dojo, declare) {
             this.cardsPlayed.removeFromStockById(card_id);
             var card_type = this.getUniqueTypeForCard(rr, v);
             var card_div = this.cardsPlayed.getItemDivId(card_id);
+
+            // have to explicitly set weight while sliding into place or it goes into wrong order before refresh from Db
+            // We add increasingly negative weights when inserted in front, because otherwise 0 wts get unordered
+            var wt = (notif.args.endpoint == "start") ? (-1*this.railWays[rr-1].count()) : this.railWays[rr-1].count();
+            this.railWays[rr-1].item_type[card_type].weight = wt;
+
             this.railWays[rr-1].addToStockWithId(card_type, card_id, card_div);
             dojo.addClass(notif.args.railway+"_item_"+card_id, "nice_card");
         },
