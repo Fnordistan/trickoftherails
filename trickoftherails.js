@@ -204,7 +204,7 @@ function (dojo, declare) {
                     let value = railwaycard.type_arg;
                     if (railwaycard.location_arg == 0) {
                         // Locomotives go to the loco slot
-                        this.placeLocomotiveCard(value, rw);
+                        this.placeLocomotiveCard(parseInt(value), parseInt(rw)+1);
                     } else {
                         var ctype = this.getUniqueTypeForCard(tt, value);
                         this.railWays[rw].item_type[ctype].weight = parseInt(railwaycard.location_arg);
@@ -220,6 +220,10 @@ function (dojo, declare) {
 
             for (loconode of dojo.query('.locomotive_slot')) {
                 dojo.connect(loconode, 'onclick', this, 'onLocomotiveSelected');
+            }
+
+            for (endnode of dojo.query('.railway_endpoint')) {
+                dojo.connect(endnode, 'onclick', this, 'onEndpointSelected');
             }
 
             // Setup game notifications to handle (see "setupNotifications" method below)
@@ -518,7 +522,22 @@ function (dojo, declare) {
                     rr: li,
                     lock: true 
                     }, this, function( result ) {  }, function( is_error) { } );                        
+            }
+        },
 
+        /**
+         * When player clicks a start or endpoint on railway.
+         * @param {*} event 
+         */
+        onEndpointSelected : function(event) {
+            if (this.checkAction('addRailwayCard', true)) {
+                var endpoint_id = event.target.id;
+                console.log('clicked '+endpoint_id);
+
+                this.ajaxcall( "/trickoftherails/trickoftherails/addRailwayCard.html", { 
+                    endpoint: endpoint_id,
+                    lock: true 
+                    }, this, function( result ) {  }, function( is_error) { } );                        
             }
         },
 

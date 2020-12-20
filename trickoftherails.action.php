@@ -91,9 +91,10 @@
     }
 
     public function addRailwayCard() {
-      self::setAjaxMode();     
+      self::setAjaxMode();
+      $endpoint = self::getArg( "endpoint", AT_alphanum, true);
+      $this->game->addRailwayCard( $endpoint );
       self::ajaxResponse( );
-
     }
 
   }

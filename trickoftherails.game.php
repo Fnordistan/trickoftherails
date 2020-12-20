@@ -401,6 +401,18 @@ class TrickOfTheRails extends Table
         return false;
     }
 
+    /**
+     * Return the card_id of the most recent card played to the trickrow by the current active player.
+     */
+    function getActivePlayersCard() {
+        $mycard = self::getUniqueValueFromDB("
+        SELECT card_id
+        FROM TRICK_ROW
+        WHERE player_id=".self::getActivePlayerId());
+
+        return $mycard;
+    }
+
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Player actions
@@ -496,7 +508,6 @@ class TrickOfTheRails extends Table
         $this->gamestate->nextState();
     }
 
-
     /**
      * Actual Locomotive card placement on specified Railway.
      * Return the type_arg (loco card#) of the locomotive placed, so we know if it's the next-to-last one
@@ -526,30 +537,28 @@ class TrickOfTheRails extends Table
         return $lococard['type_arg'];
     }
 
+    function addRailwayCard( $endpoint ) {
+        self::checkAction( 'addRailwayCard' );
+        // get the card I played to tricklane
+        // assoc player => cardplayed
+        $tricksPlayed = self::getCollectionFromDB( "SELECT player_id player, card_id id FROM TRICK_ROW", true );
+        $mycard = self::getActivePlayersCard();
+        $railwaycard = $this->cards->getCard($mycard);
 
-    // // is the one chosen already occupied?
-    // function checkLocomotiveSlot( $railway ) {
-    //     $isloc = self::getObjectFromDB("
-    //     SELECT * FROM CARDS
-    //     WHERE card_location = '${railway}' AND card_location_arg = 0
-    //     ");
+        self::dump('railwaycard', $railwaycard);
 
-    //     if ($isloc != null) {
-    //         throw new BgaUserException ( self::_( "You must place the locomotive on railway that does not already have one." ));
-    //     }
-    //     // otherwise we're good
-    // } 
+        //"_start"
+        //"_end"
+
+
+    }
+    
 
     function placeCity( $card_id ) {
         self::checkAction( 'placeCity' );
 
     }
 
-    function addRailwayCard( $card_id ) {
-        self::checkAction( 'addRailwayCard' );
-
-    }
-    
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state arguments
@@ -593,7 +602,23 @@ class TrickOfTheRails extends Table
 
         return array(
             "i18n" => array( 'city'),
-            'locomotive' => $city,
+            'locomotive' => $city
+        );
+    }
+
+    function argAddRailway() {
+        $mycard = self::getActivePlayersCard();
+        
+        $rrcard = $this->cards->getCard($mycard);
+
+        $rr = $this->railroads[$rrcard['type']]['name'];
+        // $color = $this->railroads[$mycard['card_type']]['color'];
+        $val = $this->values_label[$rrcard['type_arg']];
+
+        return array(
+            "i18n" => array( 'railwayCardToPlay'),
+            'rr' => $rr,
+            'val' => $val
         );
     }
 
