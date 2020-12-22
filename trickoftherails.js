@@ -214,16 +214,12 @@ function (dojo, declare) {
                 rw++;
             }
 
-            // removable handlers
-            this._locohandlers = [];
-
             dojo.query('.stockitem').addClass("nice_card");
 
             dojo.connect( this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged' );
 
             for (loconode of dojo.query('.locomotive_slot')) {
                 var handle = dojo.connect(loconode, 'onclick', this, 'onLocomotiveSelected');
-                this._locohandlers[loconode] = handle;
             }
 
             for (endnode of dojo.query('.railway_endpoint')) {
@@ -464,7 +460,6 @@ function (dojo, declare) {
             dojo.addClass(loconode, "nice_card");
             dojo.addClass( loconode, RAILROADS[rr-1]);
             dojo.removeClass(loconode, "locomotive_slot");
-            dojo.disconnect(this._locohandlers[loconode]);
             var tooltip = this.getLocomotiveLabel(loc);
             this.addTooltip( loconode, _(tooltip), '');
         },
@@ -515,8 +510,8 @@ function (dojo, declare) {
                 var loc_id = event.target.id;
                 // find index
                 var li = 1;
-                for (var rr of RR_PREFIXES) {
-                    if (loc_id.startsWith(rr)) {
+                for (var rrname of RR_PREFIXES) {
+                    if (loc_id.startsWith(rrname)) {
                         break;
                     } else {
                         li++;

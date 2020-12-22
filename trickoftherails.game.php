@@ -415,15 +415,16 @@ class TrickOfTheRails extends Table
 
     /**
      * Checks whether a locomotive has already been placed here.
-     * Given a "_railway" location.
-     * Returns null if there is no locomotive already there, 
+     * Given a ${rr}_railway" location.
+     * Returns true if there is no locomotive already there, false otherwise.
      */
     function checkLocomotiveSlot( $railway ) {
-        return self::getUniqueValueFromDB("
-            SELECT card_id
+        $sql = self::getUniqueValueFromDB("
+            SELECT *
             FROM CARDS
             WHERE card_location ='".$railway."' AND card_location_arg = 0
         ");
+        return ($sql == null);
     }
 
     /**
@@ -497,30 +498,32 @@ class TrickOfTheRails extends Table
     function placeLocomotive( $rr ) {
         self::checkAction( 'placeLocomotive' );
 
-        $loconum = self::doLocomotivePlacement($rr);
+        $loconum = $this->doLocomotivePlacement($rr);
 
         // if this was Locomotive [6], the last one is automatically placed in the remaining empty slot
         if ($loconum == 4) {
-            // find remaining empty locomotive slot
-            // railway => loc_slot array
-            $locomotives = self::getCollectionFromDB("
-            SELECT card_location railway, card_location_arg slot FROM CARDS
-            WHERE card_type = 6 AND card_type_arg < 5
+            // get the railways that already have locomotives
+            $placedRRs = self::getCollectionFromDB("
+            SELECT card_location railway FROM CARDS
+            WHERE card_location_arg = 0 and card_type = 6 AND card_type_arg <= 5
             ", true);
 
-            $lastrr = 1;
-            foreach ($this->railroads as $railroad) {
-                $railway = $railroad['abbr'].'_railway';
-                // is it in $locomotives already placed?
-                if ($locomotives[$railway] == 0) {
-                    $lastrr++;
-                } else {
+            $ri = 0;
+            foreach ($this->railroads as $rri => $rw) {
+                $lastrr = $rw['abbr']."_railway";
+                if (!array_key_exists($lastrr, $placedRRs)) {
+                    $ri = $rri;
                     break;
                 }
             }
+
+            if ($ri == 0) {
+                throw new BgaVisibleSystemException( "No railway with empty locomotive slot found!" );
+            }
+
             // need to increment trick index to ∞ card
             self::incGameStateValue('currentTrickIndex', 1);
-            self::doLocomotivePlacement($lastrr);
+            $this->doLocomotivePlacement($ri);
         }
 
         // other players add their cards to railway
@@ -536,7 +539,7 @@ class TrickOfTheRails extends Table
         $locomotive = $this->trick_type[$lococard['type_arg']]['name'];
         $railway = $this->railroads[$rr]['abbr']."_railway";
 
-        if ($this->checkLocomotiveSlot($railway) != null) {
+        if (!$this->checkLocomotiveSlot($railway)) {
             throw new BgaUserException( self::_( "You must choose a railway that does not already have a locomotive." ));
         }
 
