@@ -459,22 +459,22 @@ class TrickOfTheRails extends Table
      */
     function scoreRailways() {
         foreach ($this->railroads as $rr => $rw) {
-            $railway = self::getNonEmptyCollectionFromDB("
+            $railway = $rw['railway'];
+            $railwaycards = self::getNonEmptyCollectionFromDB("
             SELECT card_location_arg location_arg, card_type type, card_type_arg type_arg
             FROM CARDS
-            WHERE card_location = ".$rw
+            WHERE card_location = '".$railway."'"
             );
-            ksort($railway);
+            ksort($railwaycards);
 
-            $locomotive = $railway[0];
+            $locomotive = $railwaycards[0];
             // number of hops - 0 for the ∞ loco
             $loco_dist = 0;
             if ($locomotive['type_arg'] < 5) {
                 $loco_dist = $locomotive['type_arg']+2;
             }
 
-            $rwi = $railway['type'];
-            $rw_len = count($railway)-1;
+            $rw_len = count($railwaycards)-1;
 
             self::setStat($rw_len, $railway."_length");
 
@@ -482,34 +482,34 @@ class TrickOfTheRails extends Table
 
             if ($loco_dist == 0 || $loco_dist >= $rw_len) {
                 // count all the card values
-                for ($i = 1; $i < count($railway); $i++) {
-                    $next_card = $railway[$i];
-                    $score += $this->point_values[$rwi][$next_card['type_arg']];
+                for ($i = 1; $i < count($railwaycards); $i++) {
+                    $next_card = $railwaycards[$i];
+                    $score += $this->point_values[$rr][$next_card['type_arg']];
                 }
             } else {
                 // iterate from 1... until end
                 $max = 0;
                 // get initial value
                 for ($i = 1; $i <= $loco_dist; $i++) {
-                    $next_card = $railway[$i];
-                    $max += $this->point_values[$rwi][$next_card['type_arg']];
+                    $next_card = $railwaycards[$i];
+                    $max += $this->point_values[$rr][$next_card['type_arg']];
                 }
                 // now increment to end, subtracting first card and adding end card
-                for ($j = 2; $j <= (count($railway)-$loco_dist); $j++ ) {
+                for ($j = 2; $j <= (count($railwaycards)-$loco_dist); $j++ ) {
                     $tempscore = $max;
                     // subtract value of last card
-                    $prev_card = $railway[$j-1];
-                    $tempscore -= $this->point_values[$rwi][$prev_card['type_arg']];
+                    $prev_card = $railwaycards[$j-1];
+                    $tempscore -= $this->point_values[$rr][$prev_card['type_arg']];
                     // add value of next card in lie
-                    $end_card = $railway[$j+$loco_dist-1];
-                    $tempscore += $this->point_values[$rwi][$end_card['type_arg']];
+                    $end_card = $railwaycards[$j+$loco_dist-1];
+                    $tempscore += $this->point_values[$rr][$end_card['type_arg']];
                     if ($tempscore > $max) {
                         $max = $tempscore;
                     }
                 }
                 $score = $max;
             }
-            $locoscore = $this->point_values[$rwi][$railway[0]['type_arg']];
+            $locoscore = $this->point_values[$rr][$railwaycards[0]['type_arg']];
             $score += $locoscore;
             $score = max(0, $score);
 
