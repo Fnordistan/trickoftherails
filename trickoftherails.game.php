@@ -160,7 +160,7 @@ class TrickOfTheRails extends Table
             $station = current($stations);
             // Locomotive will be location 0
             // set station at location 1
-            $this->cards->moveCard($station['id'], $railroad['abbr'].'_railway', 1);
+            $this->cards->moveCard($station['id'], $railroad['railway'], 1);
         }
 
         // now shuffle
@@ -174,9 +174,9 @@ class TrickOfTheRails extends Table
 
         // deal out remaining cards to appropriate railway line
         foreach ($this->cards->getCardsInLocation( 'deck') as $rrcard) {
-            $railway = $this->railroads[$rrcard['type']]['abbr'];
-            $pos = 1+$this->cards->countCardInLocation("{$railway}_railway");
-            $this->cards->moveCard($rrcard['id'], "{$railway}_railway", $pos);
+            $railway = $this->railroads[$rrcard['type']]['railway'];
+            $pos = 1+$this->cards->countCardInLocation($railway);
+            $this->cards->moveCard($rrcard['id'], $railway, $pos);
         }
     }
 
@@ -358,7 +358,7 @@ class TrickOfTheRails extends Table
         $result['tricklanecards'] = $this->cards->getCardsInLocation( 'tricklane' );
 
         foreach ( $this->railroads as $rr_id => $railroad ) {
-            $result[$railroad['abbr'].'_railway_cards'] = $this->cards->getCardsInLocation( $railroad['abbr'].'_railway' );
+            $result[$railroad['railway'].'_cards'] = $this->cards->getCardsInLocation( $railroad['railway'] );
         }
 
         return $result;
@@ -510,7 +510,7 @@ class TrickOfTheRails extends Table
 
             $ri = 0;
             foreach ($this->railroads as $rri => $rw) {
-                $lastrr = $rw['abbr']."_railway";
+                $lastrr = $rw['railway'];
                 if (!array_key_exists($lastrr, $placedRRs)) {
                     $ri = $rri;
                     break;
@@ -537,7 +537,7 @@ class TrickOfTheRails extends Table
     function doLocomotivePlacement( $rr ) {
         $lococard = current($this->cards->getCardsInLocation('tricklane', self::getGameStateValue('currentTrickIndex')));
         $locomotive = $this->trick_type[$lococard['type_arg']]['name'];
-        $railway = $this->railroads[$rr]['abbr']."_railway";
+        $railway = $this->railroads[$rr]['railway'];
 
         if (!$this->checkLocomotiveSlot($railway)) {
             throw new BgaUserException( self::_( "You must choose a railway that does not already have a locomotive." ));
@@ -570,7 +570,7 @@ class TrickOfTheRails extends Table
         // card we're going to insert in front or back
         $railwaycard = $this->cards->getCard($mycard_id);
 
-        $railway = $this->railroads[$railwaycard['type']]['abbr']."_railway";
+        $railway = $this->railroads[$railwaycard['type']]['railway'];
         $railroad = $this->railroads[$railwaycard['type']]['name'];
         $val = $this->values_label[$railwaycard['type_arg']];
 
@@ -612,7 +612,7 @@ class TrickOfTheRails extends Table
         $rr = -1;
         // which rr# is this?
         foreach ($this->railroads as $rri => $rw) {
-            if ($rw['abbr'] == $railroad) {
+            if ($rw['railway'] == $railway) {
                 $rr = $rri;
                 break;
             }
