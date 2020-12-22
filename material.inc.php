@@ -84,3 +84,12 @@ $this->trick_type = array(
     11 => array( 'name' => clienttranslate('Exchange'),
     'nametr' => self::_('Exchange') ),
 );
+
+$this->point_values = array(
+  /** B&O */    array(10, 10, 10, 20, 20, 20, 20, 30, 30, 40, 0, 10),
+  /** C&O */    array(40, 30, 30, 20, 20, 20, 20, 10, 10, 10, 0, 10),
+  /** Erie */   array(30, 20, 20, 10, 30, 10, 20, 20, 40, 10, 0, 10),
+  /** NYC */    array(20, 20, 30, 10, 20, 40, 10, 20, 30, 10, 0, 10),
+  /** PRR */    array(10, 20, 20, 30, 40, 30, 20, 20, 10, 10, 0, 10),
+  /** LASTROW*/ array(-40, -50, -60, -70, -80, 20, 30, 40, 0, 0, 0, 0)
+);

@@ -55,19 +55,36 @@ $stats_type = array(
         "turns_number" => array("id"=> 10,
                     "name" => totranslate("Number of turns"),
                     "type" => "int" ),
-
-/*
-        Examples:
-
-
-        "table_teststat1" => array(   "id"=> 10,
-                                "name" => totranslate("table test stat 1"), 
-                                "type" => "int" ),
-                                
-        "table_teststat2" => array(   "id"=> 11,
-                                "name" => totranslate("table test stat 2"), 
-                                "type" => "float" )
-*/  
+        "b_and_o_railway_length" => array("id" => 20,
+                    "name" => totranslate("B&O length"),
+                    "type" => "int"),
+        "b_and_o_railway_profit" => array("id" => 21,
+                    "name" => totranslate("B&O profits"),
+                    "type" => "int"),
+        "c_and_o_railway_length" => array("id" => 30,
+                    "name" => totranslate("C&O length"),
+                    "type" => "int"),
+        "c_and_o_railway_profit" => array("id" => 31,
+                    "name" => totranslate("C&O profits"),
+                    "type" => "int"),
+        "erie_railway_length" => array("id" => 40,
+                    "name" => totranslate("Erie length"),
+                    "type" => "int"),
+        "erie_railway_profit" => array("id" => 41,
+                    "name" => totranslate("Erie profits"),
+                    "type" => "int"),
+        "nyc_railway_length" => array("id" => 50,
+                    "name" => totranslate("NYC length"),
+                    "type" => "int"),
+        "nyc_railway_profit" => array("id" => 51,
+                    "name" => totranslate("NYC profits"),
+                    "type" => "int"),
+        "prr_railway_length" => array("id" => 60,
+                    "name" => totranslate("PRR length"),
+                    "type" => "int"),
+        "prr_railway_profit" => array("id" => 61,
+                    "name" => totranslate("PRR profits"),
+                    "type" => "int"),
     ),
     
     // Statistics existing for each player
@@ -76,20 +93,35 @@ $stats_type = array(
         "tricks_won" => array("id"=> 20,
                     "name" => totranslate("Number of tricks won"),
                     "type" => "int" ),
-    
-/*
-        Examples:    
-        
-        
-        "player_teststat1" => array(   "id"=> 10,
-                                "name" => totranslate("player test stat 1"), 
-                                "type" => "int" ),
-                                
-        "player_teststat2" => array(   "id"=> 11,
-                                "name" => totranslate("player test stat 2"), 
-                                "type" => "float" )
-
-*/    
+        "b_and_o_railway_shares" => array("id" => 30,
+                    "name" => totranslate("Number of B&O shares"),
+                    "type" => "int"),
+        "c_and_o_railway_shares" => array("id" => 31,
+                    "name" => totranslate("Number of C&O shares"),
+                    "type" => "int"),
+        "erie_railway_shares" => array("id" => 32,
+                    "name" => totranslate("Number of Erie shares"),
+                    "type" => "int"),
+        "nyc_railway_shares" => array("id" => 33,
+                    "name" => totranslate("Number of NYC shares"),
+                    "type" => "int"),
+        "prr_railway_shares" => array("id" => 34,
+                    "name" => totranslate("Number of PRR shares"),
+                    "type" => "int"),
+        "b_and_o_railway_profits" => array("id" => 40,
+                    "name" => totranslate("Profits from B&O shares"),
+                    "type" => "int"),
+        "c_and_o_railway_profits" => array("id" => 41,
+                    "name" => totranslate("Profits from C&O shares"),
+                    "type" => "int"),
+        "erie_railway_profits" => array("id" => 42,
+                    "name" => totranslate("Profits from Erie shares"),
+                    "type" => "int"),
+        "nyc_railway_profits" => array("id" => 43,
+                    "name" => totranslate("Profits from NYC shares"),
+                    "type" => "int"),
+        "prr_railway_profits" => array("id" => 44,
+                    "name" => totranslate("Profits from PRR shares"),
+                    "type" => "int"),
     )
-
 );

@@ -79,6 +79,16 @@ class TrickOfTheRails extends Table
             $color = array_shift( $default_colors );
             $values[] = "('".$player_id."','$color','".$player['player_canal']."','".addslashes( $player['player_name'] )."','".addslashes( $player['player_avatar'] )."')";
             self::initStat('player', 'tricks_won', 0, $player_id);
+            self::initStat('player', 'b_and_o_railway_shares', 0, $player_id);
+            self::initStat('player', 'c_and_o_railway_shares', 0, $player_id);
+            self::initStat('player', 'erie_railway_shares', 0, $player_id);
+            self::initStat('player', 'nyc_railway_shares', 0, $player_id);
+            self::initStat('player', 'prr_railway_shares', 0, $player_id);
+            self::initStat('player', 'b_and_o_railway_profits', 0, $player_id);
+            self::initStat('player', 'c_and_o_railway_profits', 0, $player_id);
+            self::initStat('player', 'erie_railway_profits', 0, $player_id);
+            self::initStat('player', 'nyc_railway_profits', 0, $player_id);
+            self::initStat('player', 'prr_railway_profits', 0, $player_id);
         }
         $sql .= implode( $values, ',' );
         self::DbQuery( $sql );
@@ -89,7 +99,16 @@ class TrickOfTheRails extends Table
 
         /**** Stats */
         self::initStat('table', 'turns_number', 0);
-
+        self::initStat('table', 'b_and_o_railway_length', 0);
+        self::initStat('table', 'c_and_o_railway_length', 0);
+        self::initStat('table', 'erie_railway_length', 0);
+        self::initStat('table', 'nyc_railway_length', 0);
+        self::initStat('table', 'prr_railway_length', 0);
+        self::initStat('table', 'b_and_o_railway_profit', 0);
+        self::initStat('table', 'c_and_o_railway_profit', 0);
+        self::initStat('table', 'erie_railway_profit', 0);
+        self::initStat('table', 'nyc_railway_profit', 0);
+        self::initStat('table', 'prr_railway_profit', 0);
 
         // Init global values with their initial values
          // Set current trick color to zero (= no trick color)
@@ -434,6 +453,69 @@ class TrickOfTheRails extends Table
         return $card['type'] == LASTROW && $card['type_arg'] == RESERVATION;
     }
 
+    /**
+     * Score the value of a railway.
+     * Returns the profit including the Locomotive penalty.
+     */
+    function scoreRailways() {
+        foreach ($this->railroads as $rr => $rw) {
+            $railway = self::getNonEmptyCollectionFromDB("
+            SELECT card_location_arg location_arg, card_type type, card_type_arg type_arg
+            FROM CARDS
+            WHERE card_location = ".$rw
+            );
+            ksort($railway);
+
+            $locomotive = $railway[0];
+            // number of hops - 0 for the ∞ loco
+            $loco_dist = 0;
+            if ($locomotive['type_arg'] < 5) {
+                $loco_dist = $locomotive['type_arg']+2;
+            }
+
+            $rwi = $railway['type'];
+            $rw_len = count($railway)-1;
+
+            self::setStat($rw_len, $railway."_length");
+
+            $score = 0;
+
+            if ($loco_dist == 0 || $loco_dist >= $rw_len) {
+                // count all the card values
+                for ($i = 1; $i < count($railway); $i++) {
+                    $next_card = $railway[$i];
+                    $score += $this->point_values[$rwi][$next_card['type_arg']];
+                }
+            } else {
+                // iterate from 1... until end
+                $max = 0;
+                // get initial value
+                for ($i = 1; $i <= $loco_dist; $i++) {
+                    $next_card = $railway[$i];
+                    $max += $this->point_values[$rwi][$next_card['type_arg']];
+                }
+                // now increment to end, subtracting first card and adding end card
+                for ($j = 2; $j <= (count($railway)-$loco_dist); $j++ ) {
+                    $tempscore = $max;
+                    // subtract value of last card
+                    $prev_card = $railway[$j-1];
+                    $tempscore -= $this->point_values[$rwi][$prev_card['type_arg']];
+                    // add value of next card in lie
+                    $end_card = $railway[$j+$loco_dist-1];
+                    $tempscore += $this->point_values[$rwi][$end_card['type_arg']];
+                    if ($tempscore > $max) {
+                        $max = $tempscore;
+                    }
+                }
+                $score = $max;
+            }
+            $locoscore = $this->point_values[$rwi][$railway[0]['type_arg']];
+            $score += $locoscore;
+            $score = max(0, $score);
+
+            self::setStat($score, $railway."_profit");
+        }
+    }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Player actions
@@ -913,9 +995,12 @@ class TrickOfTheRails extends Table
 
 
     function stScoring() {
+        // first we calculate the values of every Railroad
+        $this->scoreRailways();
 
         $this->gamestate->nextState( "" );
     }
+    
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Zombie
