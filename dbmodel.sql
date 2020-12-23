@@ -36,5 +36,16 @@ CREATE TABLE IF NOT EXISTS `TRICK_ROW` (
   PRIMARY KEY (`player_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- -- final route tables
+-- CREATE TABLE IF NOT EXISTS `ROUTES` (
+--   `railroad` varchar(16) NOT NULL COMMENT 'name of railroad',
+--   `route_start` TINYINT NOT NULL COMMENT 'start of route',
+--   `route_end` TINYINT NOT NULL COMMENT 'end of route',
+--   `route_length` TINYINT NOT NULL COMMENT 'length of the route',
+--   `num_cards` TINYINT NOT NULL COMMENT 'number of cards added to railroad',
+--   `profit` TINYINT NOT NULL COMMENT 'profit per share',
+--   PRIMARY KEY (`railroad`)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
  -- add info about first player
  ALTER TABLE `player` ADD `player_first` BOOLEAN NOT NULL DEFAULT '0';

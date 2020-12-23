@@ -164,16 +164,17 @@ $machinestates = array(
         "type" => "game",
         "action" => "stScoring",
         "updateGameProgression" => true,
-        "transitions" => array( "" => STATE_DEBUG )
-    ),
-
-    STATE_DEBUG => array(
-        "name" => "debugging",
-        "description" => "Pause here to inspect and rewind...",
-        "type" => "game",
-        "action" => "stDebug",
         "transitions" => array( "" => STATE_END_GAME )
     ),
+
+    // STATE_DEBUG => array(
+    //     "name" => "debugging",
+    //     "description" => clienttranslate('${actplayer} is in debug mode.'),
+    //     "descriptionmyturn" => clienttranslate('${you} are in debug mode.'),
+    //     "type" => "activeplayer",
+    //     "possibleactions" => array( "addRailwayCard" ),
+    //     "transitions" => array( "" => STATE_END_GAME )
+    // ),
 
     // Final state.
     // Please do not modify (and do not overload action/args methods).

@@ -109,6 +109,11 @@ class TrickOfTheRails extends Table
         self::initStat('table', 'erie_railway_profit', 0);
         self::initStat('table', 'nyc_railway_profit', 0);
         self::initStat('table', 'prr_railway_profit', 0);
+        self::initStat('table', 'b_and_o_railway_cards', 0);
+        self::initStat('table', 'c_and_o_railway_cards', 0);
+        self::initStat('table', 'erie_railway_cards', 0);
+        self::initStat('table', 'nyc_railway_cards', 0);
+        self::initStat('table', 'prr_railway_cards', 0);
 
         // Init global values with their initial values
          // Set current trick color to zero (= no trick color)
@@ -465,7 +470,6 @@ class TrickOfTheRails extends Table
             WHERE card_location = '".$railway."'"
             );
             ksort($railwaycards);
-            self::dump('railwaycards', $railwaycards);
 
             $locomotive = $railwaycards[0];
             // number of hops - 0 for the ∞ loco
@@ -479,22 +483,23 @@ class TrickOfTheRails extends Table
             $rw_len = $num_rw_cards-1;
 
             self::setStat($rw_len, $railway."_length");
-            self::dump('rw_len', $rw_len);
-            self::dump('loco_dist', $loco_dist);
 
             $profit = 0;
             $route_start = 0;
             $route_end = 0;
+            $scored_cards = 0;
 
             if ($loco_dist == 0 || $loco_dist >= $rw_len) {
+                $scored_cards = $rw_len;
                 // count all the card values
-                for ($i = 1; $i < $num_rw_cards; $i++) {
+                for ($i = 1; $i <= $scored_cards; $i++) {
                     $next_card = $railwaycards[$i];
-                    $profit += $this->cardValue($rr, $next_card['type_arg']);
+                    $profit += $this->cardValue($next_card);
                 }
                 $route_start = 1;
                 $route_end = $rw_len;
             } else {
+                $scored_cards = $loco_dist;
                 // start with first loco distance, then successively add next and discard previous
                 // to find longest route
                 $max = 0;
@@ -504,20 +509,18 @@ class TrickOfTheRails extends Table
                 // get first route
                 for ($i = 1; $i <= $loco_dist; $i++) {
                     $next_card = $railwaycards[$i];
-                    $lastscore += $this->cardValue($rr, $next_card['type_arg']);
+                    $lastscore += $this->cardValue($next_card);
                 }
                 $max = $lastscore;
-                // 1-5
                 // check the next route by adding the next card and discarding the previous
                 for ($j = 2; ($j+$loco_dist) <= $num_rw_cards; $j++ ) {
-                    // when j =2, should subtract 1 and add 6
                     $nextscore = $lastscore;
                     // subtract value of last card
                     $prev_card = $railwaycards[$j-1];
-                    $nextscore -= $this->cardValue($rr, $prev_card['type_arg']);
+                    $nextscore -= $this->cardValue($prev_card);
                     // add value of next card in lie
                     $end_card = $railwaycards[$j+$loco_dist-1];
-                    $nextscore += $this->cardValue($rr, $end_card['type_arg']);
+                    $nextscore += $this->cardValue($end_card);
                     if ($nextscore > $max) {
                         $max = $nextscore;
                         $route_start = $j;
@@ -527,15 +530,18 @@ class TrickOfTheRails extends Table
                 }
                 $profit = $max;
             }
-            self::dump('profit', $profit);
             // subtract value of locomotive
-            $loco_pen = $this->cardValue(LASTROW, $locomotive['type_arg']);
+            $loco_pen = $this->cardValue($locomotive);
             $profit += $loco_pen;
             $profit = max(0, $profit);
-            self::dump('postprofit', $profit);
-            self::debug("MOST PROFITABLE ROUTE FOR ".$railway.": [".$route_start.",".$route_end."]");
 
             self::setStat($profit, $railway."_profit");
+            self::setStat($scored_cards, $railway."_cards");
+
+            // // update route table
+            // self::DbQuery("
+            // INSERT INTO ROUTES (railroad, route_start, route_end, route_length, num_cards, profit) VALUES ('".$railway."',".$route_start.",".$route_end.",".$scored_cards.",".$rw_len.",".$profit.")
+            // ");
 
         }
     }
@@ -544,7 +550,9 @@ class TrickOfTheRails extends Table
      * Given card values (row, column) that start from 1, get the point value of that card
      * from our 0-indexes double array.
      */
-    function cardValue($x, $y) {
+    function cardValue($card) {
+        $x = $card['type'];
+        $y = $card['type_arg'];
         return $this->point_values[$x-1][$y-1];
     }
 
@@ -958,6 +966,8 @@ class TrickOfTheRails extends Table
                 foreach ($this->cards->getCardsInLocation('tricklane', null, 'location_arg') as $tricklanecard) {
                     if ($this->isReservationCard($tricklanecard)) {
                         $reservation = $tricklanecard;
+                        // stop at the first one
+                        break;
                     }
                 }
                 if ($reservation == null) {
@@ -1033,20 +1043,34 @@ class TrickOfTheRails extends Table
         // now calculate how many shares of each RR each player has
         $players = self::loadPlayersBasicInfos();
         foreach( $players as $player_id => $player ) {
+            $score = 0;
 
             $shares = self::getNonEmptyCollectionFromDB("
-            SELECT card_id location_arg, card_type type, card_type_arg type_arg
+            SELECT card_id card_id, card_type rr
             FROM CARDS
             WHERE card_location = 'shares' AND card_location_arg = $player_id
-            ");
+            ", true);
 
             foreach($this->railroads as $rr => $rw) {
-                $rr_profit = self::getStat($rw['railway']."_profit");
+                $railway = $rw['railway'];
+                $rr_profit = self::getStat($railway."_profit");
 
+                // how many shares does this player have?
+                $rr_shares = 0;
+                foreach( $shares as $cid => $rrsh ) {
+                    if ($rrsh['rr'] == $rr) {
+                        $rr_shares++;
+                    }
+                }
+                $rr_profit *= $rr_shares;
+                $score += $rr_profit;
+
+                self::setStat($rr_shares, $railway."_shares", $player_id);
+                self::setStat($rr_profit, $railway."_profits", $player_id);
             }
+
+            self::DbQuery( "UPDATE player SET player_score=$score WHERE player_id=$player_id" );
         }
-
-
 
         $this->gamestate->nextState( "" );
     }
