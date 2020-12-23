@@ -25,10 +25,23 @@
     Please REMOVE this comment before publishing your game on BGA
 -->
 
-
 <div id="myhand_wrap" class="whiteblock">
     <h3>{MY_HAND}</h3>
     <div id="myhand"></div>
+</div>
+
+<div id="button_wrapper" style="text-align: center;">
+    <a href="#" id="shares_button" class="bgabutton bgabutton_blue"><span>{SHOW_SHARES_TEXT}</span></a>
+</div>
+
+<div id="shares_area" class="shares_container">
+    <div id="shares_lane" class="whiteblock shares_block">
+        <!-- BEGIN SHARES -->
+        <div id="{PLAYER}_shares" class="shares">
+            <h1>{PLAYER_NAME}'s Shares</h1>
+        </div>
+        <!-- END SHARES -->
+    </div>
 </div>
 
 <div id="currenttrick_wrap" class="whiteblock">

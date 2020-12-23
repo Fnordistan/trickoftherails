@@ -48,17 +48,12 @@
 
 /********* You can start writing your CSS below this line: **********/
 
-.nice_card {
-    border-radius: 10px;
-    border: 1px black solid;
-    -moz-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
-    -webkit-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
-    -o-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
-    box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
-    filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
+.rr_lane > * {
+    display: inline-block;
+    position: relative;
 }
 
-.rr_lane > * {
+.shares_block > * {
     display: inline-block;
     position: relative;
 }
@@ -90,6 +85,20 @@
     background-repeat: no-repeat;
     width: 114px;
     height: 171px;
+}
+
+.shares_container {
+    display: none;
+}
+
+.nice_card {
+    border-radius: 10px;
+    border: 1px black solid;
+    -moz-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    -webkit-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    -o-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
 }
 
 #b_and_o_logo {

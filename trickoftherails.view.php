@@ -43,10 +43,19 @@
 
         // this will make our My Hand text translatable
         $this->tpl['MY_HAND'] = self::_("My hand");
-        
+        $this->tpl['SHOW_SHARES_TEXT'] = self::_("Show All Player Shares");
+
+        // this will inflate our player block with actual players data
+        $this->page->begin_block($template, "SHARES");
+        foreach ( $players as $player_id => $player) {
+            $this->page->insert_block("SHARES", array (
+                "PLAYER" => $player_id,
+                "PLAYER_NAME" => $player['player_name']
+            ));
+        }
+
         $RAILCOS = array( 'b_and_o', 'c_and_o', 'erie', 'nyc', 'prr' );
         
-        // this will inflate our player block with actual players data
         $this->page->begin_block($template, "RAILROAD");
         foreach ( $RAILCOS as $rr) {
             $this->page->insert_block("RAILROAD", array ("RR" => $rr));
@@ -59,34 +68,9 @@
         // Display a specific number / string
         $this->tpl['MY_VARIABLE_ELEMENT'] = $number_to_display;
 
-        // Display a string to be translated in all languages: 
-        $this->tpl['MY_VARIABLE_ELEMENT'] = self::_("A string to be translated");
 
         // Display some HTML content of your own:
         $this->tpl['MY_VARIABLE_ELEMENT'] = self::raw( $some_html_code );
-        
-        */
-        
-        /*
-        
-        // Example: display a specific HTML block for each player in this game.
-        // (note: the block is defined in your .tpl file like this:
-        //      <!-- BEGIN myblock --> 
-        //          ... my HTML code ...
-        //      <!-- END myblock --> 
-        
-
-        $this->page->begin_block( "trickoftherails_trickoftherails", "myblock" );
-        foreach( $players as $player )
-        {
-            $this->page->insert_block( "myblock", array( 
-                                                    "PLAYER_NAME" => $player['player_name'],
-                                                    "SOME_VARIABLE" => $some_value
-                                                    ...
-                                                     ) );
-        }
-        
-        */
 
 
 

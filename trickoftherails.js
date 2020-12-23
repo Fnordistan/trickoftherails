@@ -38,7 +38,7 @@ const RESERVATION_CARD_TYPE = 68;
 const CARD_SPRITES = 'img/cards_sprites.jpg';
 
 define([
-    "dojo","dojo/_base/declare","dojo/on",
+    "dojo","dojo/_base/declare","dojo/dom", "dojo/on",
     "ebg/core/gamegui",
     "ebg/counter",
     "ebg/stock"
@@ -225,6 +225,8 @@ function (dojo, declare) {
             for (endnode of dojo.query('.railway_endpoint')) {
                 dojo.connect(endnode, 'onclick', this, 'onEndpointSelected');
             }
+
+            dojo.connect(dojo.byId('shares_button'), 'onclick', this, 'onShowShares');
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
@@ -547,6 +549,19 @@ function (dojo, declare) {
                     lock: true 
                     }, this, function( result ) {  }, function( is_error) { } );
             }
+        },
+
+        /**
+         * When show shares button is clicked
+         * @param {*} event 
+         */
+        onShowShares : function(event) {
+            var sharedisplay = dojo.getStyle("shares_area", "display");
+            // toggle display
+            sharedisplay = (sharedisplay == 'none') ? 'block' : 'none';
+            dojo.setStyle(dojo.byId('shares_area'), 'display', sharedisplay);
+            // dojo.byId('shares_container').style()
+
         },
 
 
