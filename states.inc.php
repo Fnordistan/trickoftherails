@@ -62,6 +62,7 @@ if (!defined('STATE_SETUP')) { // ensure this block is only invoked once, since 
     define("STATE_ADD_SHARES", 40);
     define("STATE_SCORE", 98);
     define("STATE_END_GAME", 99);
+    define("STATE_DEBUG", 7);
  }
  
 $machinestates = array(
@@ -163,6 +164,14 @@ $machinestates = array(
         "type" => "game",
         "action" => "stScoring",
         "updateGameProgression" => true,
+        "transitions" => array( "" => STATE_DEBUG )
+    ),
+
+    STATE_DEBUG => array(
+        "name" => "debugging",
+        "description" => "Pause here to inspect and rewind...",
+        "type" => "game",
+        "action" => "stDebug",
         "transitions" => array( "" => STATE_END_GAME )
     ),
 

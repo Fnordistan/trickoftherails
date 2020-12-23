@@ -454,8 +454,7 @@ class TrickOfTheRails extends Table
     }
 
     /**
-     * Score the value of a railway.
-     * Returns the profit including the Locomotive penalty.
+     * Score the values of all railways. Puts them in the stats.
      */
     function scoreRailways() {
         foreach ($this->railroads as $rr => $rw) {
@@ -466,6 +465,7 @@ class TrickOfTheRails extends Table
             WHERE card_location = '".$railway."'"
             );
             ksort($railwaycards);
+            self::dump('railwaycards', $railwaycards);
 
             $locomotive = $railwaycards[0];
             // number of hops - 0 for the ∞ loco
@@ -474,48 +474,80 @@ class TrickOfTheRails extends Table
                 $loco_dist = $locomotive['type_arg']+2;
             }
 
-            $rw_len = count($railwaycards)-1;
+            // number of cards in the railway, not counting locomotive
+            $num_rw_cards = count($railwaycards);
+            $rw_len = $num_rw_cards-1;
 
             self::setStat($rw_len, $railway."_length");
+            self::dump('rw_len', $rw_len);
+            self::dump('loco_dist', $loco_dist);
 
-            $score = 0;
+            $profit = 0;
+            $route_start = 0;
+            $route_end = 0;
 
             if ($loco_dist == 0 || $loco_dist >= $rw_len) {
                 // count all the card values
-                for ($i = 1; $i < count($railwaycards); $i++) {
+                for ($i = 1; $i < $num_rw_cards; $i++) {
                     $next_card = $railwaycards[$i];
-                    $score += $this->point_values[$rr][$next_card['type_arg']];
+                    $profit += $this->cardValue($rr, $next_card['type_arg']);
                 }
+                $route_start = 1;
+                $route_end = $rw_len;
             } else {
-                // iterate from 1... until end
+                // start with first loco distance, then successively add next and discard previous
+                // to find longest route
                 $max = 0;
-                // get initial value
+                $lastscore = 0;
+                $route_start = 1;
+                $route_end = $loco_dist;
+                // get first route
                 for ($i = 1; $i <= $loco_dist; $i++) {
                     $next_card = $railwaycards[$i];
-                    $max += $this->point_values[$rr][$next_card['type_arg']];
+                    $lastscore += $this->cardValue($rr, $next_card['type_arg']);
                 }
-                // now increment to end, subtracting first card and adding end card
-                for ($j = 2; $j <= (count($railwaycards)-$loco_dist); $j++ ) {
-                    $tempscore = $max;
+                $max = $lastscore;
+                // 1-5
+                // check the next route by adding the next card and discarding the previous
+                for ($j = 2; ($j+$loco_dist) <= $num_rw_cards; $j++ ) {
+                    // when j =2, should subtract 1 and add 6
+                    $nextscore = $lastscore;
                     // subtract value of last card
                     $prev_card = $railwaycards[$j-1];
-                    $tempscore -= $this->point_values[$rr][$prev_card['type_arg']];
+                    $nextscore -= $this->cardValue($rr, $prev_card['type_arg']);
                     // add value of next card in lie
                     $end_card = $railwaycards[$j+$loco_dist-1];
-                    $tempscore += $this->point_values[$rr][$end_card['type_arg']];
-                    if ($tempscore > $max) {
-                        $max = $tempscore;
+                    $nextscore += $this->cardValue($rr, $end_card['type_arg']);
+                    if ($nextscore > $max) {
+                        $max = $nextscore;
+                        $route_start = $j;
+                        $route_end = $j+$loco_dist-1;
                     }
+                    $lastscore = $nextscore;
                 }
-                $score = $max;
+                $profit = $max;
             }
-            $locoscore = $this->point_values[$rr][$railwaycards[0]['type_arg']];
-            $score += $locoscore;
-            $score = max(0, $score);
+            self::dump('profit', $profit);
+            // subtract value of locomotive
+            $loco_pen = $this->cardValue(LASTROW, $locomotive['type_arg']);
+            $profit += $loco_pen;
+            $profit = max(0, $profit);
+            self::dump('postprofit', $profit);
+            self::debug("MOST PROFITABLE ROUTE FOR ".$railway.": [".$route_start.",".$route_end."]");
 
-            self::setStat($score, $railway."_profit");
+            self::setStat($profit, $railway."_profit");
+
         }
     }
+
+    /**
+     * Given card values (row, column) that start from 1, get the point value of that card
+     * from our 0-indexes double array.
+     */
+    function cardValue($x, $y) {
+        return $this->point_values[$x-1][$y-1];
+    }
+
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Player actions
@@ -998,7 +1030,29 @@ class TrickOfTheRails extends Table
         // first we calculate the values of every Railroad
         $this->scoreRailways();
 
+        // now calculate how many shares of each RR each player has
+        $players = self::loadPlayersBasicInfos();
+        foreach( $players as $player_id => $player ) {
+
+            $shares = self::getNonEmptyCollectionFromDB("
+            SELECT card_id location_arg, card_type type, card_type_arg type_arg
+            FROM CARDS
+            WHERE card_location = 'shares' AND card_location_arg = $player_id
+            ");
+
+            foreach($this->railroads as $rr => $rw) {
+                $rr_profit = self::getStat($rw['railway']."_profit");
+
+            }
+        }
+
+
+
         $this->gamestate->nextState( "" );
+    }
+
+    function stDebug() {
+        throw new BgaUserException( "We are in debug mode!");
     }
     
 
