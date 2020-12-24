@@ -37,8 +37,13 @@
 <div id="shares_area" class="shares_container">
     <div id="shares_lane" class="whiteblock shares_block">
         <!-- BEGIN SHARES -->
-        <div id="{PLAYER}_shares" class="shares">
-            <h1>{PLAYER_NAME}'s Shares</h1>
+        <div id="{PLAYER}_shares" class="shares_lane">
+            <h1>{PLAYER_NAME}</h1>
+            <div id="{PLAYER}_b_and_o_shares" class="shares"></div>
+            <div id="{PLAYER}_c_and_o_shares" class="shares"></div>
+            <div id="{PLAYER}_erie_shares" class="shares"></div>
+            <div id="{PLAYER}_nyc_shares" class="shares"></div>
+            <div id="{PLAYER}_prr_shares" class="shares"></div>
         </div>
         <!-- END SHARES -->
     </div>

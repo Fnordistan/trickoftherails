@@ -375,6 +375,8 @@ class TrickOfTheRails extends Table
   
         // Cards in player hand
         $result['hand'] = $this->cards->getCardsInLocation( 'hand', $current_player_id );
+        // all shares
+        $result['shares'] = $this->cards->getCardsInLocation('shares');
 
         // Cards played onto the table
         $result['currenttrick'] = $this->cards->getCardsInLocation( 'currenttrick');

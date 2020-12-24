@@ -69,14 +69,14 @@ function (dojo, declare) {
         
         setup: function( gamedatas )
         {
-            console.log( "Starting game setup" );
-            
+
+            // this will be an array of arrays by player_id => array of rr share piles
+            this.sharePiles = [];
             // Setting up player boards
             for( const player_id in gamedatas.players )
             {
                 var player = gamedatas.players[player_id];
-                         
-                // TODO: Setting up players boards if needed
+                this.sharePiles[player_id] = [];
             }
             
             // Player hand
@@ -102,8 +102,9 @@ function (dojo, declare) {
             // hitch adding railroad as a class to each hand
             this.cardsPlayed.onItemCreate = dojo.hitch(this, this.setUpRRCard);
 
-            // and create the Stock items for all five railways
+            // create the Stock items for all five railways
             this.railWays = [];
+            // this will be an array by rr_shares => player
             for (const rr of RR_PREFIXES)
             {
                 var railway = new ebg.stock();
@@ -114,6 +115,20 @@ function (dojo, declare) {
                 // for some reason they display vertically in rr_lane if this isn't set
                 railway.autowidth = true;
                 this.railWays.push(railway);
+
+                // create Stock items for each share pile
+                var rr_shares = rr+"_shares";
+                // Setting up player boards
+                for( const player_id in gamedatas.players ) {
+                    var shares = new ebg.stock();
+                    var share_id = player_id+'_'+rr_shares;
+                    // debugger;
+                    shares.create(this, $(share_id), this.cardwidth, this.cardheight );
+                    shares.setSelectionMode(0);
+                    shares.image_items_per_row = COLS;
+                    shares.onItemCreate = dojo.hitch(this, this.setUpRRCard);
+                    this.sharePiles[player_id].push(shares);
+                }
             }
 
             // Create card types
@@ -152,10 +167,12 @@ function (dojo, declare) {
                         } else if (vv == EXCHANGE) {
                             // it's an Exchange card
                             this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+CARD_SPRITES, card_type_id );
+                            this.populateSharePiles(card_type_id, g_gamethemeurl+CARD_SPRITES);
                         } else {
                             this.playerHand.addItemType( card_type_id, card_type_id, g_gamethemeurl+CARD_SPRITES, card_type_id );
                             this.cardsPlayed.addItemType( card_type_id, 0, g_gamethemeurl+CARD_SPRITES, card_type_id );
                             this.railWays[rr-1].addItemType( card_type_id, 0, g_gamethemeurl+CARD_SPRITES, card_type_id );
+                            this.populateSharePiles(card_type_id, g_gamethemeurl+CARD_SPRITES);
                             // tricklanes can also hold RR cards
                             this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+CARD_SPRITES, card_type_id );
                         }
@@ -392,6 +409,19 @@ function (dojo, declare) {
                     throw new Error("Unexpected Locomotive value: "+type_arg);
             }
             return label;
+        },
+
+        /**
+         * Add StockItem to all share piles
+         * @param {*} card_type_id
+         * @param {*} sprite_url
+         */
+        populateSharePiles: function(card_type_id, sprite_url) {
+            for( const player_id in this.gamedatas.players ) {
+                for (const ri of RR_INDEXES) {
+                    this.sharePiles[player_id][ri].addItemType( card_type_id, card_type_id, sprite_url, card_type_id );
+                }
+            }
         },
 
         /**

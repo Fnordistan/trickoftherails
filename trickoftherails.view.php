@@ -45,16 +45,18 @@
         $this->tpl['MY_HAND'] = self::_("My hand");
         $this->tpl['SHOW_SHARES_TEXT'] = self::_("Show Player Shares");
 
+        $RAILCOS = array( 'b_and_o', 'c_and_o', 'erie', 'nyc', 'prr' );
+
         // this will inflate our player block with actual players data
-        $this->page->begin_block($template, "SHARES");
+        $this->page->begin_block($template, 'SHARES');
         foreach ( $players as $player_id => $player) {
+
             $this->page->insert_block("SHARES", array (
                 "PLAYER" => $player_id,
                 "PLAYER_NAME" => $player['player_name']
             ));
         }
 
-        $RAILCOS = array( 'b_and_o', 'c_and_o', 'erie', 'nyc', 'prr' );
         
         $this->page->begin_block($template, "RAILROAD");
         foreach ( $RAILCOS as $rr) {
