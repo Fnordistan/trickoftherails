@@ -57,14 +57,16 @@
     text-align: center;
 }
 
+.shares_lane {
+    display: flex;
+}
+
 .player_shares {
-    display: inline-block;
     margin: 10px;
 }
 
-.rr_lane > * {
-    display: inline-block;
-    position: relative;
+.rr_lane {
+    display: flex;
 }
 
 .rr_lane_logo {

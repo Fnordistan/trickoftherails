@@ -35,7 +35,7 @@
 </div>
 
 <div id="shares_wrapper" class="shares_container">
-    <div id="shares_area">
+    <div id="shares_area" class="shares_lane">
         <!-- BEGIN PLAYERS -->
         <div id="{PLAYER}_shares" class="whiteblock player_shares">
             <h1 class="player_shares_heading">{PLAYER_NAME}</h1>
