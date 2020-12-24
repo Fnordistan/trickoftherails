@@ -484,7 +484,7 @@ class TrickOfTheRails extends Table
             $num_rw_cards = count($railwaycards);
             $rw_len = $num_rw_cards-1;
 
-            self::setStat($rw_len, $railway."_length");
+            self::setStat($rw_len, $railway."_cards");
 
             $profit = 0;
             $route_start = 0;
@@ -538,7 +538,7 @@ class TrickOfTheRails extends Table
             $profit = max(0, $profit);
 
             self::setStat($profit, $railway."_profit");
-            self::setStat($scored_cards, $railway."_cards");
+            self::setStat($scored_cards, $railway."_length");
 
             // // update route table
             // self::DbQuery("

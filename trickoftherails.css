@@ -48,27 +48,23 @@
 
 /********* You can start writing your CSS below this line: **********/
 
-.rr_lane > * {
-    display: inline-block;
-    position: relative;
-}
-
-.shares_lane > * {
-    display: inline-block;
-    position: relative;
-}
-
 /* Hide by default */
-.shares_block {
+.shares_container {
     display: none;
-}
-
-.player_shares {
-    margin: 10px;
 }
 
 .player_shares_heading {
     text-align: center;
+}
+
+.player_shares {
+    display: inline-block;
+    margin: 10px;
+}
+
+.rr_lane > * {
+    display: inline-block;
+    position: relative;
 }
 
 .rr_lane_logo {

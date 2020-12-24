@@ -62,7 +62,6 @@ if (!defined('STATE_SETUP')) { // ensure this block is only invoked once, since 
     define("STATE_ADD_SHARES", 40);
     define("STATE_SCORE", 98);
     define("STATE_END_GAME", 99);
-    define("STATE_DEBUG", 7);
  }
  
 $machinestates = array(
@@ -133,7 +132,7 @@ $machinestates = array(
 
     STATE_ADD_RAILWAY => array(
         "name" => "addRailway",
-        "description" => clienttranslate('${actplayer} must add ${rr} (${val}) to the ${rr} railway.'),
+        "description" => clienttranslate('${actplayer} adds ${rr} (${val}) to the ${rr} railway.'),
         "descriptionmyturn" => clienttranslate('${you} must add ${rr} (${val}) to the ${rr} railway.'),
         "type" => "activeplayer",
         "args" => "argAddRailway",
@@ -157,7 +156,6 @@ $machinestates = array(
         "transitions" => array( "nextTrick" => STATE_NEW_TRICK, "endGame" =>  STATE_SCORE)
     ),
 
-
     STATE_SCORE => array(
         "name" => "scoring",
         "description" => "Adding scores...",
@@ -166,15 +164,6 @@ $machinestates = array(
         "updateGameProgression" => true,
         "transitions" => array( "" => STATE_END_GAME )
     ),
-
-    // STATE_DEBUG => array(
-    //     "name" => "debugging",
-    //     "description" => clienttranslate('${actplayer} is in debug mode.'),
-    //     "descriptionmyturn" => clienttranslate('${you} are in debug mode.'),
-    //     "type" => "activeplayer",
-    //     "possibleactions" => array( "addRailwayCard" ),
-    //     "transitions" => array( "" => STATE_END_GAME )
-    // ),
 
     // Final state.
     // Please do not modify (and do not overload action/args methods).
@@ -187,6 +176,3 @@ $machinestates = array(
     )
 
 );
-
-
-

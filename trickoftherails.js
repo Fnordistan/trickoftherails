@@ -129,8 +129,9 @@ function (dojo, declare) {
                     shares.create(this, $(share_id), this.cardwidth, this.cardheight );
                     shares.setSelectionMode(0);
                     shares.image_items_per_row = COLS;
+                    shares.autowidth = true;
                     shares.extraClasses='nice_card';
-                    shares.setOverlap( 0, 50 );
+                    shares.setOverlap( 25, 0 );
                     shares.onItemCreate = dojo.hitch(this, this.setUpRRCard);
                     this.sharePiles[player_id].push(shares);
                 }
@@ -505,7 +506,7 @@ function (dojo, declare) {
                 "background": "url("+g_gamethemeurl+CARD_SPRITES+") "+x+"px "+y +"px",
                 "z-index": 1,
             });
-            dojo.addClass( loconode, RAILROADS[rr-1]);
+            dojo.addClass( loconode, RAILROADS[rr-1]+ " nice_card");
             dojo.removeClass(loconode, "locomotive_slot");
             var tooltip = this.getLocomotiveLabel(loc);
             this.addTooltip( loconode, _(tooltip), '');

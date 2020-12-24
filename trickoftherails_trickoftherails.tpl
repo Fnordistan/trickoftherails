@@ -34,8 +34,8 @@
     <a href="#" id="shares_button" class="bgabutton bgabutton_blue"><span>{SHOW_SHARES_TEXT}</span></a>
 </div>
 
-<div id="shares_wrapper" class="shares_block">
-    <div id="shares_area" class="shares_lane">
+<div id="shares_wrapper" class="shares_container">
+    <div id="shares_area">
         <!-- BEGIN PLAYERS -->
         <div id="{PLAYER}_shares" class="whiteblock player_shares">
             <h1 class="player_shares_heading">{PLAYER_NAME}</h1>
