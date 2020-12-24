@@ -43,7 +43,7 @@
 
         // this will make our My Hand text translatable
         $this->tpl['MY_HAND'] = self::_("My hand");
-        $this->tpl['SHOW_SHARES_TEXT'] = self::_("Show All Player Shares");
+        $this->tpl['SHOW_SHARES_TEXT'] = self::_("Show Player Shares");
 
         // this will inflate our player block with actual players data
         $this->page->begin_block($template, "SHARES");

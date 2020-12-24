@@ -559,9 +559,9 @@ function (dojo, declare) {
             var sharedisplay = dojo.getStyle("shares_area", "display");
             // toggle display
             sharedisplay = (sharedisplay == 'none') ? 'block' : 'none';
+            var button_text = (sharedisplay == 'none') ? "Show Player Shares" : "Hide Player Shares";
             dojo.setStyle(dojo.byId('shares_area'), 'display', sharedisplay);
-            // dojo.byId('shares_container').style()
-
+            $('shares_button').innerHTML = _(button_text);
         },
 
 
