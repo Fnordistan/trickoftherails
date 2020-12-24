@@ -138,9 +138,9 @@ function (dojo, declare) {
             }
 
             // Create card types
-            for( let rr = 1; rr <= ROWS; rr++ )
+            for( var rr = 1; rr <= ROWS; rr++ )
             {
-                for (let vv = 1; vv <= COLS; vv++ )
+                for (var vv = 1; vv <= COLS; vv++ )
                 {
                     // Build card type id
                     // we can use 0 value for card id here, it only really matters
@@ -156,7 +156,7 @@ function (dojo, declare) {
                                 // We create three cards with different item types but the same image position
                                 // we can just increment up because we know Reservation card is the LAST id
                                 // (need to change this if we start using card back)
-                                for (let rv = 0; rv < 3; rv++) {
+                                for (var rv = 0; rv < 3; rv++) {
                                     this.trickLane.addItemType( card_type_id+rv, 0, g_gamethemeurl+CARD_SPRITES, card_type_id );
                                 }
                             }else {
@@ -216,12 +216,12 @@ function (dojo, declare) {
 
             // the trick lane
             // Special counter for Reservation cards
-            let rsv = 0;
+            var rsv = 0;
             for (const i in gamedatas.tricklanecards) {
-                let tlcard = gamedatas.tricklanecards[i];
-                let tt = tlcard.type;
-                let value = tlcard.type_arg;
-                let ctype = this.getUniqueTypeForCard(tt, value);
+                var tlcard = gamedatas.tricklanecards[i];
+                var tt = tlcard.type;
+                var value = tlcard.type_arg;
+                var ctype = this.getUniqueTypeForCard(tt, value);
                 if (ctype == RESERVATION_CARD_TYPE) {
                     ctype += rsv++;
                 }
@@ -230,12 +230,12 @@ function (dojo, declare) {
             }
 
             // the railway lines
-            let rw = 0;
+            var rw = 0;
             for (railwaycards of [gamedatas.b_and_o_railway_cards, gamedatas.c_and_o_railway_cards, gamedatas.erie_railway_cards, gamedatas.nyc_railway_cards, gamedatas.prr_railway_cards]) {
                 for (const i in railwaycards) {
-                    let railwaycard = railwaycards[i];
-                    let tt = railwaycard.type;
-                    let value = railwaycard.type_arg;
+                    var railwaycard = railwaycards[i];
+                    var tt = railwaycard.type;
+                    var value = railwaycard.type_arg;
                     if (railwaycard.location_arg == 0) {
                         // Locomotives go to the loco slot
                         this.placeLocomotiveCard(parseInt(value), parseInt(rw)+1);
