@@ -53,9 +53,22 @@
     position: relative;
 }
 
-.shares_block > * {
+.shares_lane > * {
     display: inline-block;
     position: relative;
+}
+
+/* Hide by default */
+.shares_block {
+    display: none;
+}
+
+.player_shares {
+    margin: 10px;
+}
+
+.player_shares_heading {
+    text-align: center;
 }
 
 .rr_lane_logo {
@@ -85,10 +98,6 @@
     background-repeat: no-repeat;
     width: 114px;
     height: 171px;
-}
-
-.shares_container {
-    display: none;
 }
 
 .nice_card {

@@ -1019,12 +1019,14 @@ class TrickOfTheRails extends Table
                 $this->cards->moveCard($share['id'], 'shares', $player);
                 $share_val = $this->values_label[$share['type_arg']];
             }
-            self::notifyAllPlayers('shareAdded', clienttranslate('${player_name} adds ${rr_name} ${card_value} to ${rr_name} shares'), array (
+            self::notifyAllPlayers('shareAdded', clienttranslate('${player_name} adds ${rr_name} ${card_label} to ${rr_name} shares'), array (
                 'i18n' => array ('rr_name', 'card_value' ),
                 'player_id' => $player,
                 'player_name' => $players[$player]['player_name'],
                 'card_id' => $share['id'],
-                'card_value' => $share_val,
+                'rr' => $share['type'],
+                'card_value' => $share['type_arg'],
+                'card_label' => $share_val,
                 'rr_name' => $this->railroads[$share['type']] ['name']));
         }
 

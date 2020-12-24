@@ -122,7 +122,6 @@ function (dojo, declare) {
                 for( const player_id in gamedatas.players ) {
                     var shares = new ebg.stock();
                     var share_id = player_id+'_'+rr_shares;
-                    // debugger;
                     shares.create(this, $(share_id), this.cardwidth, this.cardheight );
                     shares.setSelectionMode(0);
                     shares.image_items_per_row = COLS;
@@ -181,19 +180,29 @@ function (dojo, declare) {
             }
 
             // Cards in player's hand
-            for ( const i in gamedatas.hand ) {
-                let mycard = gamedatas.hand[i];
-                let rr = mycard.type;
-                let value = mycard.type_arg;
+            for ( const h in gamedatas.hand ) {
+                var mycard = gamedatas.hand[h];
+                var rr = mycard.type;
+                var value = mycard.type_arg;
                 this.playerHand.addToStockWithId(this.getUniqueTypeForCard(rr, value), mycard.id);
+            }
+
+            // everyone's stock shares
+            for (const s in gamedatas.shares) {
+                var sharecard = gamedatas.shares[s];
+                var owner = sharecard.location_arg;
+                var rr = sharecard.type;
+                var val = sharecard.type_arg;
+                var ctype = this.getUniqueTypeForCard(rr, val);
+                this.sharePiles[owner][rr-1].addToStockWithId(ctype, sharecard.id);
             }
 
             // Cards played on table
             for ( const i in gamedatas.currenttrick) {
-                let tcard = gamedatas.currenttrick[i];
-                let rr = tcard.type;
-                let value = tcard.type_arg;
-                let ctype = this.getUniqueTypeForCard(rr, value);
+                var tcard = gamedatas.currenttrick[i];
+                var rr = tcard.type;
+                var value = tcard.type_arg;
+                var ctype = this.getUniqueTypeForCard(rr, value);
                 this.cardsPlayed.item_type[ctype].weight = parseInt(tcard.location_arg);
                 this.cardsPlayed.addToStockWithId(ctype, tcard.id);
             }
@@ -213,6 +222,7 @@ function (dojo, declare) {
                 this.trickLane.addToStockWithId(ctype, tlcard.id);
             }
 
+            // the railway lines
             let rw = 0;
             for (railwaycards of [gamedatas.b_and_o_railway_cards, gamedatas.c_and_o_railway_cards, gamedatas.erie_railway_cards, gamedatas.nyc_railway_cards, gamedatas.prr_railway_cards]) {
                 for (const i in railwaycards) {
@@ -586,11 +596,11 @@ function (dojo, declare) {
          * @param {*} event 
          */
         onShowShares : function(event) {
-            var sharedisplay = dojo.getStyle("shares_area", "display");
+            var sharedisplay = dojo.getStyle("shares_wrapper", "display");
             // toggle display
             sharedisplay = (sharedisplay == 'none') ? 'block' : 'none';
             var button_text = (sharedisplay == 'none') ? "Show Player Shares" : "Hide Player Shares";
-            dojo.setStyle(dojo.byId('shares_area'), 'display', sharedisplay);
+            dojo.setStyle(dojo.byId('shares_wrapper'), 'display', sharedisplay);
             $('shares_button').innerHTML = _(button_text);
         },
 
@@ -677,11 +687,11 @@ function (dojo, declare) {
             var reserve_div = this.trickLane.getItemDivId(notif.args.reservation_id);
             // remove the Reservation card
             this.trickLane.removeFromStockById(notif.args.reservation_id);
-            // move the (winning) trick card from the play area to the Trick Lane
-            this.cardsPlayed.removeFromStockById(card_id, reserve_div);
             // set the weight to that of the replaced Reservation card
             this.trickLane.item_type[card_type].weight = parseInt(notif.args.reservation_loc);
+            // move the (winning) trick card from the play area to the Trick Lane
             this.trickLane.addToStockWithId(card_type, card_id, trick_div);
+            this.cardsPlayed.removeFromStockById(card_id, reserve_div);
             dojo.addClass("tricklane_item_"+card_id, "nice_card");
         },
 
@@ -690,7 +700,6 @@ function (dojo, declare) {
          * @param {*} notif 
          */
         notif_discardedShare : function(notif) {
-            console.log(notif.args.player_id + " discarded " + notif.args.card_id);
             this.cardsPlayed.removeFromStockById(notif.args.card_id);
         },
 
@@ -699,13 +708,25 @@ function (dojo, declare) {
          * @param {*} notif 
          */
         notif_shareAdded : function(notif) {
-            var card_id = notif.args.card_id;
+            var player_id = notif.args.player_id;
+            var card_id = parseInt(notif.args.card_id);
+            var rr = parseInt(notif.args.rr);
+            var val = parseInt(notif.args.card_value);
+            var card_type = this.getUniqueTypeForCard(rr, val);
+            var to_div = null;
             // it was either in the cards played area, or won from the Trick Lane.
             if (this.cardsPlayed.getItemById(card_id) != null) {
-                this.cardsPlayed.removeFromStockById(card_id);
+                var card_div = this.cardsPlayed.getItemDivId(card_id);
+                this.sharePiles[player_id][rr-1].addToStockWithId(card_type, card_id, card_div);
+                to_div = this.sharePiles[player_id][rr-1].getItemDivId(card_id);
+                this.cardsPlayed.removeFromStockById(card_id, to_div);
             } else {
-                this.trickLane.removeFromStockById(card_id);
+                var card_div = this.trickLane.getItemDivId(card_id);
+                this.sharePiles[player_id][rr-1].addToStockWithId(card_type, card_id, card_div);
+                to_div = this.sharePiles[player_id][rr-1].getItemDivId(card_id);
+                this.trickLane.removeFromStockById(card_id, to_div);
             }
+            dojo.addClass(to_div, "nice_card");
         },
 
         /**
@@ -713,7 +734,7 @@ function (dojo, declare) {
          * @param {*} notif 
          */
         notif_locomotivePlaced : function(notif) {
-            var card_id = notif.args.card_id;
+            var card_id = parseInt(notif.args.card_id);
             // remove locomotive from Trick Lane, move to Railroad
             this.trickLane.removeFromStockById(card_id);
             this.placeLocomotiveCard(parseInt(notif.args.loc_num), parseInt(notif.args.railroad));
@@ -724,9 +745,9 @@ function (dojo, declare) {
          * @param {*} notif 
          */
         notif_railwayCardAdded : function(notif) {
-            var card_id = notif.args.card_id;
-            var rr = notif.args.rr;
-            var v = notif.args.value;
+            var card_id = parseInt(notif.args.card_id);
+            var rr = parseInt(notif.args.rr);
+            var v = parseInt(notif.args.value);
             this.cardsPlayed.removeFromStockById(card_id);
             var card_type = this.getUniqueTypeForCard(rr, v);
             var card_div = this.cardsPlayed.getItemDivId(card_id);
@@ -745,7 +766,7 @@ function (dojo, declare) {
          * @param {*} notif 
          */
         notif_cityAdded : function(notif) {
-            var card_id = notif.args.card_id;
+            var card_id = parseInt(notif.args.card_id);
             var type_arg = parseInt(notif.args.city_type);
             var card_type = this.getUniqueTypeForCard(ROWS, type_arg);
 
