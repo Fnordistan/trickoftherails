@@ -36,16 +36,14 @@
 
 <div id="shares_wrapper" class="shares_block">
     <div id="shares_area" class="shares_lane">
-        <!-- BEGIN SHARES -->
+        <!-- BEGIN PLAYERS -->
         <div id="{PLAYER}_shares" class="whiteblock player_shares">
             <h1 class="player_shares_heading">{PLAYER_NAME}</h1>
-            <div id="{PLAYER}_b_and_o_shares" class="shares"></div>
-            <div id="{PLAYER}_c_and_o_shares" class="shares"></div>
-            <div id="{PLAYER}_erie_shares" class="shares"></div>
-            <div id="{PLAYER}_nyc_shares" class="shares"></div>
-            <div id="{PLAYER}_prr_shares" class="shares"></div>
+            <!-- BEGIN SHARES -->
+            <div id="{PLAYER}_{RR}_shares" class="shares"></div>
+            <!-- END SHARES -->
         </div>
-        <!-- END SHARES -->
+        <!-- END PLAYERS -->
     </div>
 </div>
 

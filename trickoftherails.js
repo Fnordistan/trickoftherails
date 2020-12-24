@@ -84,6 +84,7 @@ function (dojo, declare) {
             this.playerHand.create( this, $('myhand'), this.cardwidth, this.cardheight );
             this.playerHand.setSelectionMode(1);
             this.playerHand.image_items_per_row = COLS;
+            this.playerHand.extraClasses='nice_card';
             // hitch adding railroad as a class to each hand
             this.playerHand.onItemCreate = dojo.hitch(this, this.setUpRRCard);
 
@@ -92,12 +93,14 @@ function (dojo, declare) {
             this.trickLane.create(this, $('tricklane'), this.cardwidth, this.cardheight );
             this.trickLane.setSelectionMode(0);
             this.trickLane.image_items_per_row = COLS;
+            this.trickLane.extraClasses='nice_card';
             this.trickLane.onItemCreate = dojo.hitch(this, this.setUpTrickLaneCard);
 
             // where cards are played for the current trick
             this.cardsPlayed = new ebg.stock();
             this.cardsPlayed.create(this, $('currenttrick'), this.cardwidth, this.cardheight );
             this.cardsPlayed.setSelectionMode(0);
+            this.cardsPlayed.extraClasses='nice_card';
             this.cardsPlayed.image_items_per_row = COLS;
             // hitch adding railroad as a class to each hand
             this.cardsPlayed.onItemCreate = dojo.hitch(this, this.setUpRRCard);
@@ -111,6 +114,7 @@ function (dojo, declare) {
                 railway.create(this, $(rr+'_railway'), this.cardwidth, this.cardheight );
                 railway.setSelectionMode(0);
                 railway.image_items_per_row = COLS;
+                railway.extraClasses='nice_card';
                 railway.onItemCreate = dojo.hitch(this, this.setUpRRCard);
                 // for some reason they display vertically in rr_lane if this isn't set
                 railway.autowidth = true;
@@ -125,6 +129,8 @@ function (dojo, declare) {
                     shares.create(this, $(share_id), this.cardwidth, this.cardheight );
                     shares.setSelectionMode(0);
                     shares.image_items_per_row = COLS;
+                    shares.extraClasses='nice_card';
+                    shares.setOverlap( 0, 50 );
                     shares.onItemCreate = dojo.hitch(this, this.setUpRRCard);
                     this.sharePiles[player_id].push(shares);
                 }
@@ -241,7 +247,7 @@ function (dojo, declare) {
                 rw++;
             }
 
-            dojo.query('.stockitem').addClass("nice_card");
+            // dojo.query('.stockitem').addClass("nice_card");
 
             dojo.connect( this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged' );
 
@@ -499,7 +505,6 @@ function (dojo, declare) {
                 "background": "url("+g_gamethemeurl+CARD_SPRITES+") "+x+"px "+y +"px",
                 "z-index": 1,
             });
-            dojo.addClass(loconode, "nice_card");
             dojo.addClass( loconode, RAILROADS[rr-1]);
             dojo.removeClass(loconode, "locomotive_slot");
             var tooltip = this.getLocomotiveLabel(loc);
@@ -668,9 +673,6 @@ function (dojo, declare) {
                     this.playerHand.removeFromStockById(card_id, 'currenttrick_item_'+card_id);
                 }
             }
-
-            dojo.addClass('currenttrick_item_'+card_id, "nice_card");
-
         },
 
         /**
@@ -692,7 +694,6 @@ function (dojo, declare) {
             // move the (winning) trick card from the play area to the Trick Lane
             this.trickLane.addToStockWithId(card_type, card_id, trick_div);
             this.cardsPlayed.removeFromStockById(card_id, reserve_div);
-            dojo.addClass("tricklane_item_"+card_id, "nice_card");
         },
 
         /**
@@ -713,20 +714,18 @@ function (dojo, declare) {
             var rr = parseInt(notif.args.rr);
             var val = parseInt(notif.args.card_value);
             var card_type = this.getUniqueTypeForCard(rr, val);
-            var to_div = null;
             // it was either in the cards played area, or won from the Trick Lane.
             if (this.cardsPlayed.getItemById(card_id) != null) {
                 var card_div = this.cardsPlayed.getItemDivId(card_id);
                 this.sharePiles[player_id][rr-1].addToStockWithId(card_type, card_id, card_div);
-                to_div = this.sharePiles[player_id][rr-1].getItemDivId(card_id);
+                var to_div = this.sharePiles[player_id][rr-1].getItemDivId(card_id);
                 this.cardsPlayed.removeFromStockById(card_id, to_div);
             } else {
                 var card_div = this.trickLane.getItemDivId(card_id);
                 this.sharePiles[player_id][rr-1].addToStockWithId(card_type, card_id, card_div);
-                to_div = this.sharePiles[player_id][rr-1].getItemDivId(card_id);
+                var to_div = this.sharePiles[player_id][rr-1].getItemDivId(card_id);
                 this.trickLane.removeFromStockById(card_id, to_div);
             }
-            dojo.addClass(to_div, "nice_card");
         },
 
         /**
@@ -758,7 +757,6 @@ function (dojo, declare) {
             this.railWays[rr-1].item_type[card_type].weight = wt;
 
             this.railWays[rr-1].addToStockWithId(card_type, card_id, card_div);
-            dojo.addClass(notif.args.railway+"_item_"+card_id, "nice_card");
         },
 
         /**
@@ -783,7 +781,6 @@ function (dojo, declare) {
             this.railWays[rr-1].item_type[card_type].weight = wt;
 
             this.railWays[rr-1].addToStockWithId(card_type, card_id, trick_div);
-            dojo.addClass(notif.args.railway+"_item_"+card_id, "nice_card");
         },
 
     });             

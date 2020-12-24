@@ -49,9 +49,18 @@
 
         // this will inflate our player block with actual players data
         $this->page->begin_block($template, 'SHARES');
+        $this->page->begin_block($template, 'PLAYERS');
         foreach ( $players as $player_id => $player) {
+            $this->page->reset_subblocks( 'SHARES');
 
-            $this->page->insert_block("SHARES", array (
+            foreach ($RAILCOS as $rr) {
+                $this->page->insert_block("SHARES", array(
+                    "PLAYER" => $player_id,
+                    "RR" => $rr
+                ));
+            }
+
+            $this->page->insert_block("PLAYERS", array (
                 "PLAYER" => $player_id,
                 "PLAYER_NAME" => $player['player_name']
             ));
