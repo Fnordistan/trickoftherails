@@ -69,6 +69,14 @@
     display: flex;
 }
 
+.noselect {
+    -webkit-touch-callout:none;
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
+}
+
 .rr_lane_logo {
     margin-top: 5px;
     background-position: top;

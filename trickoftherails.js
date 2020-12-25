@@ -82,7 +82,11 @@ function (dojo, declare) {
             // Player hand
             this.playerHand = new ebg.stock();
             this.playerHand.create( this, $('myhand'), this.cardwidth, this.cardheight );
-            this.playerHand.setSelectionMode(1);
+            if (this.isCurrentPlayerActive() && this.checkAction('playCard', true)) {
+                this.playerHand.setSelectionMode(1);
+            } else {
+                this.playerHand.setSelectionMode(0);
+            }
             this.playerHand.image_items_per_row = COLS;
             this.playerHand.extraClasses='nice_card';
             // hitch adding railroad as a class to each hand
@@ -122,7 +126,7 @@ function (dojo, declare) {
 
                 // create Stock items for each share pile
                 var rr_shares = rr+"_shares";
-                // Setting up player boards
+                // Setting up player shares
                 for( const player_id in gamedatas.players ) {
                     var shares = new ebg.stock();
                     var share_id = player_id+'_'+rr_shares;
@@ -264,8 +268,6 @@ function (dojo, declare) {
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
-
-            console.log( "Ending game setup" );
         },
 
         ///////////////////////////////////////////////////
@@ -276,8 +278,6 @@ function (dojo, declare) {
         //
         onEnteringState: function( stateName, args )
         {
-            console.log( 'Entering state: '+stateName );
-            
             switch( stateName )
             {
             
@@ -302,8 +302,6 @@ function (dojo, declare) {
         //
         onLeavingState: function( stateName )
         {
-            console.log( 'Leaving state: '+stateName );
-            
             switch( stateName )
             {
             
@@ -334,18 +332,14 @@ function (dojo, declare) {
             {            
                 switch( stateName )
                 {
-/*               
-                 Example:
- 
-                 case 'myGameState':
+                 case 'playerTurn':
+                     this.playerHand.setSelectionMode(1);
                     
-                    // Add 3 action buttons in the action status bar:
-                    
-                    this.addActionButton( 'button_1_id', _('Button 1 label'), 'onMyMethodToCall1' ); 
-                    this.addActionButton( 'button_2_id', _('Button 2 label'), 'onMyMethodToCall2' ); 
-                    this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' ); 
+                    // // Add 3 action buttons in the action status bar:
+                    // this.addActionButton( 'button_1_id', _('Button 1 label'), 'onMyMethodToCall1' ); 
+                    // this.addActionButton( 'button_2_id', _('Button 2 label'), 'onMyMethodToCall2' ); 
+                    // this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' ); 
                     break;
-*/
                 }
             }
         },        
@@ -625,19 +619,6 @@ function (dojo, declare) {
         */
         setupNotifications: function()
         {
-            console.log( 'notifications subscriptions setup' );
-            
-            // TODO: here, associate your game notifications with local methods
-            
-            // Example 1: standard notification handling
-            // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
-            
-            // Example 2: standard notification handling + tell the user interface to wait
-            //            during 3 seconds after calling the method in order to let the players
-            //            see what is happening in the game.
-            // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
-            // this.notifqueue.setSynchronous( 'cardPlayed', 3000 );
-            // 
             dojo.subscribe('cardPlayed', this, "notif_cardPlayed");
             dojo.subscribe('discardedShare', this, "notif_discardedShare");
             dojo.subscribe('reservationSwapped', this, "notif_reservationSwapped");
@@ -660,10 +641,12 @@ function (dojo, declare) {
 
             if( notif.args.player_id != this.player_id )
             {
+                console.log('someone else played a card');
                 // Some opponent played a card
                 this.cardsPlayed.addToStockWithId(card_type, card_id, 'player_board_'+notif.args.player_id);
                 // // highlight all my cards of that color
                 // dojo.query('#myhand .'+RAILROADS[rr-1]).style('opacity', 0.5);
+                // enable selection if it's my turn next
             }
             else
             {
@@ -673,7 +656,10 @@ function (dojo, declare) {
                     this.cardsPlayed.addToStockWithId(card_type, card_id, 'myhand_item_'+card_id);
                     this.playerHand.removeFromStockById(card_id, 'currenttrick_item_'+card_id);
                 }
+                // now disable my hand again
+                this.playerHand.setSelectionMode(0);
             }
+            console.log(this.isCurrentPlayerActive());
         },
 
         /**
