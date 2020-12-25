@@ -78,19 +78,26 @@ function (dojo, declare) {
                 var player = gamedatas.players[player_id];
                 this.sharePiles[player_id] = [];
             }
+
+            // where cards are played for the current trick
+            // must come before player hand!
+            this.cardsPlayed = new ebg.stock();
+            this.cardsPlayed.create(this, $('currenttrick'), this.cardwidth, this.cardheight );
+            this.cardsPlayed.setSelectionMode(0);
+            this.cardsPlayed.extraClasses='nice_card';
+            this.cardsPlayed.image_items_per_row = COLS;
+            // hitch adding railroad as a class to each hand
+            this.cardsPlayed.onItemCreate = dojo.hitch(this, this.setUpRRCard);
+
             
             // Player hand
             this.playerHand = new ebg.stock();
             this.playerHand.create( this, $('myhand'), this.cardwidth, this.cardheight );
-            if (this.isCurrentPlayerActive() && this.checkAction('playCard', true)) {
-                this.playerHand.setSelectionMode(1);
-            } else {
-                this.playerHand.setSelectionMode(0);
-            }
             this.playerHand.image_items_per_row = COLS;
             this.playerHand.extraClasses='nice_card';
             // hitch adding railroad as a class to each hand
             this.playerHand.onItemCreate = dojo.hitch(this, this.setUpRRCard);
+            this.updateHand(this.isCurrentPlayerActive() && this.checkAction('playCard', true));
 
             // Now set up trick lane
             this.trickLane = new ebg.stock();
@@ -99,15 +106,6 @@ function (dojo, declare) {
             this.trickLane.image_items_per_row = COLS;
             this.trickLane.extraClasses='nice_card';
             this.trickLane.onItemCreate = dojo.hitch(this, this.setUpTrickLaneCard);
-
-            // where cards are played for the current trick
-            this.cardsPlayed = new ebg.stock();
-            this.cardsPlayed.create(this, $('currenttrick'), this.cardwidth, this.cardheight );
-            this.cardsPlayed.setSelectionMode(0);
-            this.cardsPlayed.extraClasses='nice_card';
-            this.cardsPlayed.image_items_per_row = COLS;
-            // hitch adding railroad as a class to each hand
-            this.cardsPlayed.onItemCreate = dojo.hitch(this, this.setUpRRCard);
 
             // create the Stock items for all five railways
             this.railWays = [];
@@ -281,18 +279,11 @@ function (dojo, declare) {
             switch( stateName )
             {
             
-            /* Example:
-            
-            case 'myGameState':
-            
-                // Show some HTML block at this game state
-                dojo.style( 'my_html_block_id', 'display', 'block' );
-                
+                case 'playerTurn':
+                    this.updateHand(this.isCurrentPlayerActive());
                 break;
-           */
-           
-           
-            case 'dummmy':
+
+                case 'dummmy':
                 break;
             }
         },
@@ -305,16 +296,9 @@ function (dojo, declare) {
             switch( stateName )
             {
             
-            /* Example:
-            
-            case 'myGameState':
-            
-                // Hide the HTML block we are displaying only during this game state
-                dojo.style( 'my_html_block_id', 'display', 'none' );
-                
+            case 'playerTurn':
+                this.updateHand(false);
                 break;
-           */
-           
            
             case 'dummmy':
                 break;
@@ -328,20 +312,20 @@ function (dojo, declare) {
         {
             console.log( 'onUpdateActionButtons: '+stateName );
                       
-            if( this.isCurrentPlayerActive() )
-            {            
-                switch( stateName )
-                {
-                 case 'playerTurn':
-                     this.playerHand.setSelectionMode(1);
+            // if( this.isCurrentPlayerActive() )
+            // {            
+            //     switch( stateName )
+            //     {
+            //      case 'playerTurn':
+            //          this.updateHand(true);
                     
-                    // // Add 3 action buttons in the action status bar:
-                    // this.addActionButton( 'button_1_id', _('Button 1 label'), 'onMyMethodToCall1' ); 
-                    // this.addActionButton( 'button_2_id', _('Button 2 label'), 'onMyMethodToCall2' ); 
-                    // this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' ); 
-                    break;
-                }
-            }
+            //         // // Add 3 action buttons in the action status bar:
+            //         // this.addActionButton( 'button_1_id', _('Button 1 label'), 'onMyMethodToCall1' ); 
+            //         // this.addActionButton( 'button_2_id', _('Button 2 label'), 'onMyMethodToCall2' ); 
+            //         // this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' ); 
+            //         break;
+            //     }
+            // }
         },        
 
         ///////////////////////////////////////////////////
@@ -506,6 +490,55 @@ function (dojo, declare) {
             this.addTooltip( loconode, _(tooltip), '');
         },
 
+        /**
+         * Update the cards in this player's hand - assumes we have already determined if
+         */
+        updateHand: function(is_current_player) {
+            if (is_current_player) {
+                this.playerHand.setSelectionMode(1);
+
+                if (this.cardsPlayed.count() != 0) {
+                    var leadcard = this.cardsPlayed.items[0];
+                    var [rr,val] = this.getTypeAndValue(leadcard.type);
+                    console.log("RR lead is " + RR_PREFIXES[rr-1]);
+
+                    var has_trick_color = false;
+                    for (const c of this.playerHand.getAllItems()) {
+                        var cid = c.id;
+                        var ctype = c.type;
+                        var [crr,cval] = this.getTypeAndValue(ctype);
+                        var cdiv = this.playerHand.getItemDivId(cid);
+                        if (crr == rr) {
+                            has_trick_color = true;
+                            dojo.addClass(cdiv, "trick_color");
+                            dojo.removeClass(cdiv, "noselect");
+                        } else {
+                            dojo.addClass(cdiv, "noselect");
+                            dojo.removeClass(cdiv, "trick_color");
+                        }
+                    }
+                    // if we don't have any of the right color,
+                    // we have to go back and remove the noselect
+                    if (!has_trick_color) {
+                        for (const c2 of this.playerHand.getAllItems()) {
+                            var cdiv2 = this.playerHand.getItemDivId(c2.id);
+                            dojo.addClass(cdiv2, "trick_color");
+                            dojo.removeClass(cdiv2, "noselect");
+                        }
+                    }
+                }
+            } else {
+                // cleanup any previous selection chrome
+                for (const c of this.playerHand.getAllItems()) {
+                    var cdiv = this.playerHand.getItemDivId(c.id);
+                    dojo.removeClass(cdiv, "trick_color");
+                    dojo.removeClass(cdiv, "noselect");
+                }
+
+                this.playerHand.setSelectionMode(0);
+            }
+        },
+
         ///////////////////////////////////////////////////
         //// Player's action
         
@@ -641,12 +674,10 @@ function (dojo, declare) {
 
             if( notif.args.player_id != this.player_id )
             {
-                console.log('someone else played a card');
                 // Some opponent played a card
                 this.cardsPlayed.addToStockWithId(card_type, card_id, 'player_board_'+notif.args.player_id);
                 // // highlight all my cards of that color
                 // dojo.query('#myhand .'+RAILROADS[rr-1]).style('opacity', 0.5);
-                // enable selection if it's my turn next
             }
             else
             {
@@ -657,7 +688,7 @@ function (dojo, declare) {
                     this.playerHand.removeFromStockById(card_id, 'currenttrick_item_'+card_id);
                 }
                 // now disable my hand again
-                this.playerHand.setSelectionMode(0);
+                this.updateHand(false);
             }
             console.log(this.isCurrentPlayerActive());
         },

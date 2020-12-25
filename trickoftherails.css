@@ -69,14 +69,6 @@
     display: flex;
 }
 
-.noselect {
-    -webkit-touch-callout:none;
-    -webkit-user-select:none;
-    -moz-user-select:none;
-    -ms-user-select:none;
-    user-select:none;
-}
-
 .rr_lane_logo {
     margin-top: 5px;
     background-position: top;
@@ -114,6 +106,21 @@
     -o-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
     box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
     filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
+}
+
+.noselect {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.trick_color {
+    border: 4px solid #E9B3A7;
+}
+
+.trick_color:hover {
+    outline: none;
+    border-color: #AF4B35;
+    box-shadow: 0 0 10px #AF4B35;
 }
 
 #b_and_o_logo {
