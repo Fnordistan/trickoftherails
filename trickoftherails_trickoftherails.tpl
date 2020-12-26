@@ -39,9 +39,9 @@
     <div id="{RR}_lane" class="whiteblock rr_lane">
         <div id="{RR}_logo" class="rr_lane_logo"></div>
         <div id="{RR}_locomotive" class="locomotive_slot"></div>
-        <div id="{RR}_start" class="railway_endpoint"></div>
+        <div id="{RR}_start" class="railhouse"></div>
         <div id="{RR}_railway"></div>
-        <div id="{RR}_end" class="railway_endpoint"></div>
+        <div id="{RR}_end" class="railhouse"></div>
     </div>
     <!-- END RAILROAD -->
 </div>
@@ -50,10 +50,9 @@
 <script type="text/javascript">
 
 // Javascript HTML templates
+// var jstpl_railhouse_active = '<div id="${railh}_${end}" style="background-size: 675px 337.5px; background-image: url(img/railhouse_sprites.png); background-repeat: no-repeat; background-position: ${x}px ${y}px; width: 112.5px; height: 112.5px;"></div>';
 
-// var jstpl_cardontable = '<div class="cardontable nice_card" style="background-position:-${x}px -${y}px">\
-//                         </div>';
-// 
+
 </script>  
 
 {OVERALL_GAME_FOOTER}

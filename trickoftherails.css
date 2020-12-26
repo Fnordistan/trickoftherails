@@ -93,13 +93,13 @@
     outline: 1px solid red;
 }
 
-.railway_endpoint {
-    background-size: 50px 50px;
-    background-position: center;
-    background-image: url(img/railhouse.png);
+.railhouse {
+    background-size: 675px 337.5px;
+    background-image: url(img/railhouse_sprites.png);
     background-repeat: no-repeat;
-    width: 114px;
-    height: 171px;
+    background-position: 0px 25px;
+    width: 112.5px;
+    height: 112.5px;
 }
 
 .nice_card {
@@ -112,7 +112,7 @@
     filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
 }
 
-.card_played_1 {
+.card_played_not_lead {
     transform: translate(15px, 0);
 }
 

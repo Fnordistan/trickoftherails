@@ -258,7 +258,7 @@ function (dojo, declare) {
                 var handle3 = dojo.connect(loconode, 'mouseleave', this, 'onLocomotiveSlotDeactivate');
             }
 
-            for (endnode of dojo.query('.railway_endpoint')) {
+            for (endnode of dojo.query('.railhouse')) {
                 dojo.connect(endnode, 'onclick', this, 'onEndpointSelected');
                 dojo.connect(endnode, 'mouseenter', this, 'onEndpointActivate');
                 dojo.connect(endnode, 'mouseleave', this, 'onEndpointDeactivate');
@@ -285,10 +285,16 @@ function (dojo, declare) {
                     this.updateHand(this.isCurrentPlayerActive());
                     this.updateCardsPlayed();
                 break;
-                // case 'addLocomotive':
-                //     this.updateLocomotiveSlots(this.isCurrentPlayerActive());
-                // break;
-
+                case 'addRailway':
+                    if (this.isCurrentPlayerActive()) {
+                        this.updateRailhouses(false);
+                    }
+                break;
+                case 'addCity':
+                    if (this.isCurrentPlayerActive()) {
+                        this.updateRailhouses(true);
+                    }
+                break;
                 case 'dummmy':
                 break;
             }
@@ -306,7 +312,10 @@ function (dojo, declare) {
                 this.updateHand(false);
                 this.updateCardsPlayed();
                 break;
-           
+            case 'addRailway':
+            case 'addCity':
+                dojo.query(".railhouse").removeClass("railhouse_active");
+                break;
             case 'dummmy':
                 break;
             }               
@@ -528,21 +537,6 @@ function (dojo, declare) {
         },
 
         /**
-         * For determining the railway line we can add a card to.
-         * It should be the current [0] location in the cardsPlayed lane.
-         * Returns the number of the rr company, or 0 if no card in cardsplayed.
-         */
-        getCurrentCardPlayedRR: function() {
-            if (this.cardsPlayed.count() == 0) {
-                return 0;
-            } else {
-                var card = this.cardsPlayed.items[0];
-                var [rr,val] = this.getTypeAndValue(card.type);
-                return rr;
-            }
-        },
-
-        /**
          * Highlights the lead and moves over the remaining cards in the cardsPlayed area.
          */
         updateCardsPlayed: function() {
@@ -555,9 +549,44 @@ function (dojo, declare) {
                     var [rr,val] = this.getTypeAndValue(card.type);
                     dojo.style(card_div, {"border": "2px solid white", "box-shadow": "0px 0px 2px 3px "+RR_COLORS[rr-1]});
                 } else {
-                    dojo.addClass(card_div, "card_played_1");
+                    dojo.addClass(card_div, "card_played_not_lead");
                 }
+            }
+        },
 
+        /**
+         * Activate eligible railhouse icons if this is the current player.
+         * 
+         * @param {*} is_city
+         */
+        updateRailhouses: function(is_city) {
+            if (is_city) {
+                // activate all railhouses
+                for (var i = 0; i < 5; i++) {
+                    var railhouse_start = RR_PREFIXES[i]+"_start";
+                    var railhouse_end = RR_PREFIXES[i]+"_end";
+                    dojo.style(railhouse_start, "background-position", -112.5*(i+1)+"px 25px");
+                    dojo.style(railhouse_end, "background-position", -112.5*(i+1)+"px 25px");
+                }
+            } else {
+                // if we're adding the card played, it's only the card from that line
+                var railcard = this.cardsPlayed.items[0];
+                var [rr,val] = this.getTypeAndValue(railcard.type);
+            }
+        },
+
+        /**
+         * For determining the railway line we can add a card to.
+         * It should be the current [0] location in the cardsPlayed lane.
+         * Returns the number of the rr company, or 0 if no card in cardsplayed.
+         */
+        getCurrentCardPlayedRR: function() {
+            if (this.cardsPlayed.count() == 0) {
+                return 0;
+            } else {
+                var card = this.cardsPlayed.items[0];
+                var [rr,val] = this.getTypeAndValue(card.type);
+                return rr;
             }
         },
 
@@ -666,10 +695,14 @@ function (dojo, declare) {
             }
         },
 
+        /**
+         * Checks 
+         * @param {*} event 
+         */
         onEndpointActivate : function(event) {
             var activate = false;
+            var endpoint_id = event.target.id;
             if (this.checkAction('addRailwayCard', true)) {
-                var endpoint_id = event.target.id;
                 var ix = endpoint_id.lastIndexOf('_');
                 var railway = endpoint_id.substring(0, ix);
                 var rr = this.getCurrentCardPlayedRR();
