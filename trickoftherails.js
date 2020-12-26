@@ -96,7 +96,6 @@ function (dojo, declare) {
             this.playerHand.extraClasses='nice_card';
             // hitch adding railroad as a class to each hand
             this.playerHand.onItemCreate = dojo.hitch(this, this.setUpRRCard);
-            this.updateHand(this.isCurrentPlayerActive() && this.checkAction('playCard', true));
 
             // Now set up trick lane
             this.trickLane = new ebg.stock();
@@ -194,6 +193,7 @@ function (dojo, declare) {
                 var value = mycard.type_arg;
                 this.playerHand.addToStockWithId(this.getUniqueTypeForCard(rr, value), mycard.id);
             }
+            this.updateHand(this.isCurrentPlayerActive() && this.checkAction('playCard', true));
 
             // everyone's stock shares
             for (const s in gamedatas.shares) {
@@ -214,6 +214,7 @@ function (dojo, declare) {
                 this.cardsPlayed.item_type[ctype].weight = parseInt(tcard.location_arg);
                 this.cardsPlayed.addToStockWithId(ctype, tcard.id);
             }
+            this.updateCardsPlayed();
 
             // the trick lane
             // Special counter for Reservation cards
@@ -280,6 +281,7 @@ function (dojo, declare) {
             
                 case 'playerTurn':
                     this.updateHand(this.isCurrentPlayerActive());
+                    this.updateCardsPlayed();
                 break;
 
                 case 'dummmy':
@@ -297,6 +299,7 @@ function (dojo, declare) {
             
             case 'playerTurn':
                 this.updateHand(false);
+                this.updateCardsPlayed();
                 break;
            
             case 'dummmy':
@@ -489,7 +492,10 @@ function (dojo, declare) {
         },
 
         /**
-         * Update the cards in this player's hand - assumes we have already determined if this is current player
+         * Update the cards in this player's hand - assumes we have already determined if this is current player.
+         * Highlights cards that are of the proper company and adds not-allowed cursor to others.
+         * 
+         * Must be activated on entry and exit of playerTurn, to switch selectability on and off.
          */
         updateHand: function(is_current_player) {
             if (is_current_player) {
@@ -534,13 +540,12 @@ function (dojo, declare) {
 
                 this.playerHand.setSelectionMode(0);
             }
-            this.styleCardsPlayed();
         },
 
         /**
-         * Gets the first card in cardsplayed and styles it
+         * Highlights the lead and moves over the remaining cards in the cardsPlayed area.
          */
-        styleCardsPlayed: function() {
+        updateCardsPlayed: function() {
             var playct = this.cardsPlayed.count();
             // now style the lead card
             for (var i = 0; i < playct; i++) {

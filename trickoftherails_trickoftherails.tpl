@@ -23,7 +23,7 @@
 </div>
 
 <div id="currenttrick_wrap" class="whiteblock">
-    <div class="lane_header">Trick Lead</div>
+    <div class="lane_header">Lead</div>
     <div id="currenttrick"></div>
 </div>
 
@@ -33,7 +33,7 @@
 </div>
 
 <div id="rr_lanes_container">
-    <div class="lane_header">Railroads</div>
+    <div class="lane_header">Railway Lines</div>
 
     <!-- BEGIN RAILROAD -->
     <div id="{RR}_lane" class="whiteblock rr_lane">
