@@ -86,7 +86,7 @@ function (dojo, declare) {
             this.cardsPlayed.image_items_per_row = COLS;
             // this.cardsPlayed.item_margin = 15;
             // hitch adding railroad as a class to each hand
-            this.cardsPlayed.onItemCreate = dojo.hitch(this, this.setUpRRCard);
+            this.cardsPlayed.onItemCreate = dojo.hitch(this, this.setUpCard);
 
             
             // Player hand
@@ -95,7 +95,7 @@ function (dojo, declare) {
             this.playerHand.image_items_per_row = COLS;
             this.playerHand.extraClasses='nice_card';
             // hitch adding railroad as a class to each hand
-            this.playerHand.onItemCreate = dojo.hitch(this, this.setUpRRCard);
+            this.playerHand.onItemCreate = dojo.hitch(this, this.setUpCard);
 
             // Now set up trick lane
             this.trickLane = new ebg.stock();
@@ -103,7 +103,7 @@ function (dojo, declare) {
             this.trickLane.setSelectionMode(0);
             this.trickLane.image_items_per_row = COLS;
             this.trickLane.extraClasses='nice_card';
-            this.trickLane.onItemCreate = dojo.hitch(this, this.setUpTrickLaneCard);
+            this.trickLane.onItemCreate = dojo.hitch(this, this.setUpCard);
 
             // create the Stock items for all five railways
             this.railWays = [];
@@ -115,7 +115,7 @@ function (dojo, declare) {
                 railway.setSelectionMode(0);
                 railway.image_items_per_row = COLS;
                 railway.extraClasses='nice_card';
-                railway.onItemCreate = dojo.hitch(this, this.setUpRRCard);
+                railway.onItemCreate = dojo.hitch(this, this.setUpCard);
                 // for some reason they display vertically in rr_lane if this isn't set
                 railway.autowidth = true;
                 this.railWays.push(railway);
@@ -132,7 +132,7 @@ function (dojo, declare) {
                     shares.autowidth = true;
                     shares.extraClasses='nice_card';
                     shares.setOverlap( 25, 0 );
-                    shares.onItemCreate = dojo.hitch(this, this.setUpRRCard);
+                    shares.onItemCreate = dojo.hitch(this, this.setUpCard);
                     this.sharePiles[player_id].push(shares);
                 }
             }
@@ -250,16 +250,18 @@ function (dojo, declare) {
                 rw++;
             }
 
-            // dojo.query('.stockitem').addClass("nice_card");
-
             dojo.connect( this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged' );
 
             for (loconode of dojo.query('.locomotive_slot')) {
                 var handle = dojo.connect(loconode, 'onclick', this, 'onLocomotiveSelected');
+                var handle2 = dojo.connect(loconode, 'mouseenter', this, 'onLocomotiveSlotActivate');
+                var handle3 = dojo.connect(loconode, 'mouseleave', this, 'onLocomotiveSlotDeactivate');
             }
 
             for (endnode of dojo.query('.railway_endpoint')) {
                 dojo.connect(endnode, 'onclick', this, 'onEndpointSelected');
+                dojo.connect(endnode, 'mouseenter', this, 'onEndpointActivate');
+                dojo.connect(endnode, 'mouseleave', this, 'onEndpointDeactivate');
             }
 
             dojo.connect(dojo.byId('shares_button'), 'onclick', this, 'onShowShares');
@@ -283,6 +285,9 @@ function (dojo, declare) {
                     this.updateHand(this.isCurrentPlayerActive());
                     this.updateCardsPlayed();
                 break;
+                // case 'addLocomotive':
+                //     this.updateLocomotiveSlots(this.isCurrentPlayerActive());
+                // break;
 
                 case 'dummmy':
                 break;
@@ -358,25 +363,52 @@ function (dojo, declare) {
             return [Math.floor(card_type/12)+1, (card_type % 12) +1];
         },
 
+
         /**
-         * Each card invokes this when added to a player hand or the RR.
-         * Adds tooltips and a class equal to the name of the RR.
+         * 
          * @param {*} card_div 
-         * @param {*} card_type
+         * @param {*} card_type 
          * @param {*} myhand_item 
          */
-        setUpRRCard: function(card_div, card_type, myhand_item) {
-               // Add a special tooltip on the card:
-               var [type, type_arg] = this.getTypeAndValue(card_type);
-               var tooltip;
-               if (type_arg == STATION) {
-                   tooltip = RAILROADS[type-1]+ " Station";
-               } else {
-                   tooltip = RAILROADS[type-1] + " (" + type_arg + ")";
-               }
-               this.addTooltip( card_div.id, _(tooltip), '');
-                // add RR name to every class
-               dojo.addClass( card_div, RAILROADS[type-1]);
+        setUpCard: function(card_div, card_type, myhand_item) {
+            // Add a special tooltip on the card:
+            var [type, type_arg] = this.getTypeAndValue(card_type);
+            var rri = type-1;
+            var tooltip;
+            if (type == ROWS) {
+                switch (type_arg) {
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                    case 5:
+                        tooltip = this.getLocomotiveLabel(type_arg);
+                        break;
+                    case 6:
+                        tooltip = "City (Pittsburgh)";
+                        break;
+                    case 7:
+                        tooltip = "City (Baltimore)";
+                        break;
+                    case 8:
+                        tooltip = "City (New York)";
+                        break;
+                    case 9:
+                        tooltip = "Reservation Card";
+                        break;
+                    default:
+                        throw new Error("Unknown Card: type="+type+", type_arg="+type_arg+")");
+                }
+            } else if (type_arg == STATION) {
+                tooltip = RAILROADS[rri]+ " Station";
+            } else if (type_arg == EXCHANGE) {
+                tooltip = RAILROADS[rri]+ " Exchange Card";
+            } else {
+                tooltip = RAILROADS[rri] + " (" + type_arg + ")";
+            }
+            this.addTooltip( card_div.id, _(tooltip), '');
+            // // add RR name to every class
+            // dojo.addClass( card_div, RAILROADS[rri]);
         },
 
         /**
@@ -421,54 +453,6 @@ function (dojo, declare) {
         },
 
         /**
-         * Add tooltip for the TrickLane cards
-         * @param {*} card_div 
-         * @param {*} card_id 
-         * @param {*} myhand_item 
-         */
-        setUpTrickLaneCard: function(card_div, card_id, myhand_item) {
-                // Add a special tooltip on the card:
-                var [type, type_arg] = this.getTypeAndValue(card_id);
-                // may be Exchange, Locomotive, City, or Reservation cards
-                var tooltip;
-                var is_rr = false;
-                if (type == ROWS) {
-                    switch (type_arg) {
-                        case 1:
-                        case 2:
-                        case 3:
-                        case 4:
-                        case 5:
-                            tooltip = this.getLocomotiveLabel(type_arg);
-                            break;
-                        case 6:
-                            tooltip = "City (Pittsburgh)";
-                            break;
-                        case 7:
-                            tooltip = "City (Baltimore)";
-                            break;
-                        case 8:
-                            tooltip = "City (New York)";
-                            break;
-                        case 9:
-                            tooltip = "Reservation Card";
-                            break;
-                        default:
-                            throw new Error("Unexpected Trick Lane Card: type="+type+", type_arg="+type_arg+")");
-                    }
-                } else if (type_arg == EXCHANGE) {
-                    tooltip = RAILROADS[type-1]+ " Exchange Card";
-                } else {
-                    // This is a RR card added to Trick Lane
-                    this.setUpRRCard(card_div, card_id, myhand_item);
-                    is_rr = true;
-                }
-                if (!is_rr) {
-                    this.addTooltip( card_div.id, _(tooltip), '');
-                }
-        },
-
-        /**
          * Put a Locomotive card in its railway.
          * @param {*} loc index of locomotive (type_arg)
          * @param {*} rr index of railway
@@ -496,6 +480,7 @@ function (dojo, declare) {
          * Highlights cards that are of the proper company and adds not-allowed cursor to others.
          * 
          * Must be activated on entry and exit of playerTurn, to switch selectability on and off.
+         * @param {*} is_current_player 
          */
         updateHand: function(is_current_player) {
             if (is_current_player) {
@@ -543,6 +528,21 @@ function (dojo, declare) {
         },
 
         /**
+         * For determining the railway line we can add a card to.
+         * It should be the current [0] location in the cardsPlayed lane.
+         * Returns the number of the rr company, or 0 if no card in cardsplayed.
+         */
+        getCurrentCardPlayedRR: function() {
+            if (this.cardsPlayed.count() == 0) {
+                return 0;
+            } else {
+                var card = this.cardsPlayed.items[0];
+                var [rr,val] = this.getTypeAndValue(card.type);
+                return rr;
+            }
+        },
+
+        /**
          * Highlights the lead and moves over the remaining cards in the cardsPlayed area.
          */
         updateCardsPlayed: function() {
@@ -553,7 +553,7 @@ function (dojo, declare) {
                 var card_div = this.cardsPlayed.getItemDivId(card.id);
                 if (i == 0) {
                     var [rr,val] = this.getTypeAndValue(card.type);
-                    dojo.style(card_div, {"border": "2px solid white", "box-shadow": "0px 0px 5px 5px "+RR_COLORS[rr-1]});
+                    dojo.style(card_div, {"border": "2px solid white", "box-shadow": "0px 0px 2px 3px "+RR_COLORS[rr-1]});
                 } else {
                     dojo.addClass(card_div, "card_played_1");
                 }
@@ -623,6 +623,26 @@ function (dojo, declare) {
         },
 
         /**
+         * Light up Locomotive slot being hovered over.
+         * @param {*} event 
+         */
+        onLocomotiveSlotActivate : function(event) {
+            if (this.checkAction('placeLocomotive', true)) {
+                var loc_id = event.target.id;
+                dojo.addClass(loc_id, "locomotive_slot_active");
+            }
+        },
+
+        /**
+         * Unhighlight slot.
+         * @param {*} event 
+         */
+        onLocomotiveSlotDeactivate : function(event) {
+            var loc_id = event.target.id;
+            dojo.removeClass(loc_id, "locomotive_slot_active");
+        },
+
+        /**
          * When player clicks a start or endpoint on railway.
          * @param {*} event 
          */
@@ -644,6 +664,31 @@ function (dojo, declare) {
                     lock: true 
                     }, this, function( result ) {  }, function( is_error) { } );
             }
+        },
+
+        onEndpointActivate : function(event) {
+            var activate = false;
+            if (this.checkAction('addRailwayCard', true)) {
+                var endpoint_id = event.target.id;
+                var ix = endpoint_id.lastIndexOf('_');
+                var railway = endpoint_id.substring(0, ix);
+                var rr = this.getCurrentCardPlayedRR();
+
+                if (RR_PREFIXES[rr-1] == railway) {
+                    activate = true;
+                }
+            } else if (this.checkAction('placeCity', true)) {
+                // can add City to any railway line
+                activate = true;
+            }
+            if (activate) {
+                dojo.style(endpoint_id, "outline", "2px solid red");
+            }
+        },
+
+        onEndpointDeactivate : function(event) {
+            var endpoint_id = event.target.id;
+            dojo.style(endpoint_id, "outline", "none");
         },
 
         /**

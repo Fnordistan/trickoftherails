@@ -87,10 +87,16 @@
     border-style: groove;
 }
 
+/** Only added during place locomotive */
+.locomotive_slot_active {
+    opacity: 1;
+    outline: 1px solid red;
+}
+
 .railway_endpoint {
     background-size: 50px 50px;
     background-position: center;
-    background-image: url(img/game_icon.png);
+    background-image: url(img/railhouse.png);
     background-repeat: no-repeat;
     width: 114px;
     height: 171px;

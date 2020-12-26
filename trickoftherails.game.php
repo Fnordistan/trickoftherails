@@ -642,7 +642,7 @@ class TrickOfTheRails extends Table
             }
 
             if ($ri == 0) {
-                throw new BgaVisibleSystemException( "No railway with empty locomotive slot found!" );
+                throw new BgaVisibleSystemException( "No railway line with empty locomotive slot found!" );
             }
 
             // need to increment trick index to ∞ card
@@ -664,14 +664,14 @@ class TrickOfTheRails extends Table
         $railway = $this->railroads[$rr]['railway'];
 
         if (!$this->checkLocomotiveSlot($railway)) {
-            throw new BgaUserException( self::_( "You must choose a railway that does not already have a locomotive." ));
+            throw new BgaUserException( self::_( "You must choose a railway line that does not already have a locomotive." ));
         }
 
         // place it on location 0
         $this->cards->moveCard($lococard['id'], $railway, 0);
 
         // Notify all players about Locomotive placement
-        self::notifyAllPlayers('locomotivePlaced', clienttranslate('${player_name} placed ${locomotive} on ${railway}'), array (
+        self::notifyAllPlayers('locomotivePlaced', clienttranslate('${player_name} placed ${locomotive} on the ${railway} line'), array (
             'i18n' => array ('locomotive', 'railroad'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
@@ -705,7 +705,7 @@ class TrickOfTheRails extends Table
         }
 
         // Notify all players about Locomotive placement
-        self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} added (${value}) to ${endpoint} of ${railroad}'), array (
+        self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} added (${value}) to ${endpoint} of the ${railroad} line'), array (
             'i18n' => array ('endpoint', 'railroad'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
@@ -743,7 +743,7 @@ class TrickOfTheRails extends Table
         }
 
         // Notify all players about City placement
-        self::notifyAllPlayers('cityAdded', clienttranslate('${player_name} added ${city} to ${endpoint} of ${railroad}'), array (
+        self::notifyAllPlayers('cityAdded', clienttranslate('${player_name} added ${city} to ${endpoint} of the ${railroad} line'), array (
             'i18n' => array ('city', 'endpoint', 'railroad'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
