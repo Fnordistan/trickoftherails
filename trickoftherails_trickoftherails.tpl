@@ -1,7 +1,7 @@
 {OVERALL_GAME_HEADER}
 
 <div id="myhand_wrap" class="whiteblock">
-    <h3>{MY_HAND}</h3>
+    <div class="lane_header">{MY_HAND}</div>
     <div id="myhand"></div>
 </div>
 
@@ -13,7 +13,7 @@
     <div id="shares_area" class="shares_lane">
         <!-- BEGIN PLAYERS -->
         <div id="{PLAYER}_shares" class="whiteblock player_shares">
-            <h1 class="player_shares_heading">{PLAYER_NAME}</h1>
+            <div class="lane_header">{PLAYER_NAME}</div>
             <!-- BEGIN SHARES -->
             <div id="{PLAYER}_{RR}_shares" class="shares"></div>
             <!-- END SHARES -->
@@ -23,17 +23,17 @@
 </div>
 
 <div id="currenttrick_wrap" class="whiteblock">
-    <h3>Trick Lead</h3>
+    <div class="lane_header">Trick Lead</div>
     <div id="currenttrick"></div>
 </div>
 
 <div id="tricklane_wrap" class="whiteblock">
-    <h3>Trick Lane</h3>
+    <div class="lane_header">Trick Lane</div>
     <div id="tricklane"></div>
 </div>
 
 <div id="rr_lanes_container">
-    <h3>Railroads</h3>
+    <div class="lane_header">Railroads</div>
 
     <!-- BEGIN RAILROAD -->
     <div id="{RR}_lane" class="whiteblock rr_lane">

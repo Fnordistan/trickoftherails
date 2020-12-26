@@ -25,6 +25,7 @@ const NYC = 3;
 const PRR = 4;
 const RR_INDEXES = [B_O, C_O, ERIE, NYC, PRR];
 const RR_PREFIXES = ["b_and_o", "c_and_o", "erie", "nyc", "prr"];
+const RR_COLORS = ['#004D7A', '#80933F', '#EDB630', '#B8B7AE', '#9A1D20'];
 const RAILROADS = ["B&O", "C&O", "Erie", "NYC", "PRR"];
 
 const RESERVATION = 9;
@@ -46,10 +47,7 @@ define([
 function (dojo, declare) {
     return declare("bgagame.trickoftherails", ebg.core.gamegui, {
         constructor: function(){
-            console.log('trickoftherails constructor');
-              
             // Here, you can init the global variables of your user interface
-            console.log('trick of the rails constructor');
             this.cardwidth = 114;
             this.cardheight = 171;
         },
@@ -86,6 +84,7 @@ function (dojo, declare) {
             this.cardsPlayed.setSelectionMode(0);
             this.cardsPlayed.extraClasses='nice_card';
             this.cardsPlayed.image_items_per_row = COLS;
+            // this.cardsPlayed.item_margin = 15;
             // hitch adding railroad as a class to each hand
             this.cardsPlayed.onItemCreate = dojo.hitch(this, this.setUpRRCard);
 
@@ -377,7 +376,6 @@ function (dojo, declare) {
                dojo.addClass( card_div, RAILROADS[type-1]);
         },
 
-
         /**
          * For tooltips for Locomotive cards
          * @param {*} type_arg 
@@ -491,7 +489,7 @@ function (dojo, declare) {
         },
 
         /**
-         * Update the cards in this player's hand - assumes we have already determined if
+         * Update the cards in this player's hand - assumes we have already determined if this is current player
          */
         updateHand: function(is_current_player) {
             if (is_current_player) {
@@ -500,7 +498,6 @@ function (dojo, declare) {
                 if (this.cardsPlayed.count() != 0) {
                     var leadcard = this.cardsPlayed.items[0];
                     var [rr,val] = this.getTypeAndValue(leadcard.type);
-                    console.log("RR lead is " + RR_PREFIXES[rr-1]);
 
                     var has_trick_color = false;
                     for (const c of this.playerHand.getAllItems()) {
@@ -536,6 +533,26 @@ function (dojo, declare) {
                 }
 
                 this.playerHand.setSelectionMode(0);
+            }
+            this.styleCardsPlayed();
+        },
+
+        /**
+         * Gets the first card in cardsplayed and styles it
+         */
+        styleCardsPlayed: function() {
+            var playct = this.cardsPlayed.count();
+            // now style the lead card
+            for (var i = 0; i < playct; i++) {
+                var card = this.cardsPlayed.items[i];
+                var card_div = this.cardsPlayed.getItemDivId(card.id);
+                if (i == 0) {
+                    var [rr,val] = this.getTypeAndValue(card.type);
+                    dojo.style(card_div, {"border": "2px solid white", "box-shadow": "0px 0px 5px 5px "+RR_COLORS[rr-1]});
+                } else {
+                    dojo.addClass(card_div, "card_played_1");
+                }
+
             }
         },
 
@@ -676,8 +693,6 @@ function (dojo, declare) {
             {
                 // Some opponent played a card
                 this.cardsPlayed.addToStockWithId(card_type, card_id, 'player_board_'+notif.args.player_id);
-                // // highlight all my cards of that color
-                // dojo.query('#myhand .'+RAILROADS[rr-1]).style('opacity', 0.5);
             }
             else
             {
@@ -690,7 +705,6 @@ function (dojo, declare) {
                 // now disable my hand again
                 this.updateHand(false);
             }
-            console.log(this.isCurrentPlayerActive());
         },
 
         /**

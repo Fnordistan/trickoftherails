@@ -48,13 +48,11 @@
 
 /********* You can start writing your CSS below this line: **********/
 
+/* For adding padding between cards and the text above */
+
 /* Hide by default */
 .shares_container {
     display: none;
-}
-
-.player_shares_heading {
-    text-align: center;
 }
 
 .shares_lane {
@@ -108,19 +106,39 @@
     filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
 }
 
+.card_played_1 {
+    transform: translate(15px, 0);
+}
+
 .noselect {
+    border: 2px gray solid;
+    border-style: inset;
     cursor: not-allowed;
-    opacity: 0.5;
+    box-shadow: 0px 0px 0px 0px rgba(0,0,0,0.4);
 }
 
 .trick_color {
-    border: 4px solid #E9B3A7;
+    border: 2px pink solid;
+    border-style: dotted;
+    /* -moz-box-shadow: 5px 5px 5px 0px rgba(255, 0, 0, 0.7);
+    -webkit-box-shadow: 5px 5px 5px 0px rgba(255, 0, 0, 0.7);
+    -o-box-shadow: 5px 5px 5px 0px rgba(255, 0, 0, 0.7); */
+    box-shadow: 5px 5px 8px 0px silver;
+    /* filter:progid:DXImageTransform.Microsoft.Shadow(color=#f75d5d, Direction=134, Strength=30); */
 }
 
 .trick_color:hover {
     outline: none;
-    border-color: #AF4B35;
-    box-shadow: 0 0 10px #AF4B35;
+    border-color: #cd0000;
+    box-shadow: 5px 5px 10px 0px #F8F2AB;
+}
+
+.lane_header {
+    text-align: left;
+    text-indent: 12px;
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 35px;
 }
 
 #b_and_o_logo {
