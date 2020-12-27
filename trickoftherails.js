@@ -28,6 +28,16 @@ const RR_PREFIXES = ["b_and_o", "c_and_o", "erie", "nyc", "prr"];
 const RR_COLORS = ['#004D7A', '#80933F', '#EDB630', '#B8B7AE', '#9A1D20'];
 const RAILROADS = ["B&O", "C&O", "Erie", "NYC", "PRR"];
 
+/**
+ * Enum for Railhouse icons.
+ * READY means it can be clicked, ACTIVE is when it's being hovered, DEFAULT is when it's not eligible to be clicked.
+ */
+const RAILHOUSE_BUTTON = {
+    READY : 'ready',
+    ACTIVE: 'active',
+    DEFAULT: 'default'
+}
+
 const RESERVATION = 9;
 const EXCHANGE = 11;
 const STATION = 12;
@@ -257,10 +267,10 @@ function (dojo, declare) {
                 var handle3 = dojo.connect(loconode, 'mouseleave', this, 'onLocomotiveSlotDeactivate');
             }
 
-            for (endnode of dojo.query('.railhouse')) {
-                dojo.connect(endnode, 'onclick', this, 'onEndpointSelected');
-                dojo.connect(endnode, 'mouseenter', this, 'onEndpointActivate');
-                dojo.connect(endnode, 'mouseleave', this, 'onEndpointDeactivate');
+            for (rh_node of dojo.query('.railhouse')) {
+                dojo.connect(rh_node, 'onclick', this, 'onRailhouseSelected');
+                dojo.connect(rh_node, 'mouseenter', this, 'onRailhouseActivate');
+                dojo.connect(rh_node, 'mouseleave', this, 'onRailhouseDeactivate');
             }
 
             dojo.connect(dojo.byId('shares_button'), 'onclick', this, 'onShowShares');
@@ -277,6 +287,7 @@ function (dojo, declare) {
         //
         onEnteringState: function( stateName, args )
         {
+            console.log("entering state: " + stateName);
             switch( stateName )
             {
             
@@ -300,6 +311,7 @@ function (dojo, declare) {
         //
         onLeavingState: function( stateName )
         {
+            console.log("leaving state: " + stateName);
             switch( stateName )
             {
             
@@ -550,32 +562,30 @@ function (dojo, declare) {
 
         /**
          * Activate eligible railhouse icons if this is the current player.
+         * Otherwise reset all to default.
          * 
-         * @param {*} is_city
+         * @param {*} is_city are we placing a city?
          */
         updateRailhouses: function(is_city) {
-            if (this.isCurrentPlayerActive()) {
-                if (is_city) {
-                    // activate all railhouses
-                    for (var i = 0; i < 5; i++) {
-                        var railhouse_start = RR_PREFIXES[i]+"_start";
-                        var railhouse_end = RR_PREFIXES[i]+"_end";
-                        dojo.style(railhouse_start, "background-position", -112.5*(i+1)+"px 25px");
-                        dojo.style(railhouse_end, "background-position", -112.5*(i+1)+"px 25px");
+            var mode = RAILHOUSE_BUTTON.DEFAULT;
+            for (var i = 0; i < 5; i++) {
+                var railhouse_start = RR_PREFIXES[i]+"_start";
+                var railhouse_end = RR_PREFIXES[i]+"_end";
+                var rri = i+1;
+                if (this.isCurrentPlayerActive()) {
+                    // for city, all endpoints are ready
+                    if (is_city) {
+                        mode = RAILHOUSE_BUTTON.READY;
+                    } else {
+                        // if we're adding the card played, it's only the railhouses from that line
+                        // all other cards should be deactivated
+                        var railcard = this.cardsPlayed.items[0];
+                        var [rr,val] = this.getTypeAndValue(railcard.type);
+                        mode = (rri == rr) ? RAILHOUSE_BUTTON.READY : RAILHOUSE_BUTTON.DEFAULT;
                     }
-                } else {
-                    // if we're adding the card played, it's only the card from that line
-                    var railcard = this.cardsPlayed.items[0];
-                    var [rr,val] = this.getTypeAndValue(railcard.type);
                 }
-    
-            } else {
-                for (var i = 0; i < 5; i++) {
-                    var railhouse_start = RR_PREFIXES[i]+"_start";
-                    var railhouse_end = RR_PREFIXES[i]+"_end";
-                    dojo.style(railhouse_start, "background-position", "0px 25px");
-                    dojo.style(railhouse_end, "background-position", "0px 25px");
-                }
+                this.setRailhouseButton(railhouse_start, rri, mode);
+                this.setRailhouseButton(railhouse_end, rri, mode);
             }
         },
 
@@ -694,18 +704,19 @@ function (dojo, declare) {
          * When player clicks a start or endpoint on railway.
          * @param {*} event 
          */
-        onEndpointSelected : function(event) {
+        onRailhouseSelected : function(event) {
             var endpoint_id = event.target.id;
             var ix = endpoint_id.lastIndexOf('_');
             var is_start = endpoint_id.endsWith("start");
-            var railway = endpoint_id.substring(0, ix);
 
-            if (this.checkAction('addRailwayCard', true)) {
+            // railway cards, check it's a valid endpoint
+            if (this.checkAction('addRailwayCard', true) && this.isEligibleRailhouse(event)) {
                 this.ajaxcall( "/trickoftherails/trickoftherails/addRailwayCard.html", { 
                     bStart: is_start,
                     lock: true 
                     }, this, function( result ) {  }, function( is_error) { } );
             } else if (this.checkAction('placeCity', true)) {
+                var railway = endpoint_id.substring(0, ix);
                 this.ajaxcall( "/trickoftherails/trickoftherails/placeCity.html", { 
                     sRR: railway,
                     bStart: is_start,
@@ -714,38 +725,56 @@ function (dojo, declare) {
             }
         },
 
+
+        /**
+         * Checks whether the Railhouse "touched" should be highlighted/unhighlighted
+         * depending on game state.
+         * @param {*} event 
+         * @returns boolean
+         */
+        isEligibleRailhouse: function(event) {
+            var eligible = false;
+            if (this.checkAction('addRailwayCard', true)) {
+                // can only add city to (my) current card played
+                var endpoint_id = event.target.id;
+                var ix = endpoint_id.lastIndexOf('_');
+                var railway = endpoint_id.substring(0, ix);
+                    var rr = this.getCurrentCardPlayedRR();
+                if (RR_PREFIXES[rr-1] == railway) {
+                    eligible = true;
+                }
+            } else if (this.checkAction('placeCity', true)) {
+                eligible = true;
+            }
+            return eligible;
+        },
+
         /**
          * Highlights a chosen endpoint.
          * @param {*} event 
          */
-        onEndpointActivate : function(event) {
-            var activate = false;
-            var endpoint_id = event.target.id;
-            var ix = endpoint_id.lastIndexOf('_');
-            var railway = endpoint_id.substring(0, ix);
-            var rr = this.getCurrentCardPlayedRR();
-            if (this.checkAction('addRailwayCard', true)) {
-                if (RR_PREFIXES[rr-1] == railway) {
-                    activate = true;
-                }
-            } else if (this.checkAction('placeCity', true)) {
-                // can add City to any railway line
-                activate = true;
-            }
-            if (activate) {
+        onRailhouseActivate : function(event) {
+            if (this.isEligibleRailhouse(event)) {
+                var endpoint_id = event.target.id;
+                var ix = endpoint_id.lastIndexOf('_');
+                var railway = endpoint_id.substring(0, ix);
                 var rri = this.getIndexByRR(railway);
-                console.log("activating " + railway + " " + rri);
-                dojo.style(endpoint_id, "background-position", -112.5*(rri+1)+"px -87.5px");
+                this.setRailhouseButton(endpoint_id, rri+1, RAILHOUSE_BUTTON.ACTIVE);
             }
         },
 
-        onEndpointDeactivate : function(event) {
-            var endpoint_id = event.target.id;
-            // restore the active icon
-            var ix = endpoint_id.lastIndexOf('_');
-            var railway = endpoint_id.substring(0, ix);
-            var rri = this.getIndexByRR(railway);
-            dojo.style(endpoint_id, "background-position", -112.5*(rri+1)+"px 25px");
+        /**
+         * Puts a Railhouse back in READY state upon leaving.
+         */
+        onRailhouseDeactivate : function(event) {
+            if (this.isEligibleRailhouse(event)) {
+                var endpoint_id = event.target.id;
+                // restore the active icon
+                var ix = endpoint_id.lastIndexOf('_');
+                var railway = endpoint_id.substring(0, ix);
+                var rri = this.getIndexByRR(railway);
+                this.setRailhouseButton(endpoint_id, rri+1, RAILHOUSE_BUTTON.READY);
+            }
         },
 
         /**
@@ -759,6 +788,31 @@ function (dojo, declare) {
             var button_text = (sharedisplay == 'none') ? "Show Player Shares" : "Hide Player Shares";
             dojo.setStyle(dojo.byId('shares_wrapper'), 'display', sharedisplay);
             $('shares_button').innerHTML = _(button_text);
+        },
+
+
+        /**
+         * Sets the  appearance of an unselected railhouse.
+         * @param {*} railhouse_id the node id
+         * @param {*} rr index (1-5)
+         * @param mode should be a RailhouseButton MODE
+         */
+        setRailhouseButton: function(railhouse_id, rr, mode) {
+            var position_string = "0px 0px";
+            switch (mode) {
+                case RAILHOUSE_BUTTON.DEFAULT:
+                    position_string = "0px 0px";
+                    break;
+                case RAILHOUSE_BUTTON.READY:
+                    position_string = -112.5*rr+"px 0px";
+                    break;
+                case RAILHOUSE_BUTTON.ACTIVE:
+                    position_string = -112.5*rr+"px -112.5px";
+                    break;
+                default:
+                    console.log("ERROR: Unknown Railhouse Button mode: " + mode + " for " + railhouse_id + ": " + rr);
+            }
+            dojo.style(railhouse_id, "background-position", position_string);
         },
 
 
