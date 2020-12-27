@@ -47,6 +47,8 @@ const RESERVATION_CARD_TYPE = 68;
 
 const CARD_SPRITES = 'img/cards_sprites.jpg';
 
+const DISCARD = 'discarded_shares';
+
 define([
     "dojo","dojo/_base/declare","dojo/dom", "dojo/on",
     "ebg/core/gamegui",
@@ -85,6 +87,7 @@ function (dojo, declare) {
                 var player = gamedatas.players[player_id];
                 this.sharePiles[player_id] = [];
             }
+            this.sharePiles[DISCARD] = [];
 
             // where cards are played for the current trick
             // must come before player hand!
@@ -97,7 +100,6 @@ function (dojo, declare) {
             // hitch adding railroad as a class to each hand
             this.cardsPlayed.onItemCreate = dojo.hitch(this, this.setUpCard);
 
-            
             // Player hand
             this.playerHand = new ebg.stock();
             this.playerHand.create( this, $('myhand'), this.cardwidth, this.cardheight );
@@ -118,32 +120,20 @@ function (dojo, declare) {
             this.railWays = [];
             // this will be an array by rr_shares => player
             for (const rr of RR_PREFIXES) {
-                var railway = new ebg.stock();
-                railway.create(this, $(rr+'_railway'), this.cardwidth, this.cardheight );
-                railway.setSelectionMode(0);
-                railway.image_items_per_row = COLS;
-                railway.extraClasses='nice_card';
-                railway.onItemCreate = dojo.hitch(this, this.setUpCard);
-                // for some reason they display vertically in rr_lane if this isn't set
-                railway.autowidth = true;
-                this.railWays.push(railway);
+                var railroad = this.createRailroadStock(rr);
+                this.railWays.push(railroad);
 
                 // create Stock items for each share pile
                 var rr_shares = rr+"_shares";
                 // Setting up player shares
                 for( const player_id in gamedatas.players ) {
-                    var shares = new ebg.stock();
-                    var share_id = player_id+'_'+rr_shares;
-                    shares.create(this, $(share_id), this.cardwidth, this.cardheight );
-                    shares.setSelectionMode(0);
-                    shares.image_items_per_row = COLS;
-                    shares.autowidth = true;
-                    shares.extraClasses='nice_card';
-                    shares.setOverlap( 25, 0 );
-                    shares.onItemCreate = dojo.hitch(this, this.setUpCard);
+                    var shares = this.createPlayerSharesStock(player_id, rr_shares);
                     this.sharePiles[player_id].push(shares);
                 }
+                var discarded_shares = this.createPlayerSharesStock(DISCARD, rr_shares)
+                this.sharePiles[DISCARD].push(discarded_shares);
             }
+
 
             // Create card types
             for( var rr = 1; rr <= ROWS; rr++ )
@@ -204,9 +194,13 @@ function (dojo, declare) {
             this.updateHand(this.isCurrentPlayerActive() && this.checkAction('playCard', true));
 
             // everyone's stock shares
+            // also find the discarded shares
             for (const s in gamedatas.shares) {
                 var sharecard = gamedatas.shares[s];
                 var owner = sharecard.location_arg;
+                if (sharecard.location == 'discard') {
+                    owner = DISCARD;
+                }
                 var rr = sharecard.type;
                 var val = sharecard.type_arg;
                 var ctype = this.getUniqueTypeForCard(rr, val);
@@ -222,7 +216,6 @@ function (dojo, declare) {
                 this.cardsPlayed.item_type[ctype].weight = parseInt(tcard.location_arg);
                 this.cardsPlayed.addToStockWithId(ctype, tcard.id);
             }
-            this.updateCardsPlayed();
 
             // the trick lane
             // Special counter for Reservation cards
@@ -241,14 +234,15 @@ function (dojo, declare) {
 
             // the railway lines
             var rw = 0;
-            for (railwaycards of [gamedatas.b_and_o_railway_cards, gamedatas.c_and_o_railway_cards, gamedatas.erie_railway_cards, gamedatas.nyc_railway_cards, gamedatas.prr_railway_cards]) {
+            for (rr of RR_PREFIXES) {
+                var railwaycards = gamedatas[rr+'_railway_cards'];
                 for (const i in railwaycards) {
                     var railwaycard = railwaycards[i];
                     var tt = railwaycard.type;
                     var value = railwaycard.type_arg;
                     if (railwaycard.location_arg == 0) {
                         // Locomotives go to the loco slot
-                        this.placeLocomotiveCard(parseInt(value), parseInt(rw)+1);
+                        this.placeLocomotiveCard(parseInt(value), rw+1);
                     } else {
                         var ctype = this.getUniqueTypeForCard(tt, value);
                         this.railWays[rw].item_type[ctype].weight = parseInt(railwaycard.location_arg);
@@ -261,9 +255,9 @@ function (dojo, declare) {
             dojo.connect( this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged' );
 
             for (loconode of dojo.query('.locomotive_slot')) {
-                var handle = dojo.connect(loconode, 'onclick', this, 'onLocomotiveSelected');
-                var handle2 = dojo.connect(loconode, 'mouseenter', this, 'onLocomotiveSlotActivate');
-                var handle3 = dojo.connect(loconode, 'mouseleave', this, 'onLocomotiveSlotDeactivate');
+                dojo.connect(loconode, 'onclick', this, 'onLocomotiveSelected');
+                dojo.connect(loconode, 'mouseenter', this, 'onLocomotiveSlotActivate');
+                dojo.connect(loconode, 'mouseleave', this, 'onLocomotiveSlotDeactivate');
             }
 
             for (rh_node of dojo.query('.railhouse')) {
@@ -287,18 +281,28 @@ function (dojo, declare) {
         onEnteringState: function( stateName, args )
         {
             console.log("entering state: " + stateName);
-            switch( stateName )
-            {
+            switch( stateName ) {
             
                 case 'playerTurn':
                     this.updateHand(this.isCurrentPlayerActive());
-                    this.updateCardsPlayed();
+                    this.decorateLeadCard();
                 break;
                 case 'addRailway':
-                    this.updateRailhouses(false);
+                    this.updateRailhouses(false, false);
+                    if (this.cardsPlayed.count() == Object.keys(this.gamedatas.players).length) {
+                        this.decorateLeadCard();
+                    }
                 break;
                 case 'addCity':
-                    this.updateRailhouses(true);
+                    this.updateRailhouses(true, false);
+                    if (this.cardsPlayed.count() == Object.keys(this.gamedatas.players).length) {
+                        this.decorateLeadCard();
+                    }
+                break;
+                case 'addLocomotive':
+                    if (this.cardsPlayed.count() == Object.keys(this.gamedatas.players).length) {
+                        this.decorateLeadCard();
+                    }
                 break;
                 case 'dummmy':
                 break;
@@ -316,11 +320,10 @@ function (dojo, declare) {
             
             case 'playerTurn':
                 this.updateHand(false);
-                this.updateCardsPlayed();
                 break;
             case 'addRailway':
             case 'addCity':
-                dojo.query(".railhouse").removeClass("railhouse_active");
+                this.updateRailhouses(false, true);
                 break;
             case 'dummmy':
                 break;
@@ -377,6 +380,39 @@ function (dojo, declare) {
             return [Math.floor(card_type/12)+1, (card_type % 12) +1];
         },
 
+        /**
+         * Create a Stock for a RR company.
+         * @param {*} rr 
+         */
+        createRailroadStock: function(rr) {
+            var railroad = new ebg.stock();
+            railroad.create(this, $(rr+'_railway'), this.cardwidth, this.cardheight );
+            railroad.setSelectionMode(0);
+            railroad.image_items_per_row = COLS;
+            railroad.extraClasses='nice_card';
+            railroad.onItemCreate = dojo.hitch(this, this.setUpCard);
+            // for some reason they display vertically in rr_lane if this isn't set
+            railroad.autowidth = true;
+            return railroad;
+        },
+
+        /**
+         * Create the Stock for a player's shares of a company.
+         * @param {*} player_id 
+         * @param {*} company 
+         */
+        createPlayerSharesStock: function(player_id, company) {
+            var shares = new ebg.stock();
+            var share_id = player_id+'_'+company;
+            shares.create(this, $(share_id), this.cardwidth, this.cardheight );
+            shares.setSelectionMode(0);
+            shares.image_items_per_row = COLS;
+            shares.autowidth = true;
+            shares.extraClasses='nice_card';
+            shares.setOverlap( 25, 0 );
+            shares.onItemCreate = dojo.hitch(this, this.setUpCard);
+            return shares;
+        },
 
         /**
          * 
@@ -459,10 +495,11 @@ function (dojo, declare) {
          * @param {*} sprite_url
          */
         populateSharePiles: function(card_type_id, sprite_url) {
-            for( const player_id in this.gamedatas.players ) {
-                for (var ri = 0; ri < 5; ri++) {
+            for (var ri = 0; ri < 5; ri++) {
+                for( const player_id in this.gamedatas.players ) {
                     this.sharePiles[player_id][ri].addItemType( card_type_id, card_type_id, sprite_url, card_type_id );
                 }
+                this.sharePiles[DISCARD][ri].addItemType( card_type_id, card_type_id, sprite_url, card_type_id );
             }
         },
 
@@ -541,18 +578,18 @@ function (dojo, declare) {
             }
         },
 
+
         /**
-         * Highlights the lead and moves over the remaining cards in the cardsPlayed area.
+         * Decorates the lead card and moves over the remaining cards in the cardsPlayed area.
          */
-        updateCardsPlayed: function() {
-            var playct = this.cardsPlayed.count();
-            // now style the lead card
-            for (var i = 0; i < playct; i++) {
+        decorateLeadCard: function() {
+            var numcardsplayed = this.cardsPlayed.count();
+            for (var i = 0; i < numcardsplayed; i++) {
                 var card = this.cardsPlayed.items[i];
                 var card_div = this.cardsPlayed.getItemDivId(card.id);
                 if (i == 0) {
-                    var [rr,val] = this.getTypeAndValue(card.type);
-                    dojo.style(card_div, {"border": "2px solid white", "box-shadow": "0px 0px 2px 3px "+RR_COLORS[rr-1]});
+                    // var [rr,val] = this.getTypeAndValue(card.type);
+                    dojo.addClass(card_div, "card_lead");
                 } else {
                     dojo.addClass(card_div, "card_played_not_lead");
                 }
@@ -564,14 +601,15 @@ function (dojo, declare) {
          * Otherwise reset all to default.
          * 
          * @param {*} is_city are we placing a city?
+         * @param {*} reset are we resetting to default?
          */
-        updateRailhouses: function(is_city) {
+        updateRailhouses: function(is_city, reset) {
             var mode = RAILHOUSE_BUTTON.DEFAULT;
             for (var i = 0; i < 5; i++) {
                 var railhouse_start = RR_PREFIXES[i]+"_start";
                 var railhouse_end = RR_PREFIXES[i]+"_end";
                 var rri = i+1;
-                if (this.isCurrentPlayerActive()) {
+                if (this.isCurrentPlayerActive() && !reset) {
                     // for city, all endpoints are ready
                     if (is_city) {
                         mode = RAILHOUSE_BUTTON.READY;
@@ -675,7 +713,7 @@ function (dojo, declare) {
                 this.ajaxcall( "/trickoftherails/trickoftherails/placeLocomotive.html", { 
                     rr: li,
                     lock: true 
-                    }, this, function( result ) {  }, function( is_error) { } );                        
+                    }, this, function( result ) {  }, function( is_error) { } );
             }
         },
 
@@ -707,15 +745,16 @@ function (dojo, declare) {
             var endpoint_id = event.target.id;
             var ix = endpoint_id.lastIndexOf('_');
             var is_start = endpoint_id.endsWith("start");
+            var railway = endpoint_id.substring(0, ix);
 
             // railway cards, check it's a valid endpoint
             if (this.checkAction('addRailwayCard', true) && this.isEligibleRailhouse(event)) {
+                this.setRailhouseButton(endpoint_id, this.getIndexByRR(railway)+1, RAILHOUSE_BUTTON.CLICKED);
                 this.ajaxcall( "/trickoftherails/trickoftherails/addRailwayCard.html", { 
                     bStart: is_start,
                     lock: true 
                     }, this, function( result ) {  }, function( is_error) { } );
             } else if (this.checkAction('placeCity', true)) {
-                var railway = endpoint_id.substring(0, ix);
                 this.setRailhouseButton(endpoint_id, this.getIndexByRR(railway)+1, RAILHOUSE_BUTTON.CLICKED);
                 this.ajaxcall( "/trickoftherails/trickoftherails/placeCity.html", { 
                     sRR: railway,
@@ -790,7 +829,6 @@ function (dojo, declare) {
             $('shares_button').innerHTML = _(button_text);
         },
 
-
         /**
          * Sets the  appearance of an unselected railhouse.
          * @param {*} railhouse_id the node id
@@ -802,15 +840,19 @@ function (dojo, declare) {
             switch (mode) {
                 case RAILHOUSE_BUTTON.DEFAULT:
                     position_string = "0px 0px";
+                    dojo.removeClass(railhouse_id, "active_railhouse");
                     break;
                 case RAILHOUSE_BUTTON.READY:
                     position_string = -(RAILHOUSE_W*rr)+"px 0px";
+                    dojo.addClass(railhouse_id, "active_railhouse");
                     break;
                 case RAILHOUSE_BUTTON.ACTIVE:
                     position_string = -(RAILHOUSE_W*rr)+"px "+(-RAILHOUSE_H)+"px";
                     break;
                 case RAILHOUSE_BUTTON.CLICKED:
                     position_string = -(RAILHOUSE_W*rr)+"px "+(-2*RAILHOUSE_H)+"px";
+                    // temporarily depress to match clicked position
+                    dojo.style(railhouse_id, "transform", "translateX(4px) translateY(4px)");
                     break;
                 default:
                     // this is an error, should not happen!
@@ -898,7 +940,14 @@ function (dojo, declare) {
          * @param {*} notif 
          */
         notif_discardedShare : function(notif) {
-            this.cardsPlayed.removeFromStockById(notif.args.card_id);
+            var card_id = parseInt(notif.args.card_id);
+            var rr = parseInt(notif.args.rr);
+            var val = parseInt(notif.args.card_value);
+            var card_type = this.getUniqueTypeForCard(rr, val);
+            var card_div = this.cardsPlayed.getItemDivId(card_id);
+            this.sharePiles[DISCARD][rr-1].addToStockWithId(card_type, card_id, card_div);
+            var to_div = this.sharePiles[DISCARD][rr-1].getItemDivId(card_id);
+            this.cardsPlayed.removeFromStockById(card_id, to_div);
         },
 
         /**

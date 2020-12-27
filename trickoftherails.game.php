@@ -375,8 +375,8 @@ class TrickOfTheRails extends Table
   
         // Cards in player hand
         $result['hand'] = $this->cards->getCardsInLocation( 'hand', $current_player_id );
-        // all shares
-        $result['shares'] = $this->cards->getCardsInLocation('shares');
+        // all shares, including discards
+        $result['shares'] = array_merge($this->cards->getCardsInLocation('shares'), $this->getDiscardedShares());
 
         // Cards played onto the table
         $result['currenttrick'] = $this->cards->getCardsInLocation( 'currenttrick');
@@ -458,6 +458,19 @@ class TrickOfTheRails extends Table
      */
     function isReservationCard($card) {
         return $card['type'] == LASTROW && $card['type_arg'] == RESERVATION;
+    }
+
+    /**
+     * Convenience function, gets all discarded shares, not including Reservation cards.
+     */
+    function getDiscardedShares() {
+        $discarded = array();
+        foreach ($this->cards->getCardsInLocation('discard') as $d) {
+            if (!$this->isReservationCard($d)) {
+                $discarded[] = $d;
+            }
+        }
+        return $discarded;
     }
 
     /**
@@ -1000,6 +1013,7 @@ class TrickOfTheRails extends Table
                         'player_id' => $player,
                         'player_name' => $players[$player]['player_name'],
                         'card_id' => $discarded['id'],
+                        'rr' => $discarded['type'],
                         'card_value' => $this->values_label[$discarded['type_arg']],
                         'rr_name' => $this->railroads [$discarded['type']] ['name']));
                 }

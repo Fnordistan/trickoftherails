@@ -66,6 +66,13 @@
             ));
         }
 
+        $this->page->begin_block($template, 'DISCARDED_SHARES');
+        foreach ($RAILCOS as $rr) {
+            $this->page->insert_block('DISCARDED_SHARES', array(
+                "RR" => $rr
+            ));
+        }
+
         
         $this->page->begin_block($template, "RAILROAD");
         foreach ( $RAILCOS as $rr) {

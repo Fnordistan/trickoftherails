@@ -112,6 +112,11 @@
     filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
 }
 
+.card_lead {
+    border: 2px solid white;
+    box-shadow: 0px 0px 2px 3px;
+}
+
 .card_played_not_lead {
     transform: translate(15px, 0);
 }
@@ -139,12 +144,31 @@
     box-shadow: 5px 5px 10px 0px #F8F2AB;
 }
 
+/** active_railhouse class is dynamically added and removed */
+.active_railhouse:active {
+    transform: translateX(4px) translateY(4px);
+}
+
 .lane_header {
-    text-align: left;
+    text-align: center;
     text-indent: 12px;
     font-size: 20px;
     font-weight: bold;
     line-height: 35px;
+}
+
+#discard_shares_header {
+    text-align: center;
+    text-indent: 12px;
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 35px;
+    color: maroon;
+}
+
+#discarded_shares {
+    background-color: lightgray;
+    opacity: 0.6;
 }
 
 #b_and_o_logo {

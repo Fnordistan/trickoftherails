@@ -19,6 +19,12 @@
             <!-- END SHARES -->
         </div>
         <!-- END PLAYERS -->
+        <div id="discarded_shares" class="whiteblock player_shares">
+            <div id="discard_shares_header">Discarded Shares</div>
+            <!-- BEGIN DISCARDED_SHARES -->
+            <div id="discarded_shares_{RR}_shares" class="shares"></div>
+            <!-- END DISCARDED_SHARES -->
+        </div>
     </div>
 </div>
 
