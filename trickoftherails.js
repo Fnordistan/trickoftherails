@@ -18,30 +18,29 @@
 ROWS = 6;
 COLS = 12;
 
-const B_O = 0;
-const C_O = 1;
-const ERIE = 2;
-const NYC = 3;
-const PRR = 4;
-const RR_INDEXES = [B_O, C_O, ERIE, NYC, PRR];
 const RR_PREFIXES = ["b_and_o", "c_and_o", "erie", "nyc", "prr"];
 const RR_COLORS = ['#004D7A', '#80933F', '#EDB630', '#B8B7AE', '#9A1D20'];
 const RAILROADS = ["B&O", "C&O", "Erie", "NYC", "PRR"];
+const RAILHOUSE_H = 112.5;
+const RAILHOUSE_W = 112.5;
 
 /**
  * Enum for Railhouse icons.
- * READY means it can be clicked, ACTIVE is when it's being hovered, DEFAULT is when it's not eligible to be clicked.
  */
 const RAILHOUSE_BUTTON = {
+    /** It can be clicked */
     READY : 'ready',
+    /** It's eligible to be clicked, and is being mouseovered */
     ACTIVE: 'active',
-    DEFAULT: 'default'
+    /** It's not eligible to be clicked */
+    DEFAULT: 'default',
+    /** It has been clicked */
+    CLICKED: 'clicked'
 }
 
 const RESERVATION = 9;
 const EXCHANGE = 11;
 const STATION = 12;
-
 // this is kind of a hack - we know this specific
 // card type is the Reservation card (row 6, position 9)
 const RESERVATION_CARD_TYPE = 68;
@@ -170,7 +169,7 @@ function (dojo, declare) {
                                 }
                             }else {
                                 // adding the Locomotive and City cards to railways
-                                for (const ri of RR_INDEXES) {
+                                for (var ri = 0; ri < 5; ri++) {
                                     this.railWays[ri].addItemType( card_type_id, card_type_id, g_gamethemeurl+CARD_SPRITES, card_type_id );
                                 }
                             }
@@ -461,7 +460,7 @@ function (dojo, declare) {
          */
         populateSharePiles: function(card_type_id, sprite_url) {
             for( const player_id in this.gamedatas.players ) {
-                for (const ri of RR_INDEXES) {
+                for (var ri = 0; ri < 5; ri++) {
                     this.sharePiles[player_id][ri].addItemType( card_type_id, card_type_id, sprite_url, card_type_id );
                 }
             }
@@ -717,6 +716,7 @@ function (dojo, declare) {
                     }, this, function( result ) {  }, function( is_error) { } );
             } else if (this.checkAction('placeCity', true)) {
                 var railway = endpoint_id.substring(0, ix);
+                this.setRailhouseButton(endpoint_id, this.getIndexByRR(railway)+1, RAILHOUSE_BUTTON.CLICKED);
                 this.ajaxcall( "/trickoftherails/trickoftherails/placeCity.html", { 
                     sRR: railway,
                     bStart: is_start,
@@ -804,12 +804,16 @@ function (dojo, declare) {
                     position_string = "0px 0px";
                     break;
                 case RAILHOUSE_BUTTON.READY:
-                    position_string = -112.5*rr+"px 0px";
+                    position_string = -(RAILHOUSE_W*rr)+"px 0px";
                     break;
                 case RAILHOUSE_BUTTON.ACTIVE:
-                    position_string = -112.5*rr+"px -112.5px";
+                    position_string = -(RAILHOUSE_W*rr)+"px "+(-RAILHOUSE_H)+"px";
+                    break;
+                case RAILHOUSE_BUTTON.CLICKED:
+                    position_string = -(RAILHOUSE_W*rr)+"px "+(-2*RAILHOUSE_H)+"px";
                     break;
                 default:
+                    // this is an error, should not happen!
                     console.log("ERROR: Unknown Railhouse Button mode: " + mode + " for " + railhouse_id + ": " + rr);
             }
             dojo.style(railhouse_id, "background-position", position_string);
