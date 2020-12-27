@@ -108,8 +108,7 @@ function (dojo, declare) {
             // create the Stock items for all five railways
             this.railWays = [];
             // this will be an array by rr_shares => player
-            for (const rr of RR_PREFIXES)
-            {
+            for (const rr of RR_PREFIXES) {
                 var railway = new ebg.stock();
                 railway.create(this, $(rr+'_railway'), this.cardwidth, this.cardheight );
                 railway.setSelectionMode(0);
@@ -286,14 +285,10 @@ function (dojo, declare) {
                     this.updateCardsPlayed();
                 break;
                 case 'addRailway':
-                    if (this.isCurrentPlayerActive()) {
-                        this.updateRailhouses(false);
-                    }
+                    this.updateRailhouses(false);
                 break;
                 case 'addCity':
-                    if (this.isCurrentPlayerActive()) {
-                        this.updateRailhouses(true);
-                    }
+                    this.updateRailhouses(true);
                 break;
                 case 'dummmy':
                 break;
@@ -354,8 +349,7 @@ function (dojo, declare) {
          * @param int $v
          * @returns int card_type
          */
-        getUniqueTypeForCard: function(rr, v)
-        {
+        getUniqueTypeForCard: function(rr, v) {
             return ((rr-1)*12) + (v-1);
         },
 
@@ -560,18 +554,28 @@ function (dojo, declare) {
          * @param {*} is_city
          */
         updateRailhouses: function(is_city) {
-            if (is_city) {
-                // activate all railhouses
+            if (this.isCurrentPlayerActive()) {
+                if (is_city) {
+                    // activate all railhouses
+                    for (var i = 0; i < 5; i++) {
+                        var railhouse_start = RR_PREFIXES[i]+"_start";
+                        var railhouse_end = RR_PREFIXES[i]+"_end";
+                        dojo.style(railhouse_start, "background-position", -112.5*(i+1)+"px 25px");
+                        dojo.style(railhouse_end, "background-position", -112.5*(i+1)+"px 25px");
+                    }
+                } else {
+                    // if we're adding the card played, it's only the card from that line
+                    var railcard = this.cardsPlayed.items[0];
+                    var [rr,val] = this.getTypeAndValue(railcard.type);
+                }
+    
+            } else {
                 for (var i = 0; i < 5; i++) {
                     var railhouse_start = RR_PREFIXES[i]+"_start";
                     var railhouse_end = RR_PREFIXES[i]+"_end";
-                    dojo.style(railhouse_start, "background-position", -112.5*(i+1)+"px 25px");
-                    dojo.style(railhouse_end, "background-position", -112.5*(i+1)+"px 25px");
+                    dojo.style(railhouse_start, "background-position", "0px 25px");
+                    dojo.style(railhouse_end, "background-position", "0px 25px");
                 }
-            } else {
-                // if we're adding the card played, it's only the card from that line
-                var railcard = this.cardsPlayed.items[0];
-                var [rr,val] = this.getTypeAndValue(railcard.type);
             }
         },
 
@@ -588,6 +592,21 @@ function (dojo, declare) {
                 var [rr,val] = this.getTypeAndValue(card.type);
                 return rr;
             }
+        },
+
+        /**
+         * Given a prefix, get the index
+         * @param {*} railway 
+         */
+        getIndexByRR: function(railway) {
+            var ix = 0;
+            for (const rr of RR_PREFIXES) {
+                if (railway == rr) {
+                    return ix;
+                }
+                ix++;
+            }
+            return -1;
         },
 
         ///////////////////////////////////////////////////
@@ -696,17 +715,16 @@ function (dojo, declare) {
         },
 
         /**
-         * Checks 
+         * Highlights a chosen endpoint.
          * @param {*} event 
          */
         onEndpointActivate : function(event) {
             var activate = false;
             var endpoint_id = event.target.id;
+            var ix = endpoint_id.lastIndexOf('_');
+            var railway = endpoint_id.substring(0, ix);
+            var rr = this.getCurrentCardPlayedRR();
             if (this.checkAction('addRailwayCard', true)) {
-                var ix = endpoint_id.lastIndexOf('_');
-                var railway = endpoint_id.substring(0, ix);
-                var rr = this.getCurrentCardPlayedRR();
-
                 if (RR_PREFIXES[rr-1] == railway) {
                     activate = true;
                 }
@@ -715,13 +733,19 @@ function (dojo, declare) {
                 activate = true;
             }
             if (activate) {
-                dojo.style(endpoint_id, "outline", "2px solid red");
+                var rri = this.getIndexByRR(railway);
+                console.log("activating " + railway + " " + rri);
+                dojo.style(endpoint_id, "background-position", -112.5*(rri+1)+"px -87.5px");
             }
         },
 
         onEndpointDeactivate : function(event) {
             var endpoint_id = event.target.id;
-            dojo.style(endpoint_id, "outline", "none");
+            // restore the active icon
+            var ix = endpoint_id.lastIndexOf('_');
+            var railway = endpoint_id.substring(0, ix);
+            var rri = this.getIndexByRR(railway);
+            dojo.style(endpoint_id, "background-position", -112.5*(rri+1)+"px 25px");
         },
 
         /**
