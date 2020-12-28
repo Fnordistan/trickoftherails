@@ -134,14 +134,14 @@
     /* -moz-box-shadow: 5px 5px 5px 0px rgba(255, 0, 0, 0.7);
     -webkit-box-shadow: 5px 5px 5px 0px rgba(255, 0, 0, 0.7);
     -o-box-shadow: 5px 5px 5px 0px rgba(255, 0, 0, 0.7); */
-    box-shadow: 5px 5px 8px 0px silver;
+    box-shadow: 4px 4px 5px 0px darkslategray;
     /* filter:progid:DXImageTransform.Microsoft.Shadow(color=#f75d5d, Direction=134, Strength=30); */
 }
 
 .trick_color:hover {
     outline: none;
     border-color: #cd0000;
-    box-shadow: 5px 5px 10px 0px #F8F2AB;
+    box-shadow: 5px 5px 10px 0px lightgray;
 }
 
 /** active_railhouse class is dynamically added and removed */

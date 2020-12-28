@@ -84,7 +84,6 @@ function (dojo, declare) {
             // Setting up player boards
             for( const player_id in gamedatas.players )
             {
-                var player = gamedatas.players[player_id];
                 this.sharePiles[player_id] = [];
             }
             this.sharePiles[DISCARD] = [];
@@ -335,7 +334,6 @@ function (dojo, declare) {
         //        
         onUpdateActionButtons: function( stateName, args )
         {
-            console.log( 'onUpdateActionButtons: '+stateName );
                       
             // if( this.isCurrentPlayerActive() )
             // {            
@@ -616,8 +614,7 @@ function (dojo, declare) {
                     } else {
                         // if we're adding the card played, it's only the railhouses from that line
                         // all other cards should be deactivated
-                        var railcard = this.cardsPlayed.items[0];
-                        var [rr,val] = this.getTypeAndValue(railcard.type);
+                        var rr = this.getRailroadCompanyPlayed();
                         mode = (rri == rr) ? RAILHOUSE_BUTTON.READY : RAILHOUSE_BUTTON.DEFAULT;
                     }
                 }
@@ -627,18 +624,25 @@ function (dojo, declare) {
         },
 
         /**
+         * TODO: Fix this!
          * For determining the railway line we can add a card to.
-         * It should be the current [0] location in the cardsPlayed lane.
+         * It should be the current [0] location in the cardsPlayed lane. <=== WRONG!
          * Returns the number of the rr company, or 0 if no card in cardsplayed.
          */
-        getCurrentCardPlayedRR: function() {
-            if (this.cardsPlayed.count() == 0) {
-                return 0;
-            } else {
-                var card = this.cardsPlayed.items[0];
-                var [rr,val] = this.getTypeAndValue(card.type);
-                return rr;
+        getRailroadCompanyPlayed: function() {
+            var company = 0;
+            var cardct = this.cardsPlayed.count();
+            if (cardct > 0) {
+                var card_id = this.gamedatas.cards_played[this.player_id];
+                for (var i = 0; i < cardct; i++) {
+                    if (this.cardsPlayed.items[i].id == card_id) {
+                        var [rr,val] = this.getTypeAndValue(this.cardsPlayed.items[i].type);
+                        company = rr;
+                        break;
+                    }
+                }
             }
+            return company;
         },
 
         /**
@@ -678,7 +682,6 @@ function (dojo, declare) {
                     // Can play a card
 
                     var card_id = items[0].id;
-                    console.log("selected card "+card_id);
 
                     this.ajaxcall( "/trickoftherails/trickoftherails/playCard.html", { 
                         id: card_id,
@@ -697,7 +700,7 @@ function (dojo, declare) {
          * @param {*} event
          */
         onLocomotiveSelected : function(event) {
-            if (this.checkAction('placeLocomotive', true)) {
+            if (this.checkAction('placeLocomotive', true) && this.isEmptyLocomotiveSlot(event)) {
 
                 var loc_id = event.target.id;
                 // find index
@@ -722,7 +725,7 @@ function (dojo, declare) {
          * @param {*} event 
          */
         onLocomotiveSlotActivate : function(event) {
-            if (this.checkAction('placeLocomotive', true)) {
+            if (this.checkAction('placeLocomotive', true) && this.isEmptyLocomotiveSlot(event)) {
                 var loc_id = event.target.id;
                 dojo.addClass(loc_id, "locomotive_slot_active");
             }
@@ -764,6 +767,19 @@ function (dojo, declare) {
             }
         },
 
+        /**
+         * Checks whether a Locomotive slot being selected already has a card.
+         * @param {*} event 
+         * @returns boolean
+         */
+        isEmptyLocomotiveSlot: function(event) {
+            var is_empty = false;
+            if (this.checkAction('placeLocomotive', true)) {
+                var loco_el = event.target;
+                is_empty = !loco_el.classList.contains('nice_card');
+            }
+            return is_empty;
+        },
 
         /**
          * Checks whether the Railhouse "touched" should be highlighted/unhighlighted
@@ -778,7 +794,7 @@ function (dojo, declare) {
                 var endpoint_id = event.target.id;
                 var ix = endpoint_id.lastIndexOf('_');
                 var railway = endpoint_id.substring(0, ix);
-                    var rr = this.getCurrentCardPlayedRR();
+                var rr = this.getRailroadCompanyPlayed();
                 if (RR_PREFIXES[rr-1] == railway) {
                     eligible = true;
                 }
@@ -884,7 +900,7 @@ function (dojo, declare) {
             dojo.subscribe('railwayCardAdded', this, "notif_railwayCardAdded");
             dojo.subscribe('cityAdded', this, "notif_cityAdded");
         },  
-        
+
         /**
          * Someone played a trick card.
          * @param {*} notif 
@@ -980,9 +996,11 @@ function (dojo, declare) {
          */
         notif_locomotivePlaced : function(notif) {
             var card_id = parseInt(notif.args.card_id);
+            var rr = parseInt(notif.args.railroad);
+            var loc_div = RR_PREFIXES[rr-1]+'_locomotive';
+            this.placeLocomotiveCard(parseInt(notif.args.loc_num), rr);
             // remove locomotive from Trick Lane, move to Railroad
-            this.trickLane.removeFromStockById(card_id);
-            this.placeLocomotiveCard(parseInt(notif.args.loc_num), parseInt(notif.args.railroad));
+            this.trickLane.removeFromStockById(card_id, loc_div);
         },
 
         /**

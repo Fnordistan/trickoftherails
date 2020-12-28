@@ -387,6 +387,11 @@ class TrickOfTheRails extends Table
             $result[$railroad['railway'].'_cards'] = $this->cards->getCardsInLocation( $railroad['railway'] );
         }
 
+        // get knowledge of who played what card
+        // returns player_id => card_id associative DB
+        $cards_sql = "SELECT player_id, card_id FROM TRICK_ROW";
+        $result['cards_played'] = self::getCollectionFromDb($cards_sql, true);
+
         return $result;
     }
 
@@ -440,6 +445,8 @@ class TrickOfTheRails extends Table
     }
 
     /**
+     * **** Should no longer be needed as the UI checks if a card is already there. ****
+     * 
      * Checks whether a locomotive has already been placed here.
      * Given a ${rr}_railway" location.
      * Returns true if there is no locomotive already there, false otherwise.
@@ -676,23 +683,24 @@ class TrickOfTheRails extends Table
         $locomotive = $this->trick_type[$lococard['type_arg']]['name'];
         $railway = $this->railroads[$rr]['railway'];
 
-        if (!$this->checkLocomotiveSlot($railway)) {
-            throw new BgaUserException( self::_( "You must choose a railway line that does not already have a locomotive." ));
-        }
+        // Should no longer be necessary as the js interface checks?
+        // if (!$this->checkLocomotiveSlot($railway)) {
+        //     throw new BgaUserException( self::_( "You must choose a railway line that does not already have a locomotive." ));
+        // }
 
         // place it on location 0
         $this->cards->moveCard($lococard['id'], $railway, 0);
 
         // Notify all players about Locomotive placement
-        self::notifyAllPlayers('locomotivePlaced', clienttranslate('${player_name} placed ${locomotive} on the ${railway} line'), array (
-            'i18n' => array ('locomotive', 'railroad'),
+        self::notifyAllPlayers('locomotivePlaced', clienttranslate('${player_name} placed ${locomotive} on the ${company} line'), array (
+            'i18n' => array ('locomotive', 'company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
             'card_id' => $lococard['id'],
             'locomotive' => $locomotive,
             'loc_num' => $lococard['type_arg'],
             'railroad' => $rr,
-            'railway' => $this->railroads[$rr]['name']));
+            'company' => $this->railroads[$rr]['name']));
 
         return $lococard['type_arg'];
     }
@@ -708,7 +716,7 @@ class TrickOfTheRails extends Table
         $railwaycard = $this->cards->getCard($mycard_id);
 
         $railway = $this->railroads[$railwaycard['type']]['railway'];
-        $railroad = $this->railroads[$railwaycard['type']]['name'];
+        $company = $this->railroads[$railwaycard['type']]['name'];
         $val = $this->values_label[$railwaycard['type_arg']];
 
         if ($is_start) {
@@ -718,14 +726,14 @@ class TrickOfTheRails extends Table
         }
 
         // Notify all players about Locomotive placement
-        self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} added (${value}) to ${endpoint} of the ${railroad} line'), array (
-            'i18n' => array ('endpoint', 'railroad'),
+        self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} added (${value}) to ${endpoint} of the ${company} line'), array (
+            'i18n' => array ('value', 'endpoint', 'company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
             'card_id' => $mycard_id,
             'value' => $val,
             'rr' => $railwaycard['type'],
-            'railroad' => $railroad,
+            'company' => $company,
             'endpoint' => $is_start ? 'start' : 'end',
             'railway' => $railway));
 
@@ -756,15 +764,15 @@ class TrickOfTheRails extends Table
         }
 
         // Notify all players about City placement
-        self::notifyAllPlayers('cityAdded', clienttranslate('${player_name} added ${city} to ${endpoint} of the ${railroad} line'), array (
-            'i18n' => array ('city', 'endpoint', 'railroad'),
+        self::notifyAllPlayers('cityAdded', clienttranslate('${player_name} added ${city} to ${endpoint} of the ${company} line'), array (
+            'i18n' => array ('city', 'endpoint', 'company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
             'card_id' => $citycard['id'],
             'city' => $this->trick_type[$citycard['type_arg']]['name'],
             'city_type' => $citycard['type_arg'],
             'rr' => $rr,
-            'railroad' => $railroad,
+            'company' => $this->railroads[$rr]['name'],
             'endpoint' => $is_start ? 'start' : 'end',
             'railway' => $railway));
 
@@ -1092,11 +1100,7 @@ class TrickOfTheRails extends Table
 
         $this->gamestate->nextState( "" );
     }
-
-    function stDebug() {
-        throw new BgaUserException( "We are in debug mode!");
-    }
-    
+   
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Zombie
