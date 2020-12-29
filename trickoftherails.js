@@ -190,7 +190,7 @@ function (dojo, declare) {
                 var value = mycard.type_arg;
                 this.playerHand.addToStockWithId(this.getUniqueTypeForCard(rr, value), mycard.id);
             }
-            this.updateHand(this.isCurrentPlayerActive() && this.checkAction('playCard', true));
+            this.updateHand(this.isCurrentPlayerActive() && this.checkAction('playCard', true), this.gamedatas.trick);
 
             // everyone's stock shares
             // also find the discarded shares
@@ -283,26 +283,16 @@ function (dojo, declare) {
             switch( stateName ) {
             
                 case 'playerTurn':
-                    this.updateHand(this.isCurrentPlayerActive());
-                    this.decorateLeadCard();
+                    this.updateHand(this.isCurrentPlayerActive(), args.args.rr);
                 break;
                 case 'addRailway':
-                    this.updateRailhouses(false, false);
-                    if (this.cardsPlayed.count() == Object.keys(this.gamedatas.players).length) {
-                        this.decorateLeadCard();
-                    }
+                    this.updateRailhouses(false, args.args.rr);
                 break;
                 case 'addCity':
-                    this.updateRailhouses(true, false);
-                    if (this.cardsPlayed.count() == Object.keys(this.gamedatas.players).length) {
-                        this.decorateLeadCard();
-                    }
+                    this.updateRailhouses(true);
                 break;
-                case 'addLocomotive':
-                    if (this.cardsPlayed.count() == Object.keys(this.gamedatas.players).length) {
-                        this.decorateLeadCard();
-                    }
-                break;
+                // case 'addLocomotive':
+                // break;
                 case 'dummmy':
                 break;
             }
@@ -321,8 +311,10 @@ function (dojo, declare) {
                 this.updateHand(false);
                 break;
             case 'addRailway':
+                this.updateRailhouses(false, 0);
+                break;
             case 'addCity':
-                this.updateRailhouses(false, true);
+                this.updateRailhouses(false, 0);
                 break;
             case 'dummmy':
                 break;
@@ -529,23 +521,29 @@ function (dojo, declare) {
          * Highlights cards that are of the proper company and adds not-allowed cursor to others.
          * 
          * Must be activated on entry and exit of playerTurn, to switch selectability on and off.
-         * @param {*} is_current_player 
+         * @param {bool} is_current_player
+         * @param {int} trick_rr optional if is_current_player false, 0 means we're leading
          */
-        updateHand: function(is_current_player) {
+        updateHand: function(is_current_player, trick_rr) {
             if (is_current_player) {
                 this.playerHand.setSelectionMode(1);
 
-                if (this.cardsPlayed.count() != 0) {
-                    var leadcard = this.cardsPlayed.items[0];
-                    var [rr,val] = this.getTypeAndValue(leadcard.type);
-
+                if (trick_rr == 0) {
+                    // we're leading, all cards can be played
+                    for (const tc of this.playerHand.getAllItems()) {
+                        var tcid = tc.id;
+                        var tcdiv = this.playerHand.getItemDivId(tcid);
+                        dojo.addClass(tcdiv, "trick_color");
+                        dojo.removeClass(tcdiv, "noselect");
+                    }
+                } else {
                     var has_trick_color = false;
                     for (const c of this.playerHand.getAllItems()) {
                         var cid = c.id;
                         var ctype = c.type;
                         var [crr,cval] = this.getTypeAndValue(ctype);
                         var cdiv = this.playerHand.getItemDivId(cid);
-                        if (crr == rr) {
+                        if (crr == trick_rr) {
                             has_trick_color = true;
                             dojo.addClass(cdiv, "trick_color");
                             dojo.removeClass(cdiv, "noselect");
@@ -577,44 +575,55 @@ function (dojo, declare) {
         },
 
 
-        /**
-         * Decorates the lead card and moves over the remaining cards in the cardsPlayed area.
-         */
-        decorateLeadCard: function() {
-            var numcardsplayed = this.cardsPlayed.count();
-            for (var i = 0; i < numcardsplayed; i++) {
-                var card = this.cardsPlayed.items[i];
-                var card_div = this.cardsPlayed.getItemDivId(card.id);
-                if (i == 0) {
-                    // var [rr,val] = this.getTypeAndValue(card.type);
-                    dojo.addClass(card_div, "card_lead");
-                } else {
-                    dojo.addClass(card_div, "card_played_not_lead");
-                }
-            }
-        },
+        // /**
+        //  * Decorates the lead card and moves over the remaining cards in the cardsPlayed area.
+        //  */
+        // decorateLeadCard: function() {
+        //     var lead_id = this.gamedatas.lead;
+        //     console.log('lead_id from gamedatas: ' + lead_id);
+        //     if (lead_id == 0) {
+        //     // in the case where we are in playerTurn state and haven't refreshed or pulled from Db,
+        //     // the lead card is card 0
+        //         if (this.cardsPlayed.count() != 0) {
+        //             lead_id = this.cardsPlayed.items[0].id;
+        //             console.log('lead_id from cardsPlayed: ' + lead_id);
+        //         }
+        //     }
+        //     if (lead_id != 0) {
+        //         lead_card = this.cardsPlayed.getItemById(lead_id);
+        //         // it might have already been sent to discard or railway
+        //         console.log('lead card found: ' + lead_card);
+        //         if (lead_card != null) {
+        //             for (var i = 0; i < this.cardsPlayed.count(); i++) {
+        //                 var card = this.cardsPlayed.items[i];
+        //                 var card_div = this.cardsPlayed.getItemDivId(card.id);
+        //                 var cardcls = card.id == lead_id ? "card_lead" : "card_played_not_lead";
+        //                 dojo.addClass(card_div, cardcls);
+        //             }
+        //         }
+        //     }
+        // },
 
         /**
          * Activate eligible railhouse icons if this is the current player.
          * Otherwise reset all to default.
          * 
          * @param {*} is_city are we placing a city?
-         * @param {*} reset are we resetting to default?
+         * @param {*} rr optional: railroad to activate. 0 means none
          */
-        updateRailhouses: function(is_city, reset) {
+        updateRailhouses: function(is_city, rr) {
             var mode = RAILHOUSE_BUTTON.DEFAULT;
             for (var i = 0; i < 5; i++) {
                 var railhouse_start = RR_PREFIXES[i]+"_start";
                 var railhouse_end = RR_PREFIXES[i]+"_end";
                 var rri = i+1;
-                if (this.isCurrentPlayerActive() && !reset) {
+                if (this.isCurrentPlayerActive()) {
                     // for city, all endpoints are ready
                     if (is_city) {
                         mode = RAILHOUSE_BUTTON.READY;
                     } else {
                         // if we're adding the card played, it's only the railhouses from that line
                         // all other cards should be deactivated
-                        var rr = this.getRailroadCompanyPlayed();
                         mode = (rri == rr) ? RAILHOUSE_BUTTON.READY : RAILHOUSE_BUTTON.DEFAULT;
                     }
                 }
@@ -624,9 +633,7 @@ function (dojo, declare) {
         },
 
         /**
-         * TODO: Fix this!
-         * For determining the railway line we can add a card to.
-         * It should be the current [0] location in the cardsPlayed lane. <=== WRONG!
+         * For determining the railway line the current player can add a card to.
          * Returns the number of the rr company, or 0 if no card in cardsplayed.
          */
         getRailroadCompanyPlayed: function() {
@@ -680,18 +687,18 @@ function (dojo, declare) {
             if (items.length > 0) {
                 if (this.checkAction('playCard', true)) {
                     // Can play a card
+                    // var card_div = this.playerHand.getItemDivId(items[0].id);
+                    // if (!dojo.hasClass(card_div, 'noselect')) {
+                        var card_id = items[0].id;
 
-                    var card_id = items[0].id;
-
-                    this.ajaxcall( "/trickoftherails/trickoftherails/playCard.html", { 
-                        id: card_id,
-                        lock: true 
-                        }, this, function( result ) {  }, function( is_error) { } );                        
-
-                    this.playerHand.unselectAll();
-                } else {
-                    this.playerHand.unselectAll();
+                        this.ajaxcall( "/trickoftherails/trickoftherails/playCard.html", { 
+                            id: card_id,
+                            lock: true 
+                            }, this, function( result ) {  }, function( is_error) { } );                        
+    
+                    // }
                 }
+                this.playerHand.unselectAll();
             }
         },
 
@@ -741,6 +748,20 @@ function (dojo, declare) {
         },
 
         /**
+         * Checks whether a Locomotive slot being selected already has a card.
+         * @param {*} event 
+         * @returns boolean
+         */
+        isEmptyLocomotiveSlot: function(event) {
+            var is_empty = false;
+            if (this.checkAction('placeLocomotive', true)) {
+                var loco_el = event.target;
+                is_empty = !loco_el.classList.contains('nice_card');
+            }
+            return is_empty;
+        },
+
+        /**
          * When player clicks a start or endpoint on railway.
          * @param {*} event 
          */
@@ -751,7 +772,7 @@ function (dojo, declare) {
             var railway = endpoint_id.substring(0, ix);
 
             // railway cards, check it's a valid endpoint
-            if (this.checkAction('addRailwayCard', true) && this.isEligibleRailhouse(event)) {
+            if (this.checkAction('addRailwayCard', true) && this.isReadyRailhouse(event)) {
                 this.setRailhouseButton(endpoint_id, this.getIndexByRR(railway)+1, RAILHOUSE_BUTTON.CLICKED);
                 this.ajaxcall( "/trickoftherails/trickoftherails/addRailwayCard.html", { 
                     bStart: is_start,
@@ -768,48 +789,11 @@ function (dojo, declare) {
         },
 
         /**
-         * Checks whether a Locomotive slot being selected already has a card.
-         * @param {*} event 
-         * @returns boolean
-         */
-        isEmptyLocomotiveSlot: function(event) {
-            var is_empty = false;
-            if (this.checkAction('placeLocomotive', true)) {
-                var loco_el = event.target;
-                is_empty = !loco_el.classList.contains('nice_card');
-            }
-            return is_empty;
-        },
-
-        /**
-         * Checks whether the Railhouse "touched" should be highlighted/unhighlighted
-         * depending on game state.
-         * @param {*} event 
-         * @returns boolean
-         */
-        isEligibleRailhouse: function(event) {
-            var eligible = false;
-            if (this.checkAction('addRailwayCard', true)) {
-                // can only add city to (my) current card played
-                var endpoint_id = event.target.id;
-                var ix = endpoint_id.lastIndexOf('_');
-                var railway = endpoint_id.substring(0, ix);
-                var rr = this.getRailroadCompanyPlayed();
-                if (RR_PREFIXES[rr-1] == railway) {
-                    eligible = true;
-                }
-            } else if (this.checkAction('placeCity', true)) {
-                eligible = true;
-            }
-            return eligible;
-        },
-
-        /**
          * Highlights a chosen endpoint.
          * @param {*} event 
          */
         onRailhouseActivate : function(event) {
-            if (this.isEligibleRailhouse(event)) {
+            if (this.isReadyRailhouse(event)) {
                 var endpoint_id = event.target.id;
                 var ix = endpoint_id.lastIndexOf('_');
                 var railway = endpoint_id.substring(0, ix);
@@ -822,14 +806,22 @@ function (dojo, declare) {
          * Puts a Railhouse back in READY state upon leaving.
          */
         onRailhouseDeactivate : function(event) {
-            if (this.isEligibleRailhouse(event)) {
+            if (this.isReadyRailhouse(event)) {
                 var endpoint_id = event.target.id;
-                // restore the active icon
+                // restore the ready icon
                 var ix = endpoint_id.lastIndexOf('_');
                 var railway = endpoint_id.substring(0, ix);
                 var rri = this.getIndexByRR(railway);
                 this.setRailhouseButton(endpoint_id, rri+1, RAILHOUSE_BUTTON.READY);
             }
+        },
+
+        /**
+         * Checks whether the Railhouse is currently Ready (meaning it was previously activated).
+         * @param {*} event 
+         */
+        isReadyRailhouse: function(event) {
+            return event.target.classList.contains('ready_railhouse');
         },
 
         /**
@@ -856,11 +848,11 @@ function (dojo, declare) {
             switch (mode) {
                 case RAILHOUSE_BUTTON.DEFAULT:
                     position_string = "0px 0px";
-                    dojo.removeClass(railhouse_id, "active_railhouse");
+                    dojo.removeClass(railhouse_id, "ready_railhouse");
                     break;
                 case RAILHOUSE_BUTTON.READY:
                     position_string = -(RAILHOUSE_W*rr)+"px 0px";
-                    dojo.addClass(railhouse_id, "active_railhouse");
+                    dojo.addClass(railhouse_id, "ready_railhouse");
                     break;
                 case RAILHOUSE_BUTTON.ACTIVE:
                     position_string = -(RAILHOUSE_W*rr)+"px "+(-RAILHOUSE_H)+"px";
@@ -996,7 +988,7 @@ function (dojo, declare) {
          */
         notif_locomotivePlaced : function(notif) {
             var card_id = parseInt(notif.args.card_id);
-            var rr = parseInt(notif.args.railroad);
+            var rr = parseInt(notif.args.rr);
             var loc_div = RR_PREFIXES[rr-1]+'_locomotive';
             this.placeLocomotiveCard(parseInt(notif.args.loc_num), rr);
             // remove locomotive from Trick Lane, move to Railroad

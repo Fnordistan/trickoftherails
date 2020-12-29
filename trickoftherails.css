@@ -144,8 +144,8 @@
     box-shadow: 5px 5px 10px 0px lightgray;
 }
 
-/** active_railhouse class is dynamically added and removed */
-.active_railhouse:active {
+/** ready_railhouse class is dynamically added and removed */
+.ready_railhouse:active {
     transform: translateX(4px) translateY(4px);
 }
 

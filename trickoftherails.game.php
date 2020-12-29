@@ -41,6 +41,7 @@ class TrickOfTheRails extends Table
             'handSize' => 5,// number of cards and tricklane cards dealt
             'currentTrickIndex' => 10, // index of next card to take in trick lane. Can't be turn# because of Loc6/∞
             'trickRR' => 20,// color of current trick
+            'leadCard' => 21, // for keeping track of the lead card that was played for each hand
             'wonLastTrick' => 30 // player id who won last trick
         ) );
 
@@ -79,16 +80,10 @@ class TrickOfTheRails extends Table
             $color = array_shift( $default_colors );
             $values[] = "('".$player_id."','$color','".$player['player_canal']."','".addslashes( $player['player_name'] )."','".addslashes( $player['player_avatar'] )."')";
             self::initStat('player', 'tricks_won', 0, $player_id);
-            self::initStat('player', 'b_and_o_railway_shares', 0, $player_id);
-            self::initStat('player', 'c_and_o_railway_shares', 0, $player_id);
-            self::initStat('player', 'erie_railway_shares', 0, $player_id);
-            self::initStat('player', 'nyc_railway_shares', 0, $player_id);
-            self::initStat('player', 'prr_railway_shares', 0, $player_id);
-            self::initStat('player', 'b_and_o_railway_profits', 0, $player_id);
-            self::initStat('player', 'c_and_o_railway_profits', 0, $player_id);
-            self::initStat('player', 'erie_railway_profits', 0, $player_id);
-            self::initStat('player', 'nyc_railway_profits', 0, $player_id);
-            self::initStat('player', 'prr_railway_profits', 0, $player_id);
+            foreach ($this->railroads as $rr) {
+                self::initStat('player', $rr['railway'].'_shares', 0, $player_id);
+                self::initStat('player', $rr['railway'].'_profits', 0, $player_id);
+            }
         }
         $sql .= implode( $values, ',' );
         self::DbQuery( $sql );
@@ -99,25 +94,15 @@ class TrickOfTheRails extends Table
 
         /**** Stats */
         self::initStat('table', 'turns_number', 0);
-        self::initStat('table', 'b_and_o_railway_length', 0);
-        self::initStat('table', 'c_and_o_railway_length', 0);
-        self::initStat('table', 'erie_railway_length', 0);
-        self::initStat('table', 'nyc_railway_length', 0);
-        self::initStat('table', 'prr_railway_length', 0);
-        self::initStat('table', 'b_and_o_railway_profit', 0);
-        self::initStat('table', 'c_and_o_railway_profit', 0);
-        self::initStat('table', 'erie_railway_profit', 0);
-        self::initStat('table', 'nyc_railway_profit', 0);
-        self::initStat('table', 'prr_railway_profit', 0);
-        self::initStat('table', 'b_and_o_railway_cards', 0);
-        self::initStat('table', 'c_and_o_railway_cards', 0);
-        self::initStat('table', 'erie_railway_cards', 0);
-        self::initStat('table', 'nyc_railway_cards', 0);
-        self::initStat('table', 'prr_railway_cards', 0);
-
+        foreach ($this->railroads as $rr) {
+            self::initStat('table', $rr['railway'].'_length', 0);
+            self::initStat('table', $rr['railway'].'_profit', 0);
+            self::initStat('table', $rr['railway'].'_cards', 0);
+        }
         // Init global values with their initial values
          // Set current trick color to zero (= no trick color)
          self::setGameStateInitialValue( 'trickRR', 0 );
+         self::setGameStateInitialValue( 'leadCard', 0 );
          self::setGameStateInitialValue( 'wonLastTrick', 0 );
          //  starts at -1, will become 0 with first new trick
          self::setGameStateInitialValue( 'currentTrickIndex', -1 );
@@ -380,6 +365,8 @@ class TrickOfTheRails extends Table
 
         // Cards played onto the table
         $result['currenttrick'] = $this->cards->getCardsInLocation( 'currenttrick');
+        $result['lead'] = self::getGameStateValue('leadCard');
+        $result['trick'] = self::getGameStateValue('trickRR');
         // Cards in tricklane
         $result['tricklanecards'] = $this->cards->getCardsInLocation( 'tricklane' );
 
@@ -603,7 +590,9 @@ class TrickOfTheRails extends Table
         $plays_card = "plays";
         $trick_color = self::getGameStateValue( 'trickRR' );
         if ($trick_color == 0) {
+            // I'm the lead
             self::setGameStateValue( 'trickRR', $card_played['type']);
+            self::setGameStateValue( 'leadCard', $card_played['id']);
             $plays_card = "leads the trick with";
         } else {
             if ($card_played['type'] != $trick_color) {
@@ -622,15 +611,15 @@ class TrickOfTheRails extends Table
         ");
 
         // Notify all players about the card played
-        self::notifyAllPlayers('cardPlayed', clienttranslate('${player_name} ${action_verb} ${rr_name} (${rr_color}) ${card_value}'), array (
-            'i18n' => array ('rr_name', 'rr_color','card_value' ),
+        self::notifyAllPlayers('cardPlayed', clienttranslate('${player_name} ${action_verb} ${company} (${rr_color}) ${card_value}'), array (
+            'i18n' => array ('company', 'rr_color','card_value' ),
             'card_id' => $card_id,
             'player_id' => self::getActivePlayerId(),
             'action_verb' => $plays_card,
             'player_name' => self::getActivePlayerName(),
             'card_value' => $this->values_label [$card_played ['type_arg']],
             'rr' => $card_played['type'],
-            'rr_name' => $this->railroads [$card_played ['type']] ['name'],
+            'company' => $this->railroads [$card_played ['type']] ['name'],
             'rr_color' => $this->railroads [$card_played ['type']] ['color'] ));
         // Next player
         $this->gamestate->nextState();
@@ -699,7 +688,7 @@ class TrickOfTheRails extends Table
             'card_id' => $lococard['id'],
             'locomotive' => $locomotive,
             'loc_num' => $lococard['type_arg'],
-            'railroad' => $rr,
+            'rr' => $rr,
             'company' => $this->railroads[$rr]['name']));
 
         return $lococard['type_arg'];
@@ -792,18 +781,19 @@ class TrickOfTheRails extends Table
     */
 
     function argPlayCards() {
-        $cardToPlay = 0;
-        $currentTrick = self::getGameStateValue( 'trickRR' );
-        if ($currentTrick == 0) {
-            $cardToPlay = clienttranslate("lead the trick");
+        $card_str = 0;
+        $rr = self::getGameStateValue( 'trickRR' );
+        if ($rr == 0) {
+            $card_str = clienttranslate("lead the trick");
         } else if ($this->hasCurrentTrick(self::getActivePlayerId())) {
-            $cardToPlay = clienttranslate("play a ".$this->railroads[$currentTrick]['name']." (".$this->railroads[$currentTrick]['color'].") card");
+            $card_str = clienttranslate("play a ".$this->railroads[$rr]['name']." (".$this->railroads[$rr]['color'].") card");
         } else {
-            $cardToPlay = clienttranslate("play any card (no ".$this->railroads[$currentTrick]['name']." (".$this->railroads[$currentTrick]['color'].") cards in hand)");
+            $card_str = clienttranslate("play any card (no ".$this->railroads[$rr]['name']." (".$this->railroads[$rr]['color'].") cards in hand)");
         }
         return array(
-            "i18n" => array( 'cardToPlay'),
-            'cardToPlay' => $cardToPlay,
+            "i18n" => array( 'card_action'),
+            'rr' => $rr,
+            'card_action' => $card_str,
         );
     }
 
@@ -832,14 +822,11 @@ class TrickOfTheRails extends Table
         
         $rrcard = $this->cards->getCard($mycard_id);
 
-        $rr = $this->railroads[$rrcard['type']]['name'];
-        // $color = $this->railroads[$mycard['card_type']]['color'];
-        $val = $this->values_label[$rrcard['type_arg']];
-
         return array(
-            "i18n" => array( 'railwayCardToPlay'),
-            'rr' => $rr,
-            'val' => $val
+            "i18n" => array( 'rr', 'val', 'company'),
+            'rr' => $rrcard['type'],
+            'val' => $this->values_label[$rrcard['type_arg']],
+            'company' => $this->railroads[$rrcard['type']]['name']
         );
     }
 
@@ -861,6 +848,7 @@ class TrickOfTheRails extends Table
 
         // reset trick
         self::setGameStateValue( 'trickRR', 0 );
+        self::setGameStateValue( 'leadCard', 0 );
 
         // 
         self::incStat(1, 'turns_number');
@@ -909,12 +897,12 @@ class TrickOfTheRails extends Table
 
             $this->gamestate->changeActivePlayer( $winner );
 
-            self::notifyAllPlayers('winTrick', clienttranslate('${player_name} wins the trick with ${rr_name} ${card_value}'), array (
-                'i18n' => array ('rr_name', 'rr_color','card_value' ),
+            self::notifyAllPlayers('winTrick', clienttranslate('${player_name} wins the trick with ${company} ${card_value}'), array (
+                'i18n' => array ('company', 'rr_color','card_value' ),
                 'player_id' => self::getActivePlayerId(),
                 'player_name' => self::getActivePlayerName(),
                 'card_value' => $this->values_label [$bestCard ['type_arg']],
-                'rr_name' => $this->railroads [$bestCard ['type']] ['name'],
+                'company' => $this->railroads [$bestCard ['type']] ['name'],
                 'rr_color' => $this->railroads [$bestCard ['type']] ['color'] ));
 
             $this->gamestate->nextState( 'resolveTrick' );        
@@ -1005,8 +993,8 @@ class TrickOfTheRails extends Table
                 // notify everyone winner discards/exchanges a card with Reservation
                 $discarded = $this->cards->getCard($trick_id);
                 if ($reservation != null) {
-                    self::notifyAllPlayers('reservationSwapped', clienttranslate('${player_name} replaces Reservation card with ${rr_name} ${card_value} in Trick Lane'), array (
-                        'i18n' => array ('rr_name', 'card_value' ),
+                    self::notifyAllPlayers('reservationSwapped', clienttranslate('${player_name} replaces Reservation card with ${company} ${card_value} in Trick Lane'), array (
+                        'i18n' => array ('company', 'card_value' ),
                         'player_id' => $player,
                         'player_name' => $players[$player]['player_name'],
                         'card_id' => $discarded['id'],
@@ -1014,16 +1002,16 @@ class TrickOfTheRails extends Table
                         'card_value' => $this->values_label[$discarded['type_arg']],
                         'reservation_id' => $reservation['id'],
                         'reservation_loc' => $reservation['location_arg'],
-                        'rr_name' => $this->railroads [$discarded['type']] ['name']));
+                        'company' => $this->railroads [$discarded['type']] ['name']));
                 } else {
-                    self::notifyAllPlayers('discardedShare', clienttranslate('${player_name} discards ${rr_name} ${card_value}'), array (
-                        'i18n' => array ('rr_name', 'card_value' ),
+                    self::notifyAllPlayers('discardedShare', clienttranslate('${player_name} discards ${company} ${card_value}'), array (
+                        'i18n' => array ('company', 'card_value' ),
                         'player_id' => $player,
                         'player_name' => $players[$player]['player_name'],
                         'card_id' => $discarded['id'],
                         'rr' => $discarded['type'],
                         'card_value' => $this->values_label[$discarded['type_arg']],
-                        'rr_name' => $this->railroads [$discarded['type']] ['name']));
+                        'company' => $this->railroads [$discarded['type']] ['name']));
                 }
 
                 // winner adds card from tricklane to his shares
@@ -1041,15 +1029,15 @@ class TrickOfTheRails extends Table
                 $this->cards->moveCard($share['id'], 'shares', $player);
                 $share_val = $this->values_label[$share['type_arg']];
             }
-            self::notifyAllPlayers('shareAdded', clienttranslate('${player_name} adds ${rr_name} ${card_label} to ${rr_name} shares'), array (
-                'i18n' => array ('rr_name', 'card_value' ),
+            self::notifyAllPlayers('shareAdded', clienttranslate('${player_name} adds ${company} ${card_label} to ${company} shares'), array (
+                'i18n' => array ('company', 'card_value' ),
                 'player_id' => $player,
                 'player_name' => $players[$player]['player_name'],
                 'card_id' => $share['id'],
                 'rr' => $share['type'],
                 'card_value' => $share['type_arg'],
                 'card_label' => $share_val,
-                'rr_name' => $this->railroads[$share['type']] ['name']));
+                'company' => $this->railroads[$share['type']] ['name']));
         }
 
         // is there another trick?
