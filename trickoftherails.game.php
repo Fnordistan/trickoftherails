@@ -615,7 +615,7 @@ class TrickOfTheRails extends Table
         ");
 
         // Notify all players about the card played
-        self::notifyAllPlayers('cardPlayed', clienttranslate('${player_name} ${action_verb} ${company} ${card_value}'), array (
+        self::notifyAllPlayers('cardPlayed', clienttranslate('${player_name} ${action_verb} ${company} ${card_value} ${rr}'), array (
             'i18n' => array ('company', 'card_value' ),
             'card_id' => $card_id,
             'player_id' => self::getActivePlayerId(),
@@ -756,7 +756,7 @@ class TrickOfTheRails extends Table
         }
 
         // Notify all players about City placement
-        self::notifyAllPlayers('cityAdded', clienttranslate('${player_name} added ${city} to ${endpoint} of the ${company} line'), array (
+        self::notifyAllPlayers('cityAdded', clienttranslate('${player_name} added ${city} to ${endpoint} of the ${company} line ${rr}'), array (
             'i18n' => array ('city', 'endpoint', 'company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),

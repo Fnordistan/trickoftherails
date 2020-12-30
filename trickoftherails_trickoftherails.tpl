@@ -56,7 +56,7 @@
 <script type="text/javascript">
 
 // Javascript HTML templates
-var jstpl_rr_icon = '<span class="rr_lane_logo ${railway}_icon" style="display: block; float: none;"></span>';
+var jstpl_rr_icon = '<span class="rr_lane_logo ${railway}_icon" style="display: inline-block; float: none;"></span>';
 
 var jstpl_rr_name = '<span style="color: ${rr_color}; font-weight: bold;">${company}</span>';
 

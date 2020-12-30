@@ -283,6 +283,8 @@ function (dojo, declare) {
                     args.processed = true;
                     
                     if (args.company) {
+                        console.log(args.company);
+                        console.log(args.rr);
                         var rri = toint(args.rr)-1;
                         args.company = this.format_block('jstpl_rr_name', {
                             "company": args.company,
@@ -298,16 +300,16 @@ function (dojo, declare) {
             return this.inherited(arguments);
         },
 
-        getRRIcon : function(args) {
-            var token_id = args.rr;
-            var rr = toint(args.rr);
-            var logid = "log" + "_rr_" + args.rr;
-            var rrDiv = this.format_block('jstpl_rr_icon', {
-                "id" : logid,
-                "x" : -125*(rr-1),
-            });
-            return rrDiv;
-       },
+    //     getRRIcon : function(args) {
+    //         var token_id = args.rr;
+    //         var rr = toint(args.rr);
+    //         var logid = "log" + "_rr_" + args.rr;
+    //         var rrDiv = this.format_block('jstpl_rr_icon', {
+    //             "id" : logid,
+    //             "x" : -125*(rr-1),
+    //         });
+    //         return rrDiv;
+    //    },
 
         ///////////////////////////////////////////////////
         //// Game & client states
