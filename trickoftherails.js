@@ -85,18 +85,9 @@ function (dojo, declare) {
             for( const player_id in gamedatas.players )
             {
                 this.sharePiles[player_id] = [];
-
+                // color the labels
                 var color = '#'+gamedatas.players[player_id].color;
-                var color_bg = "";
-                if (gamedatas.players[player_id] && gamedatas.players[player_id].color_back) {
-                    color_bg = '#' + gamedatas.players[player_id].color_back;
-                }                
-                var sharelbl = dojo.byId(player_id+'_share_label');
-                
-                dojo.style(sharelbl, {
-                    'color' : color,
-                    'background-color' : color_bg
-                });
+                dojo.style($(player_id+'_share_label'), 'color', color);
             }
             this.sharePiles[DISCARD] = [];
 
@@ -277,7 +268,7 @@ function (dojo, declare) {
                 dojo.connect(rh_node, 'mouseleave', this, 'onRailhouseDeactivate');
             }
 
-            dojo.connect(dojo.byId('shares_button'), 'onclick', this, 'onShowShares');
+            dojo.connect($('shares_button'), 'onclick', this, 'onShowShares');
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
@@ -880,7 +871,7 @@ function (dojo, declare) {
             // toggle display
             sharedisplay = (sharedisplay == 'none') ? 'block' : 'none';
             var button_text = (sharedisplay == 'none') ? "Show Player Shares" : "Hide Player Shares";
-            dojo.setStyle(dojo.byId('shares_wrapper'), 'display', sharedisplay);
+            dojo.setStyle($('shares_wrapper'), 'display', sharedisplay);
             $('shares_button').innerHTML = _(button_text);
         },
 
