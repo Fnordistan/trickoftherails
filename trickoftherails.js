@@ -271,6 +271,41 @@ function (dojo, declare) {
             this.setupNotifications();
         },
 
+       /** Inject html into log items  */
+
+        /* @Override */
+        format_string_recursive : function(log, args) {
+            try {
+                if (log && args && !args.processed) {
+                    args.processed = true;
+                    
+                    if (args.company) {
+                        var rri = toint(args.rr)-1;
+                        args.company = this.format_block('jstpl_rr_name', {
+                            "company": args.company,
+                            "rr_color": RR_COLORS[rri]
+                        }) + this.format_block('jstpl_rr_icon', {
+                            "railway": RR_PREFIXES[rri]
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error(log,args,"Exception thrown", e.stack);
+            }
+            return this.inherited(arguments);
+        },
+
+        getRRIcon : function(args) {
+            var token_id = args.rr;
+            var rr = toint(args.rr);
+            var logid = "log" + "_rr_" + args.rr;
+            var rrDiv = this.format_block('jstpl_rr_icon', {
+                "id" : logid,
+                "x" : -125*(rr-1),
+            });
+            return rrDiv;
+       },
+
         ///////////////////////////////////////////////////
         //// Game & client states
         
@@ -891,7 +926,7 @@ function (dojo, declare) {
             dojo.subscribe('locomotivePlaced', this, "notif_locomotivePlaced");
             dojo.subscribe('railwayCardAdded', this, "notif_railwayCardAdded");
             dojo.subscribe('cityAdded', this, "notif_cityAdded");
-        },  
+        },      
 
         /**
          * Someone played a trick card.

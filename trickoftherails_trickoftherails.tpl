@@ -56,8 +56,9 @@
 <script type="text/javascript">
 
 // Javascript HTML templates
-// var jstpl_railhouse_active = '<div id="${railh}_${end}" style="background-size: 675px 337.5px; background-image: url(img/railhouse_sprites.png); background-repeat: no-repeat; background-position: ${x}px ${y}px; width: 112.5px; height: 112.5px;"></div>';
+var jstpl_rr_icon = '<span class="rr_lane_logo ${railway}_icon" style="display: block; float: none;"></span>';
 
+var jstpl_rr_name = '<span style="color: ${rr_color}; font-weight: bold;">${company}</span>';
 
 </script>  
 

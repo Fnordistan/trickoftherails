@@ -24,6 +24,10 @@ define('RESERVATION', 9);
 define('EXCHANGE', 11);
 define('RAILROAD_STATION', 12);
 
+# playCard actions
+define('LEAD', 1);
+define('FOLLOW', 2);
+define('ANY', 3);
 
 class TrickOfTheRails extends Table
 {
@@ -611,16 +615,15 @@ class TrickOfTheRails extends Table
         ");
 
         // Notify all players about the card played
-        self::notifyAllPlayers('cardPlayed', clienttranslate('${player_name} ${action_verb} ${company} (${rr_color}) ${card_value}'), array (
-            'i18n' => array ('company', 'rr_color','card_value' ),
+        self::notifyAllPlayers('cardPlayed', clienttranslate('${player_name} ${action_verb} ${company} ${card_value}'), array (
+            'i18n' => array ('company', 'card_value' ),
             'card_id' => $card_id,
             'player_id' => self::getActivePlayerId(),
             'action_verb' => $plays_card,
             'player_name' => self::getActivePlayerName(),
             'card_value' => $this->values_label [$card_played ['type_arg']],
             'rr' => $card_played['type'],
-            'company' => $this->railroads [$card_played ['type']] ['name'],
-            'rr_color' => $this->railroads [$card_played ['type']] ['color'] ));
+            'company' => $this->railroads [$card_played ['type']] ['name']));
         // Next player
         $this->gamestate->nextState();
     }
@@ -715,7 +718,7 @@ class TrickOfTheRails extends Table
         }
 
         // Notify all players about Locomotive placement
-        self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} added (${value}) to ${endpoint} of the ${company} line'), array (
+        self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} added ${value} to ${endpoint} of the ${company} line'), array (
             'i18n' => array ('value', 'endpoint', 'company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
@@ -781,19 +784,30 @@ class TrickOfTheRails extends Table
     */
 
     function argPlayCards() {
-        $card_str = 0;
+        $company = '';
         $rr = self::getGameStateValue( 'trickRR' );
+        $action_1 = "";
+        $action_2 = "";
+
         if ($rr == 0) {
-            $card_str = clienttranslate("lead the trick");
+            $action_1 = "lead the trick";
+            $action_2 = "";
+            $company = '';
         } else if ($this->hasCurrentTrick(self::getActivePlayerId())) {
-            $card_str = clienttranslate("play a ".$this->railroads[$rr]['name']." (".$this->railroads[$rr]['color'].") card");
+            $action_1 = "play a ";
+            $action_2 = " card";
+            $company = $this->railroads[$rr]['name'];
         } else {
-            $card_str = clienttranslate("play any card (no ".$this->railroads[$rr]['name']." (".$this->railroads[$rr]['color'].") cards in hand)");
+            $action_1 = "play any card (no ";
+            $action_2 = " cards in hand)";
+            $company = $this->railroads[$rr]['name'];
         }
         return array(
-            "i18n" => array( 'card_action'),
+            "i18n" => array('card_action_1', 'card_action_2', 'company'),
+            'card_action_1' => $action_1,
+            'card_action_2' => $action_2,
             'rr' => $rr,
-            'card_action' => $card_str,
+            'company' => $company,
         );
     }
 
@@ -898,12 +912,12 @@ class TrickOfTheRails extends Table
             $this->gamestate->changeActivePlayer( $winner );
 
             self::notifyAllPlayers('winTrick', clienttranslate('${player_name} wins the trick with ${company} ${card_value}'), array (
-                'i18n' => array ('company', 'rr_color','card_value' ),
+                'i18n' => array ('company', 'card_value' ),
                 'player_id' => self::getActivePlayerId(),
                 'player_name' => self::getActivePlayerName(),
                 'card_value' => $this->values_label [$bestCard ['type_arg']],
-                'company' => $this->railroads [$bestCard ['type']] ['name'],
-                'rr_color' => $this->railroads [$bestCard ['type']] ['color'] ));
+                'rr' => $bestCard['type'],
+                'company' => $this->railroads [$bestCard ['type']] ['name']));
 
             $this->gamestate->nextState( 'resolveTrick' );        
         } else {
