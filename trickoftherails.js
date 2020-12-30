@@ -85,6 +85,18 @@ function (dojo, declare) {
             for( const player_id in gamedatas.players )
             {
                 this.sharePiles[player_id] = [];
+
+                var color = '#'+gamedatas.players[player_id].color;
+                var color_bg = "";
+                if (gamedatas.players[player_id] && gamedatas.players[player_id].color_back) {
+                    color_bg = '#' + gamedatas.players[player_id].color_back;
+                }                
+                var sharelbl = dojo.byId(player_id+'_share_label');
+                
+                dojo.style(sharelbl, {
+                    'color' : color,
+                    'background-color' : color_bg
+                });
             }
             this.sharePiles[DISCARD] = [];
 

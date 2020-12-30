@@ -13,7 +13,7 @@
     <div id="shares_area" class="shares_lane">
         <!-- BEGIN PLAYERS -->
         <div id="{PLAYER}_shares" class="whiteblock player_shares">
-            <div class="lane_header">{PLAYER_NAME}</div>
+            <div id="{PLAYER}_share_label" class="lane_header">{PLAYER_NAME}</div>
             <!-- BEGIN SHARES -->
             <div id="{PLAYER}_{RR}_shares" class="shares"></div>
             <!-- END SHARES -->
