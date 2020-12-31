@@ -1116,7 +1116,6 @@ class TrickOfTheRails extends Table
         // zombie has to play a acard
         if ($statename == 'playerTurn') {
             $trick_color = self::getGameStateValue( 'trickRR' );
-            $zombiecard = 0;
             if ($trick_color == 0) {
                 // zombie leads with highest card in their hand
                 $sql = "SELECT card_id id, MAX(card_type_arg) val FROM CARDS WHERE card_location = 'hand' AND card_location_arg = $active_player";
@@ -1131,7 +1130,8 @@ class TrickOfTheRails extends Table
                     $zombiecard = self::getUniqueValueFromDB( $sql );
                 }
             }
-            self::playCard($zombiecard['id']);
+            self::dump('zombiecard', $zombiecard);
+            $this->playCard($zombiecard);
             return;
         }
         if ($statename == 'addLocomotive') {
@@ -1143,9 +1143,10 @@ class TrickOfTheRails extends Table
                 FROM CARDS
                 WHERE card_location_arg = 0 and card_type = 6 AND card_type_arg <= 5
                 )");
+            self::dump('emptyRR', $emptyRR);
             foreach ($this->railroads as $rr => $rw) {
                 if ($rw['railway'] == $emptyRR) {
-                    self::placeLocomotive($rr);
+                    $this->placeLocomotive($rr);
                     break;
                 }
             }
@@ -1156,13 +1157,13 @@ class TrickOfTheRails extends Table
             $rw = bga_rand(1,5);
             // flip a coin, start or end
             $flip = bga_rand(1,2);
-            self::placeCity($rw, $flip == 1);
+            $this->placeCity($rw, $flip == 1);
             return;
         }
         if ($statename == 'addRailway') {
             // flip a coin, start or end
             $flip = bga_rand(1,2);
-            self::addRailwayCard($flip == 1);
+            $this->addRailwayCard($flip == 1);
             return;
         }
 

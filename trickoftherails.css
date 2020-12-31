@@ -151,9 +151,10 @@
 .locomotive_value {
     background-color: #E2DAB4;
     color: black;
+    outline: 1px solid black;
     font-weight: bold;
     display: inline-block;
-    padding-inline: 10px 10px;
+    padding-inline: 5px;
 }
 
 .noselect {
