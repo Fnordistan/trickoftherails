@@ -82,6 +82,13 @@ function (dojo, declare) {
             // Setting up player boards
             for( const player_id in gamedatas.players )
             {
+                var player = gamedatas.players[player_id];
+                         
+                // Setting up player board if needed
+                var player_board_div = $('player_board_'+player_id);
+                dojo.place( this.format_block('jstpl_player_board', player ), player_board_div );
+
+                // create share piles for each player
                 this.sharePiles[player_id] = [];
                 // color the labels
                 var color = '#'+gamedatas.players[player_id].color;

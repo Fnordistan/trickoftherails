@@ -61,8 +61,11 @@ var jstpl_rr_icon = '<span class="rr_lane_logo ${railway}_icon" style="display: 
 
 var jstpl_rr_name = '<span style="color: ${rr_color}; font-weight: bold;">${company}</span>';
 
-var jstpl_help_card = '<div ></div>';
+var jstpl_player_board = '\<div class="cp_board">\
+   <span>Foo</span>\
+</div>';
 
+// <div id="stoneicon_p${id}" class="gmk_stoneicon gmk_stoneicon_${color}"></div><span id="stonecount_p${id}">0</span>\
 </script>  
 
 {OVERALL_GAME_FOOTER}
