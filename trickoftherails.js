@@ -62,7 +62,7 @@ function (dojo, declare) {
             this.cardwidth = 114;
             this.cardheight = 171;
         },
-        
+
         /*
             setup:
             
@@ -75,18 +75,29 @@ function (dojo, declare) {
             
             "gamedatas" argument contains all datas retrieved by your "getAllDatas" PHP method.
         */
-        
+
         setup: function( gamedatas ) {
             // this will be an array of arrays by player_id => array of rr share piles
             this.sharePiles = [];
+            // array of arrays by player_id => array of RR counters
+            this.shareCounters = [];
             // Setting up player boards
             for( const player_id in gamedatas.players )
             {
                 var player = gamedatas.players[player_id];
-                         
-                // Setting up player board if needed
+     
+                // Setting up player board
                 var player_board_div = $('player_board_'+player_id);
                 dojo.place( this.format_block('jstpl_player_board', player ), player_board_div );
+                // create RR counters
+                this.shareCounters[player_id] = [];
+                for (const rr of RR_PREFIXES) {
+                    var rr_counter = new ebg.counter();
+                    var rr_c_id = rr+'_shares_counter_'+player_id;
+                    rr_counter.create(rr_c_id);
+                    this.shareCounters[player_id].push(rr_counter);
+                }
+
 
                 // create share piles for each player
                 this.sharePiles[player_id] = [];
@@ -176,7 +187,7 @@ function (dojo, declare) {
                     args.processed = true;
                     
                     if (args.company) {
-                        var rri = toint(args.rr)-1;
+                        var rri = parseInt(args.rr)-1;
                         args.company = this.format_block('jstpl_rr_name', {
                             "company": args.company,
                             "rr_color": RR_COLORS[rri]
@@ -312,6 +323,7 @@ function (dojo, declare) {
 
         /**
          * Put all shares that have previously been added to piles.
+         * Also set counters
          */
         populateSharePiles: function() {
             // everyone's stock shares
@@ -326,6 +338,7 @@ function (dojo, declare) {
                 var val = sharecard.type_arg;
                 var ctype = this.getUniqueTypeForCard(rr, val);
                 this.sharePiles[owner][rr-1].addToStockWithId(ctype, sharecard.id);
+                this.shareCounters[owner][rr-1].incValue(1);
             }
         },
 
@@ -1081,6 +1094,8 @@ function (dojo, declare) {
                 var to_div = this.sharePiles[player_id][rr-1].getItemDivId(card_id);
                 this.trickLane.removeFromStockById(card_id, to_div);
             }
+            // add to counter
+            this.shareCounters[player_id][rr-1].incValue(1);
         },
 
         /**

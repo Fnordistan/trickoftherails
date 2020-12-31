@@ -719,7 +719,7 @@ class TrickOfTheRails extends Table
         }
 
         // Notify all players about Locomotive placement
-        self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} added ${value} to ${endpoint} of the ${company} line'), array (
+        self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} added ${value} to ${endpoint} of the ${company} line${rr}'), array (
             'i18n' => array ('value', 'endpoint', 'company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
