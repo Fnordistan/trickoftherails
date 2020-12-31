@@ -38,13 +38,13 @@ class TrickOfTheRails extends Table
         
         self::initGameStateLabels( array( 
             'handSize' => 5,// number of cards and tricklane cards dealt
-            'currentTrickIndex' => 10, // index of next card to take in trick lane. Can't be turn# because of Loc6/∞
-            'trickRR' => 20,// color of current trick
+            'currentTrickIndex' => 10, // index of next card to take in trick lane. Can't be turn # because of paired Loc6/∞
+            'trickRR' => 20,// company of current trick
             'leadCard' => 21, // for keeping track of the lead card that was played for each hand
             'wonLastTrick' => 30 // player id who won last trick
         ) );
 
-        // it's going to start with two "decks" - 'deck' is the railroad deck, while 'trickdeck' is the tricklane cards
+        // all the cards in one deck, which can keep track of where everything is
         $this->cards = self::getNew("module.common.deck");
         $this->cards->init("CARDS");
 	}
@@ -163,8 +163,8 @@ class TrickOfTheRails extends Table
 
         // before shuffling main rr deck, remove Stations and put them in railway lines
         foreach ( $this->railroads as $rr_id => $railroad ) {
-            $stations = $this->cards->getCardsOfType($rr_id, RAILROAD_STATION);
             // a one-element assocative array...
+            $stations = $this->cards->getCardsOfType($rr_id, RAILROAD_STATION);
             $station = current($stations);
             // Locomotive will be location 0
             // set station at location 1
@@ -189,7 +189,7 @@ class TrickOfTheRails extends Table
     }
 
     /**
-     * Create the trick cards according to player size.
+     * Create the trick lane according to player size.
      */
     protected function createTrickCards($players_nbr) {
         $trick_cards = array();
@@ -502,7 +502,7 @@ class TrickOfTheRails extends Table
                 // count all the card values
                 for ($i = 1; $i <= $scored_cards; $i++) {
                     $next_card = $railwaycards[$i];
-                    $profit += $this->cardValue($next_card);
+                    $profit += $this->stationValue($next_card);
                 }
                 $route_start = 1;
                 $route_end = $rw_len;
@@ -517,7 +517,7 @@ class TrickOfTheRails extends Table
                 // get first route
                 for ($i = 1; $i <= $loco_dist; $i++) {
                     $next_card = $railwaycards[$i];
-                    $lastscore += $this->cardValue($next_card);
+                    $lastscore += $this->stationValue($next_card);
                 }
                 $max = $lastscore;
                 // check the next route by adding the next card and discarding the previous
@@ -525,10 +525,10 @@ class TrickOfTheRails extends Table
                     $nextscore = $lastscore;
                     // subtract value of last card
                     $prev_card = $railwaycards[$j-1];
-                    $nextscore -= $this->cardValue($prev_card);
+                    $nextscore -= $this->stationValue($prev_card);
                     // add value of next card in lie
                     $end_card = $railwaycards[$j+$loco_dist-1];
-                    $nextscore += $this->cardValue($end_card);
+                    $nextscore += $this->stationValue($end_card);
                     if ($nextscore > $max) {
                         $max = $nextscore;
                         $route_start = $j;
@@ -539,31 +539,24 @@ class TrickOfTheRails extends Table
                 $profit = $max;
             }
             // subtract value of locomotive
-            $loco_pen = $this->cardValue($locomotive);
+            $loco_pen = $this->stationValue($locomotive);
             $profit += $loco_pen;
             $profit = max(0, $profit);
 
             self::setStat($profit, $railway."_profit");
             self::setStat($scored_cards, $railway."_length");
-
-            // // update route table
-            // self::DbQuery("
-            // INSERT INTO ROUTES (railroad, route_start, route_end, route_length, num_cards, profit) VALUES ('".$railway."',".$route_start.",".$route_end.",".$scored_cards.",".$rw_len.",".$profit.")
-            // ");
-
         }
     }
 
     /**
-     * Given card values (row, column) that start from 1, get the point value of that card
-     * from our 0-indexes double array.
+     * Given card values (row, column) that start from 1, get the station value of that card
+     * from our 0-indexed double array.
      */
-    function cardValue($card) {
+    function stationValue($card) {
         $x = $card['type'];
         $y = $card['type_arg'];
-        return $this->point_values[$x-1][$y-1];
+        return $this->station_values[$x-1][$y-1];
     }
-
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Player actions
@@ -612,7 +605,7 @@ class TrickOfTheRails extends Table
 
         // Notify all players about the card played
         self::notifyAllPlayers('cardPlayed', clienttranslate('${player_name} ${action_verb} ${company} ${card_value}${rr}'), array (
-            'i18n' => array ('company', 'card_value' ),
+            'i18n' => array ('action_verb', 'company', 'card_value' ),
             'card_id' => $card_id,
             'player_id' => self::getActivePlayerId(),
             'action_verb' => $plays_card,
@@ -705,7 +698,7 @@ class TrickOfTheRails extends Table
 
         $railway = $this->railroads[$railwaycard['type']]['railway'];
         $company = $this->railroads[$railwaycard['type']]['name'];
-        $val = $this->values_label[$railwaycard['type_arg']];
+        $card_value = $this->values_label[$railwaycard['type_arg']];
 
         if ($is_start) {
             $this->cards->insertCard($railwaycard['id'], $railway, 1);
@@ -714,12 +707,12 @@ class TrickOfTheRails extends Table
         }
 
         // Notify all players about Locomotive placement
-        self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} added ${value} to ${endpoint} of the ${company} line${rr}'), array (
-            'i18n' => array ('value', 'endpoint', 'company'),
+        self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} added ${card_value} to ${endpoint} of the ${company} line${rr}'), array (
+            'i18n' => array ('card_value', 'endpoint', 'company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
             'card_id' => $mycard_id,
-            'value' => $val,
+            'card_value' => $card_value,
             'rr' => $railwaycard['type'],
             'company' => $company,
             'endpoint' => $is_start ? 'start' : 'end',
@@ -732,10 +725,10 @@ class TrickOfTheRails extends Table
     /**
      * Passed the railway to add it to, and whether at start or end of line.
      */
-    function placeCity( $railroad, $is_start ) {
+    function placeCity( $company, $is_start ) {
         self::checkAction( 'placeCity' );
         $citycard = current($this->cards->getCardsInLocation('tricklane', self::getGameStateValue('currentTrickIndex')));
-        $railway = $railroad.'_railway';
+        $railway = $company.'_railway';
 
         if ($is_start) {
             $this->cards->insertCard($citycard['id'], $railway, 1);
@@ -833,9 +826,9 @@ class TrickOfTheRails extends Table
         $rrcard = $this->cards->getCard($mycard_id);
 
         return array(
-            "i18n" => array( 'rr', 'val', 'company'),
+            "i18n" => array( 'rr', 'card_value', 'company'),
             'rr' => $rrcard['type'],
-            'val' => $this->values_label[$rrcard['type_arg']],
+            'card_value' => $this->values_label[$rrcard['type_arg']],
             'company' => $this->railroads[$rrcard['type']]['name']
         );
     }
@@ -1028,25 +1021,18 @@ class TrickOfTheRails extends Table
                 // THIS COULD BE A RR card or an Exchange Card!
                 $share = $rewardCard;
                 $this->cards->moveCard($share['id'], 'shares', $winner);
-                if ($share['type_arg'] == EXCHANGE) {
-                    $share_val = $this->trick_type[EXCHANGE]['name'];
-                } else {
-                    $share_val = $this->values_label[$share['type_arg']];
-                }
             } else {
                 // for other players, their card played gets added to shares
                 $share = $this->cards->getCard($trick_id);
                 $this->cards->moveCard($share['id'], 'shares', $player);
-                $share_val = $this->values_label[$share['type_arg']];
             }
-            self::notifyAllPlayers('shareAdded', clienttranslate('${player_name} added ${company} ${card_label} to ${company} shares${rr}'), array (
+            self::notifyAllPlayers('shareAdded', clienttranslate('${player_name} added ${company} ${card_value} to ${company} shares${rr}'), array (
                 'i18n' => array ('company', 'card_value' ),
                 'player_id' => $player,
                 'player_name' => $players[$player]['player_name'],
                 'card_id' => $share['id'],
                 'rr' => $share['type'],
-                'card_value' => $share['type_arg'],
-                'card_label' => $share_val,
+                'card_value' => $this->values_label[$share['type_arg']],
                 'company' => $this->railroads[$share['type']] ['name']));
         }
 
@@ -1159,11 +1145,21 @@ class TrickOfTheRails extends Table
             return;
         }
         if ($statename == 'addCity') {
-
+            // add to random railway
+            $rw = bga_rand(1,5);
+            // flip a coin, start or end
+            $flip = bga_rand(1,2);
+            self::placeCity($rw, $flip == 1);
+            return;
         }
         if ($statename == 'addRailway') {
-
+            // flip a coin, start or end
+            $flip = bga_rand(1,2);
+            self::addRailwayCard($flip == 1);
+            return;
         }
+
+        /** Really shouldn't be hitting anything below? */
 
         if ($state['type'] === "activeplayer") {
             switch ($statename) {

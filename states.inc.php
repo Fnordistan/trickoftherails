@@ -132,8 +132,8 @@ $machinestates = array(
 
     STATE_ADD_RAILWAY => array(
         "name" => "addRailway",
-        "description" => clienttranslate('${actplayer} adds ${val} to the ${company} railway.'),
-        "descriptionmyturn" => clienttranslate('${you} must add ${val} to the ${company} railway.'),
+        "description" => clienttranslate('${actplayer} adds ${card_value} to the ${company} railway.'),
+        "descriptionmyturn" => clienttranslate('${you} must add ${card_value} to the ${company} railway.'),
         "type" => "activeplayer",
         "args" => "argAddRailway",
         "possibleactions" => array( "addRailwayCard" ),

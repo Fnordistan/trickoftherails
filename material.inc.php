@@ -59,7 +59,8 @@ $this->values_label = array(
   7 => '7',
   8 => '8',
   9 => '9',
-  10 => '10'
+  10 => '10',
+  11 => 'Exchange'
 );
 
 $this->trick_type = array(
@@ -85,7 +86,7 @@ $this->trick_type = array(
     'nametr' => self::_('Exchange') ),
 );
 
-$this->point_values = array(
+$this->station_values = array(
   /** B&O */    array(10, 10, 10, 20, 20, 20, 20, 30, 30, 40, 0, 10),
   /** C&O */    array(40, 30, 30, 20, 20, 20, 20, 10, 10, 10, 0, 10),
   /** Erie */   array(30, 20, 20, 10, 30, 10, 20, 20, 40, 10, 0, 10),
