@@ -68,7 +68,7 @@
 }
 
 .rr_lane_logo {
-    margin-top: 5px;
+    margin: 5px;
     background-position: top;
     background-image: url(img/railroad_sprites.png);
     background-repeat: no-repeat;
@@ -110,6 +110,24 @@
     -o-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
     box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
     filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
+}
+
+.small_station_values_card {
+    margin-left: 10px;
+    background-size: 75px 50px;
+    background-image: url(img/station_values_card.jpg);
+    background-repeat: no-repeat;
+    background-position: 0px 0px;
+    width: 75px;
+    height: 50px;
+}
+
+.large_station_values_card {
+    background-size: 480px 320px;
+    background-image: url(img/station_values_card.jpg);
+    background-repeat: no-repeat;
+    width: 480px;
+    height: 320px;
 }
 
 .card_lead {

@@ -5,8 +5,9 @@
     <div id="myhand"></div>
 </div>
 
-<div id="button_wrapper" style="text-align: center;">
+<div id="button_wrapper" style="display: flex; align-items: center; justify-content: center;">
     <a href="#" id="shares_button" class="bgabutton bgabutton_blue"><span>{SHOW_SHARES_TEXT}</span></a>
+    <div id="station_values" class="small_station_values_card"></div>
 </div>
 
 <div id="shares_wrapper" class="shares_container">
@@ -56,9 +57,11 @@
 <script type="text/javascript">
 
 // Javascript HTML templates
-var jstpl_rr_icon = '<span class="rr_lane_logo ${railway}_icon" style="display: inline-block; float: none;"></span>';
+var jstpl_rr_icon = '<span class="rr_lane_logo ${railway}_icon" style="display: inline-block; vertical-align: -10px;"></span>';
 
 var jstpl_rr_name = '<span style="color: ${rr_color}; font-weight: bold;">${company}</span>';
+
+var jstpl_help_card = '<div ></div>';
 
 </script>  
 

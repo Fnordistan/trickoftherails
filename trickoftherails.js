@@ -76,9 +76,7 @@ function (dojo, declare) {
             "gamedatas" argument contains all datas retrieved by your "getAllDatas" PHP method.
         */
         
-        setup: function( gamedatas )
-        {
-
+        setup: function( gamedatas ) {
             // this will be an array of arrays by player_id => array of rr share piles
             this.sharePiles = [];
             // Setting up player boards
@@ -136,7 +134,62 @@ function (dojo, declare) {
                 this.sharePiles[DISCARD].push(discarded_shares);
             }
 
+            // create all the Stock items
+            this.setupAllCards();
 
+            // now actually fetch game data and populate all the stock items
+            this.populatePlayerHand();
+            this.populateSharePiles();
+            this.populateCardsPlayed();
+            this.populateTrickLane();
+            this.populateRailways();
+
+            // setup card selection action
+            dojo.connect( this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged' );
+
+            this.setupLocomotiveActions();
+            this.setupRailhouseActions();
+            this.setupHelpButtons();
+
+            // Setup game notifications to handle (see "setupNotifications" method below)
+            this.setupNotifications();
+        },
+
+        ///////////////////////////////////////////////////
+        /// Setup functions
+        //
+        //
+
+       /** Inject html into log items  */
+
+        /* @Override */
+        format_string_recursive : function(log, args) {
+            try {
+                if (log && args && !args.processed) {
+                    args.processed = true;
+                    
+                    if (args.company) {
+                        var rri = toint(args.rr)-1;
+                        args.company = this.format_block('jstpl_rr_name', {
+                            "company": args.company,
+                            "rr_color": RR_COLORS[rri]
+                        }) + this.format_block('jstpl_rr_icon', {
+                            "railway": RR_PREFIXES[rri]
+                        });
+                        // hack because we had to insert ${rr}
+                        log = log.replace('${rr}', '');
+                    }
+                }
+            } catch (e) {
+                console.error(log,args,"Exception thrown", e.stack);
+            }
+            return this.inherited(arguments);
+        },
+
+        /**
+         * This creates all the cards that will populate our Stocks.
+         */
+        setupAllCards: function() {
             // Create card types
             for( var rr = 1; rr <= ROWS; rr++ )
             {
@@ -173,32 +226,91 @@ function (dojo, declare) {
                         } else if (vv == EXCHANGE) {
                             // it's an Exchange card
                             this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+CARD_SPRITES, card_type_id );
-                            this.populateSharePiles(card_type_id, g_gamethemeurl+CARD_SPRITES);
+                            this.setupSharePiles(card_type_id, g_gamethemeurl+CARD_SPRITES);
                         } else {
                             this.playerHand.addItemType( card_type_id, card_type_id, g_gamethemeurl+CARD_SPRITES, card_type_id );
                             this.cardsPlayed.addItemType( card_type_id, 0, g_gamethemeurl+CARD_SPRITES, card_type_id );
                             this.railWays[rr-1].addItemType( card_type_id, 0, g_gamethemeurl+CARD_SPRITES, card_type_id );
-                            this.populateSharePiles(card_type_id, g_gamethemeurl+CARD_SPRITES);
+                            this.setupSharePiles(card_type_id, g_gamethemeurl+CARD_SPRITES);
                             // tricklanes can also hold RR cards
                             this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+CARD_SPRITES, card_type_id );
                         }
                     }
                 }
             }
+        },
 
+        /**
+         * Add StockItem to all share piles
+         * @param {*} card_type_id
+         * @param {*} sprite_url
+         */
+        setupSharePiles: function(card_type_id, sprite_url) {
+            for (var ri = 0; ri < 5; ri++) {
+                for( const player_id in this.gamedatas.players ) {
+                    this.sharePiles[player_id][ri].addItemType( card_type_id, card_type_id, sprite_url, card_type_id );
+                }
+                this.sharePiles[DISCARD][ri].addItemType( card_type_id, card_type_id, sprite_url, card_type_id );
+            }
+        },
+
+        /**
+        * Actions clicking or hovering on locomotive slots
+        */
+        setupLocomotiveActions: function() {
+            for (loconode of dojo.query('.locomotive_slot')) {
+                dojo.connect(loconode, 'onclick', this, 'onLocomotiveSelected');
+                dojo.connect(loconode, 'mouseenter', this, 'onLocomotiveSlotActivate');
+                dojo.connect(loconode, 'mouseleave', this, 'onLocomotiveSlotDeactivate');
+            }
+        },
+
+        /**
+         * Actions clicking or hovering on Railhouse icons
+         */
+        setupRailhouseActions: function() {
+            for (rh_node of dojo.query('.railhouse')) {
+                dojo.connect(rh_node, 'onclick', this, 'onRailhouseSelected');
+                dojo.connect(rh_node, 'mouseenter', this, 'onRailhouseActivate');
+                dojo.connect(rh_node, 'mouseleave', this, 'onRailhouseDeactivate');
+            }
+        },
+
+        /**
+         * The Show/Hide shares button and the Station Values help card.
+         */
+        setupHelpButtons: function() {
+            // Show/Hide Player shares button
+            dojo.connect($('shares_button'), 'onclick', this, 'onShowShares');
+            // Station Values help card
+            this.addTooltipHtml( $('station_values'), '<div class="large_station_values_card"></div>', .1 ); 
+        },
+
+
+        //// POPULATE Functions actually put the cards into the Stocks, from Db
+
+        /**
+         * Put the cards in current player's hand.
+         */
+        populatePlayerHand: function() {
             // Cards in player's hand
-            for ( const h in gamedatas.hand ) {
-                var mycard = gamedatas.hand[h];
+            for ( const h in this.gamedatas.hand ) {
+                var mycard = this.gamedatas.hand[h];
                 var rr = mycard.type;
                 var value = mycard.type_arg;
                 this.playerHand.addToStockWithId(this.getUniqueTypeForCard(rr, value), mycard.id);
             }
             this.updateHand(this.isCurrentPlayerActive() && this.checkAction('playCard', true), this.gamedatas.trick);
+        },
 
+        /**
+         * Put all shares that have previously been added to piles.
+         */
+        populateSharePiles: function() {
             // everyone's stock shares
             // also find the discarded shares
-            for (const s in gamedatas.shares) {
-                var sharecard = gamedatas.shares[s];
+            for (const s in this.gamedatas.shares) {
+                var sharecard = this.gamedatas.shares[s];
                 var owner = sharecard.location_arg;
                 if (sharecard.location == 'discard') {
                     owner = DISCARD;
@@ -208,22 +320,30 @@ function (dojo, declare) {
                 var ctype = this.getUniqueTypeForCard(rr, val);
                 this.sharePiles[owner][rr-1].addToStockWithId(ctype, sharecard.id);
             }
+        },
 
-            // Cards played on table
-            for ( const i in gamedatas.currenttrick) {
-                var tcard = gamedatas.currenttrick[i];
+        /**
+         * Put cards played on table.
+         */
+        populateCardsPlayed: function() {
+            for ( const i in this.gamedatas.currenttrick) {
+                var tcard = this.gamedatas.currenttrick[i];
                 var rr = tcard.type;
                 var value = tcard.type_arg;
                 var ctype = this.getUniqueTypeForCard(rr, value);
                 this.cardsPlayed.item_type[ctype].weight = parseInt(tcard.location_arg);
                 this.cardsPlayed.addToStockWithId(ctype, tcard.id);
             }
+        },
 
-            // the trick lane
+        /**
+         * Put cards in Trick Lane.
+         */
+        populateTrickLane: function() {
             // Special counter for Reservation cards
             var rsv = 0;
-            for (const i in gamedatas.tricklanecards) {
-                var tlcard = gamedatas.tricklanecards[i];
+            for (const i in this.gamedatas.tricklanecards) {
+                var tlcard = this.gamedatas.tricklanecards[i];
                 var tt = tlcard.type;
                 var value = tlcard.type_arg;
                 var ctype = this.getUniqueTypeForCard(tt, value);
@@ -233,11 +353,15 @@ function (dojo, declare) {
                 this.trickLane.item_type[ctype].weight = parseInt(tlcard.location_arg);
                 this.trickLane.addToStockWithId(ctype, tlcard.id);
             }
+        },
 
-            // the railway lines
+        /**
+         * Put cards in the railway lines.
+         */
+        populateRailways: function() {
             var rw = 0;
             for (rr of RR_PREFIXES) {
-                var railwaycards = gamedatas[rr+'_railway_cards'];
+                var railwaycards = this.gamedatas[rr+'_railway_cards'];
                 for (const i in railwaycards) {
                     var railwaycard = railwaycards[i];
                     var tt = railwaycard.type;
@@ -253,63 +377,7 @@ function (dojo, declare) {
                 }
                 rw++;
             }
-
-            dojo.connect( this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged' );
-
-            for (loconode of dojo.query('.locomotive_slot')) {
-                dojo.connect(loconode, 'onclick', this, 'onLocomotiveSelected');
-                dojo.connect(loconode, 'mouseenter', this, 'onLocomotiveSlotActivate');
-                dojo.connect(loconode, 'mouseleave', this, 'onLocomotiveSlotDeactivate');
-            }
-
-            for (rh_node of dojo.query('.railhouse')) {
-                dojo.connect(rh_node, 'onclick', this, 'onRailhouseSelected');
-                dojo.connect(rh_node, 'mouseenter', this, 'onRailhouseActivate');
-                dojo.connect(rh_node, 'mouseleave', this, 'onRailhouseDeactivate');
-            }
-
-            dojo.connect($('shares_button'), 'onclick', this, 'onShowShares');
-
-            // Setup game notifications to handle (see "setupNotifications" method below)
-            this.setupNotifications();
         },
-
-       /** Inject html into log items  */
-
-        /* @Override */
-        format_string_recursive : function(log, args) {
-            try {
-                if (log && args && !args.processed) {
-                    args.processed = true;
-                    
-                    if (args.company) {
-                        console.log(args.company);
-                        console.log(args.rr);
-                        var rri = toint(args.rr)-1;
-                        args.company = this.format_block('jstpl_rr_name', {
-                            "company": args.company,
-                            "rr_color": RR_COLORS[rri]
-                        }) + this.format_block('jstpl_rr_icon', {
-                            "railway": RR_PREFIXES[rri]
-                        });
-                    }
-                }
-            } catch (e) {
-                console.error(log,args,"Exception thrown", e.stack);
-            }
-            return this.inherited(arguments);
-        },
-
-    //     getRRIcon : function(args) {
-    //         var token_id = args.rr;
-    //         var rr = toint(args.rr);
-    //         var logid = "log" + "_rr_" + args.rr;
-    //         var rrDiv = this.format_block('jstpl_rr_icon', {
-    //             "id" : logid,
-    //             "x" : -125*(rr-1),
-    //         });
-    //         return rrDiv;
-    //    },
 
         ///////////////////////////////////////////////////
         //// Game & client states
@@ -517,20 +585,6 @@ function (dojo, declare) {
                     throw new Error("Unexpected Locomotive value: "+type_arg);
             }
             return label;
-        },
-
-        /**
-         * Add StockItem to all share piles
-         * @param {*} card_type_id
-         * @param {*} sprite_url
-         */
-        populateSharePiles: function(card_type_id, sprite_url) {
-            for (var ri = 0; ri < 5; ri++) {
-                for( const player_id in this.gamedatas.players ) {
-                    this.sharePiles[player_id][ri].addItemType( card_type_id, card_type_id, sprite_url, card_type_id );
-                }
-                this.sharePiles[DISCARD][ri].addItemType( card_type_id, card_type_id, sprite_url, card_type_id );
-            }
         },
 
         /**
@@ -1078,7 +1132,6 @@ function (dojo, declare) {
 
             this.railWays[rr-1].addToStockWithId(card_type, card_id, trick_div);
         },
-
     });             
 });
 
