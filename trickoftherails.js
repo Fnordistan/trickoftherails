@@ -404,26 +404,27 @@ function (dojo, declare) {
                 this.trickLane.item_type[ctype].weight = parseInt(tlcard.location_arg);
 
                 this.trickLane.addToStockWithId(ctype, tlcard.id);
+            }
+            this.rearrangeTrickLane();
+        },
 
-                if (ctype == LOCOMOTIVE_UNLIMITED) {
-                    loc_wt = this.trickLane.item_type[ctype].weight;
-                    var loc_unl_div = this.trickLane.getItemDivId(tlcard.id);
+        /**
+         * Rearranges all cards after the unlimited locomotive.
+         */
+        rearrangeTrickLane: function() {
+            var found_loc_unl = false;
+            for (var i = 0; i < this.trickLane.count(); i++) {
+                const card = this.trickLane.items[i];
+                var card_div = this.trickLane.getItemDivId(card.id);
+                if (card.type == LOCOMOTIVE_UNLIMITED) {
+                    found_loc_unl = true;
                     // do a special thing for the ∞ Locomotive
-                    dojo.style(loc_unl_div, {
-                        "transform": "translate(-50px,0px)",
+                    dojo.style(card_div, {
                         "z-index": 1
                     });
                 }
-            }
-            // now cycle through again to shift everything to the right of the inf locomotive
-            if (loc_wt != -1) {
-                for (const j in this.gamedatas.tricklanecards) {
-                    var card_in_lane = this.gamedatas.tricklanecards[j];
-                    var wt = parseInt(card_in_lane.location_arg);
-                    if (wt > loc_wt) {
-                        var card_div = this.trickLane.getItemDivId(card_in_lane.id);
-                        dojo.style(card_div, "transform", "translate(-50px,0px)");
-                    }
+                if (found_loc_unl) {
+                    dojo.style(card_div, "transform", "translate(-50px,0px)");
                 }
             }
         },
@@ -1108,6 +1109,8 @@ function (dojo, declare) {
             // move the (winning) trick card from the play area to the Trick Lane
             this.trickLane.addToStockWithId(card_type, card_id, trick_div);
             this.cardsPlayed.removeFromStockById(card_id, reserve_div);
+            // now we need to rearrange because of unlimited loc
+            this.rearrangeTrickLane();
         },
 
         /**
