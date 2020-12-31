@@ -61,6 +61,8 @@ var jstpl_rr_icon = '<span class="rr_logo ${rr}_icon" style="display: inline-blo
 
 var jstpl_rr_name = '<span style="color: ${rr_color}; font-weight: bold;">${company}</span>';
 
+var jstpl_card_value_label = '<span class="card_value" style="background-color: ${rr_color};">${card_value_label}</span>';
+
 // same as jstpl_rr_icon, but id added
 var jstpl_rr_counter_icon = '<span id="${rr}_counter_icon_${id}" class="rr_logo ${rr}_icon" style="display: inline-block; vertical-align: -10px;"></span>';
 

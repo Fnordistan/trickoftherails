@@ -139,6 +139,23 @@
     transform: translate(15px, 0);
 }
 
+/** for card value text in logs */
+.card_value {
+    color: #ffff;
+    font-weight: bold;
+    display: inline-block;
+    padding-inline: 10px 10px;
+}
+
+/** for locomotive value text in logs */
+.locomotive_value {
+    background-color: #E2DAB4;
+    color: black;
+    font-weight: bold;
+    display: inline-block;
+    padding-inline: 10px 10px;
+}
+
 .noselect {
     border: 2px gray solid;
     border-style: inset;

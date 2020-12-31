@@ -199,8 +199,16 @@ function (dojo, declare) {
                 if (log && args && !args.processed) {
                     args.processed = true;
                     
+                    var rri = (args.rr) ? parseInt(args.rr)-1 : 0;
+                    if (args.card_value_label) {
+                        args.card_value_label = this.format_block('jstpl_card_value_label', {
+                            "card_value_label": args.card_value_label,
+                            "rr_color": RR_COLORS[rri]
+                        });
+                        // hack because we had to insert ${card_value}
+                        log = log.replace('${card_value}', '');
+                    }
                     if (args.company) {
-                        var rri = parseInt(args.rr)-1;
                         args.company = this.format_block('jstpl_rr_name', {
                             "company": args.company,
                             "rr_color": RR_COLORS[rri]
@@ -209,6 +217,12 @@ function (dojo, declare) {
                         });
                         // hack because we had to insert ${rr}
                         log = log.replace('${rr}', '');
+                    }
+                    if (args.locomotive) {
+                        let re = /\[(.+)\]/;
+                        var loc_str = args.locomotive;
+                        loc_str = loc_str.replace(re, "<span class=\"locomotive_value\">$1</span>");
+                        args.locomotive = loc_str;
                     }
                 }
             } catch (e) {
@@ -351,7 +365,9 @@ function (dojo, declare) {
                 var val = sharecard.type_arg;
                 var ctype = this.getUniqueTypeForCard(rr, val);
                 this.sharePiles[owner][rr-1].addToStockWithId(ctype, sharecard.id);
-                this.shareCounters[owner][rr-1].incValue(1);
+                if (owner != DISCARD) {
+                    this.shareCounters[owner][rr-1].incValue(1);
+                }
             }
         },
 
@@ -1155,7 +1171,7 @@ function (dojo, declare) {
         notif_railwayCardAdded : function(notif) {
             var card_id = parseInt(notif.args.card_id);
             var rr = parseInt(notif.args.rr);
-            var v = parseInt(notif.args.value);
+            var v = parseInt(notif.args.card_value);
             this.cardsPlayed.removeFromStockById(card_id);
             var card_type = this.getUniqueTypeForCard(rr, v);
             var card_div = this.cardsPlayed.getItemDivId(card_id);
