@@ -29,9 +29,8 @@
     </div>
 </div>
 
-<div id="currenttrick_wrap" class="whiteblock">
-    <div class="lane_header">Lead</div>
-    <div id="currenttrick"></div>
+<div id="cardsplayed_wrap" class="whiteblock">
+    <div id="cardsplayed"></div>
 </div>
 
 <div id="tricklane_wrap" class="whiteblock">

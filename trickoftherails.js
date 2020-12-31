@@ -123,7 +123,7 @@ function (dojo, declare) {
             // where cards are played for the current trick
             // must come before player hand!
             this.cardsPlayed = new ebg.stock();
-            this.cardsPlayed.create(this, $('currenttrick'), this.cardwidth, this.cardheight );
+            this.cardsPlayed.create(this, $('cardsplayed'), this.cardwidth, this.cardheight );
             this.cardsPlayed.setSelectionMode(0);
             this.cardsPlayed.extraClasses='nice_card';
             this.cardsPlayed.image_items_per_row = COLS;
@@ -1082,7 +1082,7 @@ function (dojo, declare) {
                 // corresponding item
                 if ($('myhand_item_' + card_id)) {
                     this.cardsPlayed.addToStockWithId(card_type, card_id, 'myhand_item_'+card_id);
-                    this.playerHand.removeFromStockById(card_id, 'currenttrick_item_'+card_id);
+                    this.playerHand.removeFromStockById(card_id, 'cardsplayed_item_'+card_id);
                 }
                 // now disable my hand again
                 this.updateHand(false);
