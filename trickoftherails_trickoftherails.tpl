@@ -44,7 +44,7 @@
 
     <!-- BEGIN RAILROAD -->
     <div id="{RR}_lane" class="whiteblock rr_lane">
-        <div id="{RR}_logo" class="rr_lane_logo"></div>
+        <div id="{RR}_logo" class="rr_logo"></div>
         <div id="{RR}_locomotive" class="locomotive_slot"></div>
         <div id="{RR}_start" class="railhouse"></div>
         <div id="{RR}_railway"></div>
@@ -57,17 +57,14 @@
 <script type="text/javascript">
 
 // Javascript HTML templates
-var jstpl_rr_icon = '<span class="rr_lane_logo ${railway}_icon" style="display: inline-block; vertical-align: -10px;"></span>';
+var jstpl_rr_icon = '<span class="rr_logo ${rr}_icon" style="display: inline-block; vertical-align: -10px;"></span>';
 
 var jstpl_rr_name = '<span style="color: ${rr_color}; font-weight: bold;">${company}</span>';
 
-var jstpl_player_board = '\<div class="cp_board">\
-    <span id="b_and_o_shares_counter_${id}" class="share_counter"></span>\
-    <span id="c_and_o_shares_counter_${id}" class="share_counter"></span>\
-    <span id="erie_shares_counter_${id}" class="share_counter"></span>\
-    <span id="nyc_shares_counter_${id}" class="share_counter"></span>\
-    <span id="prr_shares_counter_${id}" class="share_counter"></span>\
-</div>';
+// same as jstpl_rr_icon, but id added
+var jstpl_rr_counter_icon = '<span id="${rr}_counter_icon_${id}" class="rr_logo ${rr}_icon" style="display: inline-block; vertical-align: -10px;"></span>';
+
+var jstpl_rr_counter = '<span id="${rr}_shares_counter_${id}"></span>';
 
 </script>  
 

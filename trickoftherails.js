@@ -44,6 +44,8 @@ const STATION = 12;
 // this is kind of a hack - we know this specific
 // card type is the Reservation card (row 6, position 9)
 const RESERVATION_CARD_TYPE = 68;
+// identifies the ∞ Locomotive (row 6, position 5)
+const LOCOMOTIVE_UNLIMITED = 64
 
 const CARD_SPRITES = 'img/cards_sprites.jpg';
 
@@ -88,14 +90,25 @@ function (dojo, declare) {
      
                 // Setting up player board
                 var player_board_div = $('player_board_'+player_id);
-                dojo.place( this.format_block('jstpl_player_board', player ), player_board_div );
                 // create RR counters
                 this.shareCounters[player_id] = [];
-                for (const rr of RR_PREFIXES) {
+                for (const rri in RR_PREFIXES) {
+                    var rr = RR_PREFIXES[rri];
+
+                    dojo.place( this.format_block('jstpl_rr_counter_icon', {
+                        "rr": rr,
+                        "id": player_id
+                    }), player_board_div);
+
+                    dojo.place( this.format_block('jstpl_rr_counter', {
+                        "rr": rr,
+                        "id": player_id
+                    }), player_board_div);
+
                     var rr_counter = new ebg.counter();
-                    var rr_c_id = rr+'_shares_counter_'+player_id;
-                    rr_counter.create(rr_c_id);
+                    rr_counter.create(rr+'_shares_counter_'+player_id);
                     this.shareCounters[player_id].push(rr_counter);
+                    this.addTooltip(rr+'_counter_icon_'+player_id, RAILROADS[rri]+' Shares', '');
                 }
 
 
@@ -192,7 +205,7 @@ function (dojo, declare) {
                             "company": args.company,
                             "rr_color": RR_COLORS[rri]
                         }) + this.format_block('jstpl_rr_icon', {
-                            "railway": RR_PREFIXES[rri]
+                            "rr": RR_PREFIXES[rri]
                         });
                         // hack because we had to insert ${rr}
                         log = log.replace('${rr}', '');
@@ -362,6 +375,8 @@ function (dojo, declare) {
         populateTrickLane: function() {
             // Special counter for Reservation cards
             var rsv = 0;
+            // location of the UNL train
+            var loc_wt = -1;
             for (const i in this.gamedatas.tricklanecards) {
                 var tlcard = this.gamedatas.tricklanecards[i];
                 var tt = tlcard.type;
@@ -371,7 +386,29 @@ function (dojo, declare) {
                     ctype += rsv++;
                 }
                 this.trickLane.item_type[ctype].weight = parseInt(tlcard.location_arg);
+
                 this.trickLane.addToStockWithId(ctype, tlcard.id);
+
+                if (ctype == LOCOMOTIVE_UNLIMITED) {
+                    loc_wt = this.trickLane.item_type[ctype].weight;
+                    var loc_unl_div = this.trickLane.getItemDivId(tlcard.id);
+                    // do a special thing for the ∞ Locomotive
+                    dojo.style(loc_unl_div, {
+                        "transform": "translate(-50px,0px)",
+                        "z-index": 1
+                    });
+                }
+            }
+            // now cycle through again to shift everything to the right of the inf locomotive
+            if (loc_wt != -1) {
+                for (const j in this.gamedatas.tricklanecards) {
+                    var card_in_lane = this.gamedatas.tricklanecards[j];
+                    var wt = parseInt(card_in_lane.location_arg);
+                    if (wt > loc_wt) {
+                        var card_div = this.trickLane.getItemDivId(card_in_lane.id);
+                        dojo.style(card_div, "transform", "translate(-50px,0px)");
+                    }
+                }
             }
         },
 

@@ -24,11 +24,6 @@ define('RESERVATION', 9);
 define('EXCHANGE', 11);
 define('RAILROAD_STATION', 12);
 
-# playCard actions
-define('LEAD', 1);
-define('FOLLOW', 2);
-define('ANY', 3);
-
 class TrickOfTheRails extends Table
 {
 	function __construct( )
@@ -685,7 +680,7 @@ class TrickOfTheRails extends Table
         $this->cards->moveCard($lococard['id'], $railway, 0);
 
         // Notify all players about Locomotive placement
-        self::notifyAllPlayers('locomotivePlaced', clienttranslate('${player_name} placed ${locomotive} on the ${company} line'), array (
+        self::notifyAllPlayers('locomotivePlaced', clienttranslate('${player_name} placed ${locomotive} on the ${company} line${rr}'), array (
             'i18n' => array ('locomotive', 'company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
@@ -1125,7 +1120,51 @@ class TrickOfTheRails extends Table
     function zombieTurn( $state, $active_player )
     {
     	$statename = $state['name'];
-    	
+        // zombie has to play a acard
+        if ($statename == 'playerTurn') {
+            $trick_color = self::getGameStateValue( 'trickRR' );
+            $zombiecard = 0;
+            if ($trick_color == 0) {
+                // zombie leads with highest card in their hand
+                $sql = "SELECT card_id id, MAX(card_type_arg) val FROM CARDS WHERE card_location = 'hand' AND card_location_arg = $active_player";
+                $zombiecard = self::getUniqueValueFromDB( $sql );
+            } else {
+                // play highest card in the trick color
+                $sql = "SELECT card_id id, MAX(card_type_arg) FROM CARDS WHERE card_location = 'hand' AND card_location_arg = $active_player AND card_type = $trick_color";
+                $zombiecard = self::getUniqueValueFromDB( $sql );
+                if ($zombiecard == null) {
+                    // play any card, play lowest card
+                    $sql = "SELECT card_id id, MIN(card_type_arg) FROM CARDS WHERE card_location = 'hand' AND card_location_arg = $active_player";
+                    $zombiecard = self::getUniqueValueFromDB( $sql );
+                }
+            }
+            self::playCard($zombiecard['id']);
+            return;
+        }
+        if ($statename == 'addLocomotive') {
+            // get lowest railway that does not already have locomotives
+            $emptyRR = self::getUniqueValueFromDB("
+            SELECT MIN(card_location) railway FROM CARDS
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM CARDS
+                WHERE card_location_arg = 0 and card_type = 6 AND card_type_arg <= 5
+                )");
+            foreach ($this->railroads as $rr => $rw) {
+                if ($rw['railway'] == $emptyRR) {
+                    self::placeLocomotive($rr);
+                    break;
+                }
+            }
+            return;
+        }
+        if ($statename == 'addCity') {
+
+        }
+        if ($statename == 'addRailway') {
+
+        }
+
         if ($state['type'] === "activeplayer") {
             switch ($statename) {
                 default:
@@ -1146,6 +1185,11 @@ class TrickOfTheRails extends Table
         throw new BgaVisibleSystemException( "Zombie mode not supported at this game state: ".$statename );
     }
     
+    function isZombie($player_id) {
+        return self::getUniqueValueFromDB(self::format("
+            SELECT player_zombie FROM player WHERE player_id={player_id}
+        ", array('player_id' => $player_id)));
+    }
 ///////////////////////////////////////////////////////////////////////////////////:
 ////////// DB upgrade
 //////////

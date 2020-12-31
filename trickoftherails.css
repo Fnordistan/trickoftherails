@@ -67,7 +67,7 @@
     display: flex;
 }
 
-.rr_lane_logo {
+.rr_logo {
     margin: 5px;
     background-position: top;
     background-image: url(img/railroad_sprites.png);
