@@ -79,6 +79,7 @@ function (dojo, declare) {
         */
 
         setup: function( gamedatas ) {
+            dojo.destroy('debug_output');
             // this will be an array of arrays by player_id => array of rr share piles
             this.sharePiles = [];
             // array of arrays by player_id => array of RR counters
@@ -412,20 +413,29 @@ function (dojo, declare) {
          * Rearranges all cards after the unlimited locomotive.
          */
         rearrangeTrickLane: function() {
-            var found_loc_unl = false;
+            var unlimited_loco = false;
+            var last_y = Number.MAX_SAFE_INTEGER;
             for (var i = 0; i < this.trickLane.count(); i++) {
                 const card = this.trickLane.items[i];
                 var card_div = this.trickLane.getItemDivId(card.id);
+                var coords = dojo.coords(card_div);
                 if (card.type == LOCOMOTIVE_UNLIMITED) {
-                    found_loc_unl = true;
+                    unlimited_loco = true;
                     // do a special thing for the ∞ Locomotive
                     dojo.style(card_div, {
                         "z-index": 1
                     });
                 }
-                if (found_loc_unl) {
-                    dojo.style(card_div, "transform", "translate(-50px,0px)");
+                if (unlimited_loco) {
+                    var shift = "translate(-50px,0px)";
+                    // if this card is below the previous card, we're arranged vertically
+                    // and want to shift up, not left
+                    if (coords.y > last_y) {
+                        shift = "translate(0px,-20px)";
+                    }
+                    dojo.style(card_div, "transform", shift);
                 }
+                last_y = coords.y;
             }
         },
 
@@ -629,8 +639,6 @@ function (dojo, declare) {
                 tooltip = RAILROADS[rri] + " (" + type_arg + ")";
             }
             this.addTooltip( card_div.id, _(tooltip), '');
-            // // add RR name to every class
-            // dojo.addClass( card_div, RAILROADS[rri]);
         },
 
         /**

@@ -1052,7 +1052,9 @@ class TrickOfTheRails extends Table
         }
     }
 
-
+    /**
+     * End of game, scoring done here.
+     */
     function stScoring() {
         // first we calculate the values of every Railroad
         $this->scoreRailways();
@@ -1087,11 +1089,67 @@ class TrickOfTheRails extends Table
             }
 
             self::DbQuery( "UPDATE player SET player_score=$score WHERE player_id=$player_id" );
+
+            $score_table = $this->createFinalScoreTable();
+
+            $this->notifyAllPlayers( "tableWindow", '', array(
+                "id" => 'finalScoring',
+                "title" => clienttranslate("Final Score"),
+                "table" => $score_table
+            ) ); 
         }
 
         $this->gamestate->nextState( "" );
     }
-   
+
+    function createFinalScoreTable() {
+        $table = array();
+        // row 1
+        $table_header = array();
+        $table_header[] = array('str' => clienttranslate("Company"), 'type' => 'header');
+        $table_header[] = array('str' => clienttranslate("Profits"), 'type' => 'header');
+        // array of rows
+        $profit_rows = array();
+        foreach( $this->railroads as $r => $co) {
+            $next_row = array();
+            // first put company name on left column
+            $next_row[] = array('str' => clienttranslate('${company}'),
+                                'args' => array( 'company' => $co['name']),
+                                'type' => 'header');
+            // and its profits
+            $next_row[] = self::getStat($co['railway']."_profit");
+            $profit_rows[] = $next_row;
+        }
+        $total_profits = array(clienttranslate("Total Profits"));
+        // empty cell
+        $total_profits[] = "";
+
+        // now iterate players
+        $players = self::loadPlayersBasicInfos();
+        foreach( $players as $player_id => $player ) {
+            $score = 0;
+            $table_header[] = array('str' => '${player_name}',
+                                    'args' => array( 'player_name' => $player['player_name'] ),
+                                    'type' => 'header');
+
+            $row = 0;
+            foreach( $this->railroads as $rr => $company) {
+                $shares = self::getStat($company['railway']."_shares", $player_id);
+                $profit = self::getStat($company['railway']."_profits", $player_id);
+                $profit_rows[$row++][] = array('str' => clienttranslate('X{$shares} shares=${profit}'),
+                                             'args' => array('shares' => $shares, 'profit' => $profit));
+                $score += $profit;
+            }
+            $total_profits[] = $score;
+        }
+        $table[] = $table_header;
+        foreach ($profit_rows as $p) {
+            $table[] = $p;
+        }
+        $table[] = $total_profits;
+
+        return $table;
+    }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Zombie
