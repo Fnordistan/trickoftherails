@@ -1032,7 +1032,7 @@ class TrickOfTheRails extends Table
                 $share = $this->cards->getCard($trick_id);
                 $this->cards->moveCard($share['id'], 'shares', $player);
             }
-            self::notifyAllPlayers('shareAdded', clienttranslate('${player_name} added ${company} ${card_value_label} to ${company} shares${rr}${card_value}'), array (
+            self::notifyAllPlayers('shareAdded', clienttranslate('${player_name} added ${card_value_label} to ${company} shares${rr}${card_value}'), array (
                 'i18n' => array ('company', 'card_value_label' ),
                 'player_id' => $player,
                 'player_name' => $players[$player]['player_name'],
@@ -1106,18 +1106,19 @@ class TrickOfTheRails extends Table
         $table = array();
         // row 1
         $table_header = array();
-        $table_header[] = array('str' => clienttranslate("Company"), 'type' => 'header');
-        $table_header[] = array('str' => clienttranslate("Profits"), 'type' => 'header');
+        $table_header[] = array('str' => clienttranslate("Company"), 'args' => '', 'type' => 'header');
+        $table_header[] = array('str' => clienttranslate("Profits"), 'args' => '', 'type' => 'header');
         // array of rows
         $profit_rows = array();
-        foreach( $this->railroads as $r => $co) {
+        foreach( $this->railroads as $rr => $comp) {
             $next_row = array();
-            // first put company name on left column
-            $next_row[] = array('str' => clienttranslate('${company}'),
-                                'args' => array( 'company' => $co['name']),
+            // put company name on left column
+            // ${rr} is our hack for the client-side to turn it into the rr icon
+            $next_row[] = array('str' => clienttranslate('${company}${rr}'),
+                                'args' => array( 'company' => $comp['name'], 'rr' => $rr),
                                 'type' => 'header');
             // and its profits
-            $next_row[] = self::getStat($co['railway']."_profit");
+            $next_row[] = self::getStat($comp['railway']."_profit");
             $profit_rows[] = $next_row;
         }
         $total_profits = array(clienttranslate("Total Profits"));
@@ -1133,10 +1134,10 @@ class TrickOfTheRails extends Table
                                     'type' => 'header');
 
             $row = 0;
-            foreach( $this->railroads as $rr => $company) {
+            foreach( $this->railroads as $rr2 => $company) {
                 $shares = self::getStat($company['railway']."_shares", $player_id);
                 $profit = self::getStat($company['railway']."_profits", $player_id);
-                $profit_rows[$row++][] = array('str' => clienttranslate('X{$shares} shares=${profit}'),
+                $profit_rows[$row++][] = array('str' => clienttranslate('${shares} shares=${profit}'),
                                              'args' => array('shares' => $shares, 'profit' => $profit));
                 $score += $profit;
             }
