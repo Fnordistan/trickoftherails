@@ -65,6 +65,7 @@
 
 .rr_lane {
     display: flex;
+    flex-wrap: wrap;
 }
 
 .rr_logo {
