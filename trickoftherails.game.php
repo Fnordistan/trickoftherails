@@ -1198,21 +1198,18 @@ class TrickOfTheRails extends Table
             return;
         }
         if ($statename == 'addLocomotive') {
-            // get lowest railway that does not already have locomotives
-            $emptyRR = self::getUniqueValueFromDB("
-            SELECT MIN(card_location) railway FROM CARDS
-            WHERE NOT EXISTS (
-                SELECT 1
-                FROM CARDS
-                WHERE card_location_arg = 0 and card_type = 6 AND card_type_arg <= 5
-                )");
-            self::dump('emptyRR', $emptyRR);
+            // get all railways that already have locomotives
+            $occupied = self::getCollectionFromDb("
+            SELECT card_location railway, card_id FROM CARDS
+            WHERE card_type = 6 AND card_type_arg <= 5 AND card_location_arg = 0", true);
+            // choose one of the empty ones
             foreach ($this->railroads as $rr => $rw) {
-                if ($rw['railway'] == $emptyRR) {
+                if (!array_key_exists($rw['railway'], $occupied)) {
                     $this->placeLocomotive($rr);
-                    break;
+                    return;
                 }
             }
+            throw new BgaVisibleSystemException( "Zombie mode: Failed to find unoccupied railway");
             return;
         }
         if ($statename == 'addCity') {
