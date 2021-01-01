@@ -1106,8 +1106,12 @@ class TrickOfTheRails extends Table
         $table = array();
         // row 1
         $table_header = array();
-        $table_header[] = array('str' => clienttranslate("Company"), 'args' => '', 'type' => 'header');
-        $table_header[] = array('str' => clienttranslate("Profits"), 'args' => '', 'type' => 'header');
+        $table_header[] = array('str' => clienttranslate("Company"), 
+                                'args' => array(), 
+                                'type' => 'header');
+        $table_header[] = array('str' => clienttranslate("Profits"),
+                                'args' => array(),
+                                'type' => 'header');
         // array of rows
         $profit_rows = array();
         foreach( $this->railroads as $rr => $comp) {

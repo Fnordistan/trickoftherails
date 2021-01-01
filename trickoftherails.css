@@ -63,7 +63,7 @@
     margin: 10px;
 }
 
-.rr_lane {
+.flex_lane {
     display: flex;
     flex-wrap: wrap;
 }
@@ -76,6 +76,7 @@
 }
 
 .locomotive_slot {
+    margin: 5px;
     background-size: 110px 51px;
     background-position: center;
     background-image: url(img/locomotive.png);

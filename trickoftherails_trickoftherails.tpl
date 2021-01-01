@@ -35,14 +35,14 @@
 
 <div id="tricklane_wrap" class="whiteblock">
     <div class="lane_header">Trick Lane</div>
-    <div id="tricklane"></div>
+    <div id="tricklane" class="flex_lane"></div>
 </div>
 
 <div id="rr_lanes_container">
     <div class="lane_header">Railway Lines</div>
 
     <!-- BEGIN RAILROAD -->
-    <div id="{RR}_lane" class="whiteblock rr_lane">
+    <div id="{RR}_lane" class="whiteblock flex_lane">
         <div id="{RR}_logo" class="rr_logo"></div>
         <div id="{RR}_locomotive" class="locomotive_slot"></div>
         <div id="{RR}_start" class="railhouse"></div>
