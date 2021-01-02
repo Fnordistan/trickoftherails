@@ -43,11 +43,10 @@
 
         // this will make labels text translatable
         $this->tpl['MY_HAND'] = self::_("My hand");
-        $this->tpl['DISCARDED_SHARES'] = self::_("Discarded Shares");
-        $this->tpl['TRICK_LANE'] = self::_("Trick Lane");
+        $this->tpl['DISCARDS'] = self::_("Discarded Shares");
         $this->tpl['TRICK_LANE'] = self::_("Trick Lane");
         $this->tpl['RAILWAY_LINES'] = self::_("Railway Lines");
-        $this->tpl['SHOW_SHARES_TEXT'] = self::_("Show Player Shares");
+        $this->tpl['SHARES_BUTTON'] = self::_("Show Player Shares");
 
         $RAILCOS = array( 'b_and_o', 'c_and_o', 'erie', 'nyc', 'prr' );
 

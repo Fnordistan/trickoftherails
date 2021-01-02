@@ -68,13 +68,6 @@
     flex-wrap: wrap;
 }
 
-.totr_rr_logo {
-    margin: 5px;
-    background-position: top;
-    background-image: url(img/railroad_sprites.png);
-    background-repeat: no-repeat;
-}
-
 .totr_locomotive_slot {
     margin: 5px;
     background-size: 110px 51px;
@@ -198,41 +191,54 @@
     line-height: 35px;
 }
 
-.totr_b_and_o_icon {
+.totr_rr_logo {
+    margin: 5px;
+    background-position: top;
+    background-image: url(img/railroad_sprites.png);
+    background-repeat: no-repeat;
+}
+
+.totr_rr_icon {
     background-size: 140px 25px;
+    display: inline-block;
+    vertical-align: -10px;
+}
+
+.totr_b_and_o_icon {
     width: 25px;
     height: 25px;
     background-position: 0px 0px;
 }
 
 .totr_c_and_o_icon {
-    background-size: 140px 25px;
     width: 25px;
     height: 25px;
     background-position: -25px 0px;
 }
 
 .totr_erie_icon {
-    background-size: 140px 25px;
     width: 25px;
     height: 25px;
     background-position: -50px 0px;
 }
 
 .totr_nyc_icon {
-    background-size: 140px 25px;
     width: 40px;
     height: 25px;
     background-position: -100px 0px;
 }
 
 .totr_prr_icon {
-    background-size: 140px 25px;
     width: 25px;
     height: 25px;
     background-position: -75px 0px;
 }
 
+.totr_help_container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
 #discard_shares_header {
     text-align: center;

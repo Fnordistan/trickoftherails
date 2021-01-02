@@ -79,7 +79,7 @@ function (dojo, declare) {
         */
 
         setup: function( gamedatas ) {
-            // dojo.destroy('debug_output');
+            dojo.destroy('debug_output');
             // this will be an array of arrays by player_id => array of rr share piles
             this.sharePiles = [];
             // array of arrays by player_id => array of RR counters
