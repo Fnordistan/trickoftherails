@@ -126,7 +126,7 @@ function (dojo, declare) {
             this.cardsPlayed = new ebg.stock();
             this.cardsPlayed.create(this, $('cardsplayed'), this.cardwidth, this.cardheight );
             this.cardsPlayed.setSelectionMode(0);
-            this.cardsPlayed.extraClasses='nice_card';
+            this.cardsPlayed.extraClasses='totr_nice_card';
             this.cardsPlayed.image_items_per_row = COLS;
             // this.cardsPlayed.item_margin = 15;
             // hitch adding railroad as a class to each hand
@@ -137,7 +137,7 @@ function (dojo, declare) {
                 this.playerHand = new ebg.stock();
                 this.playerHand.create( this, $('myhand'), this.cardwidth, this.cardheight );
                 this.playerHand.image_items_per_row = COLS;
-                this.playerHand.extraClasses='nice_card';
+                this.playerHand.extraClasses='totr_nice_card';
                 // hitch adding railroad as a class to each hand
                 this.playerHand.onItemCreate = dojo.hitch(this, this.setUpCard);
                 // setup card selection action
@@ -152,7 +152,7 @@ function (dojo, declare) {
             this.trickLane.create(this, $('tricklane'), this.cardwidth, this.cardheight );
             this.trickLane.setSelectionMode(0);
             this.trickLane.image_items_per_row = COLS;
-            this.trickLane.extraClasses='nice_card';
+            this.trickLane.extraClasses='totr_nice_card';
             this.trickLane.onItemCreate = dojo.hitch(this, this.setUpCard);
 
             // create the Stock items for all five railways
@@ -226,7 +226,7 @@ function (dojo, declare) {
                     if (args.locomotive) {
                         let re = /\[(.+)\]/;
                         var loc_str = args.locomotive;
-                        loc_str = loc_str.replace(re, "<span class=\"locomotive_value\">$1</span>");
+                        loc_str = loc_str.replace(re, "<span class=\"totr_locomotive_value\">$1</span>");
                         args.locomotive = loc_str;
                     }
                 }
@@ -310,7 +310,7 @@ function (dojo, declare) {
         * Actions clicking or hovering on locomotive slots
         */
         setupLocomotiveActions: function() {
-            for (loconode of dojo.query('.locomotive_slot')) {
+            for (loconode of dojo.query('.totr_locomotive_slot')) {
                 dojo.connect(loconode, 'onclick', this, 'onLocomotiveSelected');
                 dojo.connect(loconode, 'mouseenter', this, 'onLocomotiveSlotActivate');
                 dojo.connect(loconode, 'mouseleave', this, 'onLocomotiveSlotDeactivate');
@@ -321,7 +321,7 @@ function (dojo, declare) {
          * Actions clicking or hovering on Railhouse icons
          */
         setupRailhouseActions: function() {
-            for (rh_node of dojo.query('.railhouse')) {
+            for (rh_node of dojo.query('.totr_railhouse')) {
                 dojo.connect(rh_node, 'onclick', this, 'onRailhouseSelected');
                 dojo.connect(rh_node, 'mouseenter', this, 'onRailhouseActivate');
                 dojo.connect(rh_node, 'mouseleave', this, 'onRailhouseDeactivate');
@@ -566,7 +566,7 @@ function (dojo, declare) {
             railroad.create(this, $(rr+'_railway'), this.cardwidth, this.cardheight );
             railroad.setSelectionMode(0);
             railroad.image_items_per_row = COLS;
-            railroad.extraClasses='nice_card';
+            railroad.extraClasses='totr_nice_card';
             railroad.onItemCreate = dojo.hitch(this, this.setUpCard);
             // for some reason they display vertically in rr_lane if this isn't set
             railroad.autowidth = true;
@@ -585,7 +585,7 @@ function (dojo, declare) {
             shares.setSelectionMode(0);
             shares.image_items_per_row = COLS;
             shares.autowidth = true;
-            shares.extraClasses='nice_card';
+            shares.extraClasses='totr_nice_card';
             shares.setOverlap( 25, 0 );
             shares.onItemCreate = dojo.hitch(this, this.setUpCard);
             return shares;
@@ -681,8 +681,8 @@ function (dojo, declare) {
                 "background": "url("+g_gamethemeurl+CARD_SPRITES+") "+x+"px "+y +"px",
                 "z-index": 1,
             });
-            dojo.addClass( loconode, RAILROADS[rr-1]+ " nice_card");
-            dojo.removeClass(loconode, "locomotive_slot");
+            dojo.addClass( loconode, RAILROADS[rr-1]+ " totr_nice_card");
+            dojo.removeClass(loconode, "totr_locomotive_slot");
             var tooltip = this.getLocomotiveLabel(loc);
             this.addTooltip( loconode, _(tooltip), '');
         },
@@ -707,8 +707,8 @@ function (dojo, declare) {
                     for (const tc of this.playerHand.getAllItems()) {
                         var tcid = tc.id;
                         var tcdiv = this.playerHand.getItemDivId(tcid);
-                        dojo.addClass(tcdiv, "trick_color");
-                        dojo.removeClass(tcdiv, "noselect");
+                        dojo.addClass(tcdiv, "totr_trick_color");
+                        dojo.removeClass(tcdiv, "totr_noselect");
                     }
                 } else {
                     var has_trick_color = false;
@@ -719,20 +719,20 @@ function (dojo, declare) {
                         var cdiv = this.playerHand.getItemDivId(cid);
                         if (crr == trick_rr) {
                             has_trick_color = true;
-                            dojo.addClass(cdiv, "trick_color");
-                            dojo.removeClass(cdiv, "noselect");
+                            dojo.addClass(cdiv, "totr_trick_color");
+                            dojo.removeClass(cdiv, "totr_noselect");
                         } else {
-                            dojo.addClass(cdiv, "noselect");
-                            dojo.removeClass(cdiv, "trick_color");
+                            dojo.addClass(cdiv, "totr_noselect");
+                            dojo.removeClass(cdiv, "totr_trick_color");
                         }
                     }
                     // if we don't have any of the right color,
-                    // we have to go back and remove the noselect
+                    // we have to go back and remove the totr_noselect
                     if (!has_trick_color) {
                         for (const c2 of this.playerHand.getAllItems()) {
                             var cdiv2 = this.playerHand.getItemDivId(c2.id);
-                            dojo.addClass(cdiv2, "trick_color");
-                            dojo.removeClass(cdiv2, "noselect");
+                            dojo.addClass(cdiv2, "totr_trick_color");
+                            dojo.removeClass(cdiv2, "totr_noselect");
                         }
                     }
                 }
@@ -740,8 +740,8 @@ function (dojo, declare) {
                 // cleanup any previous selection chrome
                 for (const c of this.playerHand.getAllItems()) {
                     var cdiv = this.playerHand.getItemDivId(c.id);
-                    dojo.removeClass(cdiv, "trick_color");
-                    dojo.removeClass(cdiv, "noselect");
+                    dojo.removeClass(cdiv, "totr_trick_color");
+                    dojo.removeClass(cdiv, "totr_noselect");
                 }
 
                 this.playerHand.setSelectionMode(0);
@@ -862,7 +862,7 @@ function (dojo, declare) {
                 if (this.checkAction('playCard', true)) {
                     // Can play a card
                     // var card_div = this.playerHand.getItemDivId(items[0].id);
-                    // if (!dojo.hasClass(card_div, 'noselect')) {
+                    // if (!dojo.hasClass(card_div, 'totr_noselect')) {
                         var card_id = items[0].id;
 
                         this.ajaxcall( "/trickoftherails/trickoftherails/playCard.html", { 
@@ -908,7 +908,7 @@ function (dojo, declare) {
         onLocomotiveSlotActivate : function(event) {
             if (this.checkAction('placeLocomotive', true) && this.isEmptyLocomotiveSlot(event)) {
                 var loc_id = event.target.id;
-                dojo.addClass(loc_id, "locomotive_slot_active");
+                dojo.addClass(loc_id, "totr_locomotive_slot_active");
             }
         },
 
@@ -918,7 +918,7 @@ function (dojo, declare) {
          */
         onLocomotiveSlotDeactivate : function(event) {
             var loc_id = event.target.id;
-            dojo.removeClass(loc_id, "locomotive_slot_active");
+            dojo.removeClass(loc_id, "totr_locomotive_slot_active");
         },
 
         /**
@@ -930,7 +930,7 @@ function (dojo, declare) {
             var is_empty = false;
             if (this.checkAction('placeLocomotive', true)) {
                 var loco_el = event.target;
-                is_empty = !loco_el.classList.contains('nice_card');
+                is_empty = !loco_el.classList.contains('totr_nice_card');
             }
             return is_empty;
         },
@@ -995,7 +995,7 @@ function (dojo, declare) {
          * @param {*} event 
          */
         isReadyRailhouse: function(event) {
-            return event.target.classList.contains('ready_railhouse');
+            return event.target.classList.contains('totr_ready_railhouse');
         },
 
         /**
@@ -1022,11 +1022,11 @@ function (dojo, declare) {
             switch (mode) {
                 case RAILHOUSE_BUTTON.DEFAULT:
                     position_string = "0px 0px";
-                    dojo.removeClass(railhouse_id, "ready_railhouse");
+                    dojo.removeClass(railhouse_id, "totr_ready_railhouse");
                     break;
                 case RAILHOUSE_BUTTON.READY:
                     position_string = -(RAILHOUSE_W*rr)+"px 0px";
-                    dojo.addClass(railhouse_id, "ready_railhouse");
+                    dojo.addClass(railhouse_id, "totr_ready_railhouse");
                     break;
                 case RAILHOUSE_BUTTON.ACTIVE:
                     position_string = -(RAILHOUSE_W*rr)+"px "+(-RAILHOUSE_H)+"px";

@@ -51,31 +51,31 @@
 /* For adding padding between cards and the text above */
 
 /* Hide by default */
-.shares_container {
+.totr_shares_container {
     display: none;
 }
 
-.shares_lane {
+.totr_shares_lane {
     display: flex;
 }
 
-.player_shares {
+.totr_player_shares {
     margin: 10px;
 }
 
-.flex_lane {
+.totr_flex_lane {
     display: flex;
     flex-wrap: wrap;
 }
 
-.rr_logo {
+.totr_rr_logo {
     margin: 5px;
     background-position: top;
     background-image: url(img/railroad_sprites.png);
     background-repeat: no-repeat;
 }
 
-.locomotive_slot {
+.totr_locomotive_slot {
     margin: 5px;
     background-size: 110px 51px;
     background-position: center;
@@ -90,13 +90,13 @@
 }
 
 /** Only added during place locomotive */
-.locomotive_slot_active {
+.totr_locomotive_slot_active {
     opacity: 1;
     outline: 2px pink;
     outline-style: dotted;
 }
 
-.railhouse {
+.totr_railhouse {
     background-size: 675px 337.5px;
     background-image: url(img/railhouse_sprites.png);
     background-repeat: no-repeat;
@@ -105,7 +105,7 @@
     height: 112.5px;
 }
 
-.nice_card {
+.totr_nice_card {
     border-radius: 10px;
     border: 1px black solid;
     -moz-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
@@ -133,17 +133,17 @@
     height: 320px;
 }
 
-.card_lead {
+/* .card_lead {
     border: 2px solid white;
     box-shadow: 0px 0px 2px 3px;
 }
 
 .card_played_not_lead {
     transform: translate(15px, 0);
-}
+} */
 
 /** for card value text in logs */
-.card_value {
+.totr_card_value {
     color: #ffff;
     font-weight: bold;
     display: inline-block;
@@ -151,7 +151,7 @@
 }
 
 /** for locomotive value text in logs */
-.locomotive_value {
+.totr_locomotive_value {
     background-color: #E2DAB4;
     color: black;
     outline: 1px solid black;
@@ -160,14 +160,14 @@
     padding-inline: 5px;
 }
 
-.noselect {
+.totr_noselect {
     border: 2px gray solid;
     border-style: inset;
     cursor: not-allowed;
     box-shadow: 0px 0px 0px 0px rgba(0,0,0,0.4);
 }
 
-.trick_color {
+.totr_trick_color {
     outline: 2px pink;
     outline-style: dotted;
     border-color: white;
@@ -178,25 +178,61 @@
     /* filter:progid:DXImageTransform.Microsoft.Shadow(color=#f75d5d, Direction=134, Strength=30); */
 }
 
-.trick_color:hover {
+.totr_trick_color:hover {
     outline: 3px red;
     outline-style: dotted;
     border-color: pink;
     box-shadow: 5px 5px 10px 0px lightgray;
 }
 
-/** ready_railhouse class is dynamically added and removed */
-.ready_railhouse:active {
+/** totr_ready_railhouse class is dynamically added and removed */
+.totr_ready_railhouse:active {
     transform: translateX(4px) translateY(4px);
 }
 
-.lane_header {
+.totr_lane_header {
     text-align: center;
     text-indent: 12px;
     font-size: 20px;
     font-weight: bold;
     line-height: 35px;
 }
+
+.totr_b_and_o_icon {
+    background-size: 140px 25px;
+    width: 25px;
+    height: 25px;
+    background-position: 0px 0px;
+}
+
+.totr_c_and_o_icon {
+    background-size: 140px 25px;
+    width: 25px;
+    height: 25px;
+    background-position: -25px 0px;
+}
+
+.totr_erie_icon {
+    background-size: 140px 25px;
+    width: 25px;
+    height: 25px;
+    background-position: -50px 0px;
+}
+
+.totr_nyc_icon {
+    background-size: 140px 25px;
+    width: 40px;
+    height: 25px;
+    background-position: -100px 0px;
+}
+
+.totr_prr_icon {
+    background-size: 140px 25px;
+    width: 25px;
+    height: 25px;
+    background-position: -75px 0px;
+}
+
 
 #discard_shares_header {
     text-align: center;
@@ -245,39 +281,4 @@
     width: 126.5px;
     height: 125px;
     background-position: -375px 0px;
-}
-
-.b_and_o_icon {
-    background-size: 140px 25px;
-    width: 25px;
-    height: 25px;
-    background-position: 0px 0px;
-}
-
-.c_and_o_icon {
-    background-size: 140px 25px;
-    width: 25px;
-    height: 25px;
-    background-position: -25px 0px;
-}
-
-.erie_icon {
-    background-size: 140px 25px;
-    width: 25px;
-    height: 25px;
-    background-position: -50px 0px;
-}
-
-.nyc_icon {
-    background-size: 140px 25px;
-    width: 40px;
-    height: 25px;
-    background-position: -100px 0px;
-}
-
-.prr_icon {
-    background-size: 140px 25px;
-    width: 25px;
-    height: 25px;
-    background-position: -75px 0px;
 }
