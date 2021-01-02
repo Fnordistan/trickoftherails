@@ -130,8 +130,8 @@ $gameinfos = array(
 // Each paragraph must be wrapped with totranslate() for translation and should not contain html (plain text without formatting).
 // A good length for this text is between 100 and 150 words (about 6 to 9 lines on a standard display)
 'presentation' => array(
-   totranslate("Trick of the Rails, themed on the rise of the American railway period, combines 18XX-like portfolio management and a trick-taking card game. Players collect stock certificates and make the companies more valuable by laying the rail network."),
-   totranslate("The game alternates between stock rounds and operating rounds. In stock rounds, the cards played become shares for the players. In operating rounds, the cards played become track for the companies. The companies get trains, which determine how many track cards they can count for their profit (the trains have costs as well, which may lead to companies not making any profit at all) and in the end, players simply count the value of their shares and highest value wins."),
+    totranslate("Trick of the Rails, themed on the rise of the American railway period, combines 18XX-like portfolio management and a trick-taking card game. Players collect stock certificates and make the companies more valuable by laying the rail network."),
+    totranslate("The game alternates between stock rounds and operating rounds. In stock rounds, the cards played become shares for the players. In operating rounds, the cards played become track for the companies. The companies get trains, which determine how many track cards they can count for their profit (the trains have costs as well, which may lead to companies not making any profit at all) and in the end, players simply count the value of their shares and highest value wins."),
 ),
 
 // Games categories

@@ -119,7 +119,7 @@ class TrickOfTheRails extends Table
                 break;
             default:
                 // WTF happened?
-                throw new BgaVisibleSystemException("Invalid player count: {$players_nbr}");
+                throw new BgaVisibleSystemException("Invalid player count: {$players_nbr}");// NOI18N
         }
         self::setGameStateInitialValue( 'handSize', $handsize );
 
@@ -219,7 +219,7 @@ class TrickOfTheRails extends Table
                 break;
             default:
                 // WTF happened?
-                throw new BgaVisibleSystemException("Invalid player count: {$players_nbr}");
+                throw new BgaVisibleSystemException("Invalid player count: {$players_nbr}");// NOI18N
         }
 
         return $trick_cards;
@@ -257,7 +257,7 @@ class TrickOfTheRails extends Table
                 break;
             default:
                 // WTF happened?
-                throw new BgaVisibleSystemException("Invalid player count: {$players_nbr}");
+                throw new BgaVisibleSystemException("Invalid player count: {$players_nbr}");// NOI18N
         }
 
         // First randomize the Exchange cards
@@ -314,7 +314,7 @@ class TrickOfTheRails extends Table
                             break;
                         default:
                             // shouldn't be any City cards in 5-player game!
-                            throw new BgaVisibleSystemException(clienttranslate("Should not be City cards in a 5-player game!"));
+                            throw new BgaVisibleSystemException("Should not be City cards in a 5-player game!");// NOI18N
                     }
                     break;
                 case 9: // Reservation cards
@@ -328,11 +328,11 @@ class TrickOfTheRails extends Table
                             break;
                         default:
                             // shouldn't be any Reservation cards in 5-player game!
-                            throw new BgaVisibleSystemException(clienttranslate("Should not be Reservation cards in a 5-player game!"));
+                            throw new BgaVisibleSystemException("Should not be Reservation cards in a 5-player game!");// NOI18N
                     }
                     break;
                 default:
-                    throw new BgaVisibleSystemException("Invalid Card found! {$lastrow['id']}");
+                    throw new BgaVisibleSystemException("Invalid Card found! {$lastrow['id']}");// NOI18N
             }
        }
     }
@@ -579,13 +579,13 @@ class TrickOfTheRails extends Table
         $player_id = self::getActivePlayerId();
         
         // am I the first to play this trick?
-        $plays_card = "played";
+        $plays_card = clienttranslate("plays");
         $trick_rr = self::getGameStateValue( 'trickRR' );
         if ($trick_rr == 0) {
             // I'm the lead
             self::setGameStateValue( 'trickRR', $railroad);
             self::setGameStateValue( 'leadCard', $card_played['id']);
-            $plays_card = totranslate("led the trick with");
+            $plays_card = clienttranslate("leads the trick with");
         } else {
             if ($railroad != $trick_rr) {
                 // do I have a card of that color in my hand?
@@ -604,7 +604,7 @@ class TrickOfTheRails extends Table
         ");
 
         // Notify all players about the card played
-        self::notifyAllPlayers('cardPlayed', clienttranslate('${player_name} ${action_verb} ${company} ${card_value_label}${rr}${card_value}'), array (
+        self::notifyAllPlayers('cardPlayed', '${player_name} ${action_verb} ${company} ${card_value_label}${rr}${card_value}', array (
             'i18n' => array ('action_verb', 'company', 'card_value_label' ),
             'card_id' => $card_id,
             'player_id' => self::getActivePlayerId(),
@@ -644,7 +644,7 @@ class TrickOfTheRails extends Table
             }
 
             if ($ri == 0) {
-                throw new BgaVisibleSystemException(clienttranslate("No railway line with empty locomotive slot found!"));
+                throw new BgaVisibleSystemException("No railway line with empty locomotive slot found!");// NOI18N
             }
 
             // need to increment trick index to ∞ card
@@ -674,7 +674,7 @@ class TrickOfTheRails extends Table
         $this->cards->moveCard($lococard['id'], $railway, 0);
 
         // Notify all players about Locomotive placement
-        self::notifyAllPlayers('locomotivePlaced', clienttranslate('${player_name} placed ${locomotive} on the ${company} line${rr}'), array (
+        self::notifyAllPlayers('locomotivePlaced', clienttranslate('${player_name} places ${locomotive} on the ${company} line${rr}'), array (
             'i18n' => array ('locomotive', 'company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
@@ -708,7 +708,7 @@ class TrickOfTheRails extends Table
         }
 
         // Notify all players about Locomotive placement
-        self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} added ${card_value_label} to ${endpoint} of the ${company} line${rr}${card_value}'), array (
+        self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} adds ${card_value_label} to ${endpoint} of the ${company} line${rr}${card_value}'), array (
             'i18n' => array ('card_value_label', 'endpoint', 'company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
@@ -745,9 +745,12 @@ class TrickOfTheRails extends Table
                 break;
             }
         }
+        if ($rr == -1) {
+            throw new BgaVisibleSystemException( "No railway found for $company during ".self::getActivePlayerName()." turn" );// NOI18N
+        }
 
         // Notify all players about City placement
-        self::notifyAllPlayers('cityAdded', clienttranslate('${player_name} added ${city} to ${endpoint} of the ${company} line ${rr}'), array (
+        self::notifyAllPlayers('cityAdded', clienttranslate('${player_name} adds ${city} to ${endpoint} of the ${company} line ${rr}'), array (
             'i18n' => array ('city', 'endpoint', 'company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
@@ -781,16 +784,16 @@ class TrickOfTheRails extends Table
         $action_2 = "";
 
         if ($rr == 0) {
-            $action_1 = totranslate("lead the trick");
+            $action_1 = clienttranslate("lead the trick");
             $action_2 = "";
             $company = '';
         } else if ($this->hasCurrentTrick(self::getActivePlayerId())) {
-            $action_1 = totranslate("play a ");
-            $action_2 = totranslate(" card");
+            $action_1 = clienttranslate("play a ");
+            $action_2 = clienttranslate(" card");
             $company = $this->railroads[$rr]['name'];
         } else {
-            $action_1 = totranslate("play any card (no ");
-            $action_2 = totranslate(" cards in hand)");
+            $action_1 = clienttranslate("play any card (no ");
+            $action_2 = clienttranslate(" cards in hand)");
             $company = $this->railroads[$rr]['name'];
         }
         return array(
@@ -891,7 +894,7 @@ class TrickOfTheRails extends Table
             }
             // should not happen!
             if ($bestCard == 0) {
-                throw new BgaVisibleSystemException( self::_("no winner of trick determined!") );
+                throw new BgaVisibleSystemException( "no winner of trick determined!" );// NOI18N
             } else {
                 $winner = self::getUniqueValueFromDB("
                     SELECT player_id FROM TRICK_ROW
@@ -903,7 +906,7 @@ class TrickOfTheRails extends Table
 
             $this->gamestate->changeActivePlayer( $winner );
 
-            self::notifyAllPlayers('winTrick', clienttranslate('${player_name} won the trick with ${company} ${card_value_label}${rr}${card_value}'), array (
+            self::notifyAllPlayers('winTrick', clienttranslate('${player_name} wins the trick with ${company} ${card_value_label}${rr}${card_value}'), array (
                 'i18n' => array ('company', 'card_value_label' ),
                 'player_id' => self::getActivePlayerId(),
                 'player_name' => self::getActivePlayerName(),
@@ -934,8 +937,7 @@ class TrickOfTheRails extends Table
                 $reward = "city";
             } else {
                 // shouldn't get here!
-                $card_type = 'type='.$rewardCard['type'].', type_arg='.$rewardCard['type_arg'];// NOI18N
-                throw new BgaVisibleSystemException(self::_('Invalid Trick Lane card: $card_type'));
+                throw new BgaVisibleSystemException('Invalid Trick Lane card: type='.$rewardCard['type'].', type_arg='.$rewardCard['type_arg']); // NOI18N
             }
         } else {
             // if it's not the last row, it's either an Exchange or Railway card
@@ -1001,7 +1003,7 @@ class TrickOfTheRails extends Table
                 // notify everyone winner discards/exchanges a card with Reservation
                 $discarded = $this->cards->getCard($trick_id);
                 if ($reservation != null) {
-                    self::notifyAllPlayers('reservationSwapped', clienttranslate('${player_name} replaced Reservation card with ${company} ${card_value_label} in Trick Lane${rr}${card_value}'), array (
+                    self::notifyAllPlayers('reservationSwapped', clienttranslate('${player_name} replaces Reservation card with ${company} ${card_value_label} in Trick Lane${rr}${card_value}'), array (
                         'i18n' => array ('company', 'card_value_label' ),
                         'player_id' => $player,
                         'player_name' => $players[$player]['player_name'],
@@ -1013,7 +1015,7 @@ class TrickOfTheRails extends Table
                         'reservation_loc' => $reservation['location_arg'],
                         'company' => $this->railroads [$discarded['type']] ['name']));
                 } else {
-                    self::notifyAllPlayers('discardedShare', clienttranslate('${player_name} discarded ${company} ${card_value_label}${rr}${card_value}'), array (
+                    self::notifyAllPlayers('discardedShare', clienttranslate('${player_name} discards ${company} ${card_value_label}${rr}${card_value}'), array (
                         'i18n' => array ('company', 'card_value_label' ),
                         'player_id' => $player,
                         'player_name' => $players[$player]['player_name'],
@@ -1033,7 +1035,7 @@ class TrickOfTheRails extends Table
                 $share = $this->cards->getCard($trick_id);
                 $this->cards->moveCard($share['id'], 'shares', $player);
             }
-            self::notifyAllPlayers('shareAdded', clienttranslate('${player_name} added ${card_value_label} to ${company} shares${rr}${card_value}'), array (
+            self::notifyAllPlayers('shareAdded', clienttranslate('${player_name} adds ${card_value_label} to ${company} shares${rr}${card_value}'), array (
                 'i18n' => array ('company', 'card_value_label' ),
                 'player_id' => $player,
                 'player_name' => $players[$player]['player_name'],
@@ -1126,9 +1128,9 @@ class TrickOfTheRails extends Table
             for ($i = 1; $i < count($winners); $i++) {
                 $winner_str = $winner_str." ".$winners[$i];
             }
-            $winner_str = self::_("Winners: ").$winner_str;
+            $winner_str = clienttranslate("Winners: ").$winner_str;
         } else {
-            $winner_str = self::_("Winner: ").$winner_str;
+            $winner_str = clienttranslate("Winner: ").$winner_str;
         }
         return $winner_str;
     }
@@ -1152,7 +1154,8 @@ class TrickOfTheRails extends Table
             $next_row = array();
             // put company name on left column
             // ${rr} is our hack for the client-side to turn it into the rr icon
-            $next_row[] = array('str' => clienttranslate('${company}${rr}'),
+            $next_row[] = array('str' => '${company}${rr}',
+                                'i18n' => array ('company'),
                                 'args' => array( 'company' => $comp['name'], 'rr' => $rr),
                                 'type' => 'header');
             // and its profits
@@ -1175,8 +1178,9 @@ class TrickOfTheRails extends Table
             foreach( $this->railroads as $rr2 => $company) {
                 $shares = self::getStat($company['railway']."_shares", $player_id);
                 $profit = self::getStat($company['railway']."_profits", $player_id);
-                $profit_rows[$row++][] = array('str' => clienttranslate('${profit} (${shares} shares)'),
-                                             'args' => array('shares' => $shares, 'profit' => $profit));
+                $profit_rows[$row++][] = array('str' => '${profit} (${shares} shares)',
+                                                'i18n' => array ('profit', 'shares' ),
+                                                'args' => array('shares' => $shares, 'profit' => $profit));
                 $score += $profit;
             }
             $total_profits[] = $score;
@@ -1243,7 +1247,7 @@ class TrickOfTheRails extends Table
                 }
             }
             // shouldn't happen...
-            throw new BgaVisibleSystemException( clienttranslate("Zombie mode: Failed to find unoccupied railway"));
+            throw new BgaVisibleSystemException("Zombie mode: Failed to find unoccupied railway");// NOI18N
             return;
         }
         if ($statename == 'addCity') {
@@ -1279,7 +1283,7 @@ class TrickOfTheRails extends Table
             return;
         }
 
-        throw new BgaVisibleSystemException( clienttranslate('Zombie mode not supported at this game state: $statename' ));
+        throw new BgaVisibleSystemException( 'Zombie mode not supported at this game state: $statename');// NOI18N
     }
     
     function isZombie($player_id) {

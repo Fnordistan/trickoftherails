@@ -38,17 +38,17 @@ $this->railroads = array(
 );
 
 $this->values_label = array(
-  1 => '1',
-  2 => '2',
-  3 => '3',
-  4 => '4',
-  5 => '5',
-  6 => '6',
-  7 => '7',
-  8 => '8',
-  9 => '9',
-  10 => '10',
-  11 => 'Exchange'
+  1 => clienttranslate('1'),
+  2 => clienttranslate('2'),
+  3 => clienttranslate('3'),
+  4 => clienttranslate('4'),
+  5 => clienttranslate('5'),
+  6 => clienttranslate('6'),
+  7 => clienttranslate('7'),
+  8 => clienttranslate('8'),
+  9 => clienttranslate('9'),
+  10 => clienttranslate('10'),
+  11 => clienttranslate('Exchange')
 );
 
 $this->trick_type = array(
