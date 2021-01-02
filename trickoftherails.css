@@ -115,7 +115,7 @@
     filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
 }
 
-.small_station_values_card {
+.totr_small_station_values_card {
     margin-left: 10px;
     background-size: 75px 50px;
     background-image: url(img/station_values_card.jpg);
@@ -125,7 +125,7 @@
     height: 50px;
 }
 
-.large_station_values_card {
+.totr_large_station_values_card {
     background-size: 480px 320px;
     background-image: url(img/station_values_card.jpg);
     background-repeat: no-repeat;

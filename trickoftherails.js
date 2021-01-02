@@ -335,7 +335,7 @@ function (dojo, declare) {
             // Show/Hide Player shares button
             dojo.connect($('shares_button'), 'onclick', this, 'onShowShares');
             // Station Values help card
-            this.addTooltipHtml( $('station_values'), '<div class="large_station_values_card"></div>', .1 ); 
+            this.addTooltipHtml( $('station_values'), '<div class="totr_large_station_values_card"></div>', .1 ); 
         },
 
 
@@ -827,7 +827,7 @@ function (dojo, declare) {
         },
 
         /**
-         * Given a prefix, get the index
+         * Given a prefix, get the index (integer 1 to 5)
          * @param {*} railway 
          */
         getIndexByRR: function(railway) {
@@ -943,19 +943,19 @@ function (dojo, declare) {
             var endpoint_id = event.target.id;
             var ix = endpoint_id.lastIndexOf('_');
             var is_start = endpoint_id.endsWith("start");
-            var railway = endpoint_id.substring(0, ix);
+            var comp = endpoint_id.substring(0, ix);
 
             // railway cards, check it's a valid endpoint
             if (this.checkAction('addRailwayCard', true) && this.isReadyRailhouse(event)) {
-                this.setRailhouseButton(endpoint_id, this.getIndexByRR(railway)+1, RAILHOUSE_BUTTON.CLICKED);
+                this.setRailhouseButton(endpoint_id, this.getIndexByRR(comp)+1, RAILHOUSE_BUTTON.CLICKED);
                 this.ajaxcall( "/trickoftherails/trickoftherails/addRailwayCard.html", { 
                     bStart: is_start,
                     lock: true 
                     }, this, function( result ) {  }, function( is_error) { } );
             } else if (this.checkAction('placeCity', true)) {
-                this.setRailhouseButton(endpoint_id, this.getIndexByRR(railway)+1, RAILHOUSE_BUTTON.CLICKED);
+                this.setRailhouseButton(endpoint_id, this.getIndexByRR(comp)+1, RAILHOUSE_BUTTON.CLICKED);
                 this.ajaxcall( "/trickoftherails/trickoftherails/placeCity.html", { 
-                    sRR: railway,
+                    sRR: comp+'_railway',
                     bStart: is_start,
                     lock: true 
                     }, this, function( result ) {  }, function( is_error) { } );

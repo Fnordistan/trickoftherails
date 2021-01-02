@@ -591,7 +591,7 @@ class TrickOfTheRails extends Table
                 // do I have a card of that color in my hand?
                 if ($this->hasCurrentTrick($player_id)) {
                     $company = $this->railroads[$trick_rr]['name'];
-                    throw new BgaUserException ( self::_( 'You must play a $company card' ));
+                    throw new BgaUserException ( self::_( 'You must play a '.$company.' card' ));
                 }
             }
         }
@@ -727,10 +727,9 @@ class TrickOfTheRails extends Table
     /**
      * Passed the railway to add it to, and whether at start or end of line.
      */
-    function placeCity( $company, $is_start ) {
+    function placeCity( $railway, $is_start ) {
         self::checkAction( 'placeCity' );
         $citycard = current($this->cards->getCardsInLocation('tricklane', self::getGameStateValue('currentTrickIndex')));
-        $railway = $company.'_railway';
 
         if ($is_start) {
             $this->cards->insertCard($citycard['id'], $railway, 1);
@@ -745,8 +744,9 @@ class TrickOfTheRails extends Table
                 break;
             }
         }
+        // should not happen! something went wrong in zombie mode
         if ($rr == -1) {
-            throw new BgaVisibleSystemException( "No railway found for $company during ".self::getActivePlayerName()." turn" );// NOI18N
+            throw new BgaVisibleSystemException( "No railway found for $railway during ".self::getActivePlayerName()." turn" );// NOI18N
         }
 
         // Notify all players about City placement
@@ -1252,7 +1252,8 @@ class TrickOfTheRails extends Table
         }
         if ($statename == 'addCity') {
             // add to random railway
-            $rw = bga_rand(1,5);
+            $randomrw = bga_rand(1,5);
+            $rw = $this->railroads[$randomrw]['railway'];
             // flip a coin, start or end
             $flip = bga_rand(1,2);
             $this->placeCity($rw, $flip == 1);

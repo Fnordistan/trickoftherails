@@ -7,7 +7,7 @@
 
 <div id="button_wrapper" style="display: flex; align-items: center; justify-content: center;">
     <a href="#" id="shares_button" class="bgabutton bgabutton_blue"><span>{SHOW_SHARES_TEXT}</span></a>
-    <div id="station_values" class="small_station_values_card"></div>
+    <div id="station_values" class="totr_small_station_values_card"></div>
 </div>
 
 <div id="shares_wrapper" class="totr_shares_container">
