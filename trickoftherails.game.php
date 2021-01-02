@@ -314,7 +314,7 @@ class TrickOfTheRails extends Table
                             break;
                         default:
                             // shouldn't be any City cards in 5-player game!
-                            throw new BgaVisibleSystemException("Should not be City cards in a 5-player game!");
+                            throw new BgaVisibleSystemException(clienttranslate("Should not be City cards in a 5-player game!"));
                     }
                     break;
                 case 9: // Reservation cards
@@ -328,7 +328,7 @@ class TrickOfTheRails extends Table
                             break;
                         default:
                             // shouldn't be any Reservation cards in 5-player game!
-                            throw new BgaVisibleSystemException("Should not be Reservation cards in a 5-player game!");
+                            throw new BgaVisibleSystemException(clienttranslate("Should not be Reservation cards in a 5-player game!"));
                     }
                     break;
                 default:
@@ -394,7 +394,7 @@ class TrickOfTheRails extends Table
     function getGameProgression()
     {
         $initialTricks = self::getGameStateValue('handSize');
-        $tricksLeft = $this->cards->countCardsInLocation( 'tricklane' );
+        $tricksLeft = $initialTricks - self::getGameStateValue('currentTrickIndex');
         return 100*($initialTricks-$tricksLeft)/$initialTricks;
     }
 
@@ -409,9 +409,9 @@ class TrickOfTheRails extends Table
      */
     function hasCurrentTrick($player_id) {
         $cards_in_hand = $this->cards->getCardsInLocation( 'hand', $player_id );
-        $trick_color = self::getGameStateValue( 'trickRR' );
+        $trick_rr = self::getGameStateValue( 'trickRR' );
         foreach ($cards_in_hand as $card) {
-            if ($card['type'] == $trick_color) {
+            if ($card['type'] == $trick_rr) {
                 return true;
             }
         }
@@ -579,19 +579,19 @@ class TrickOfTheRails extends Table
         $player_id = self::getActivePlayerId();
         
         // am I the first to play this trick?
-        // note: 'color' is really the railroad number (1-5)
         $plays_card = "played";
-        $trick_color = self::getGameStateValue( 'trickRR' );
-        if ($trick_color == 0) {
+        $trick_rr = self::getGameStateValue( 'trickRR' );
+        if ($trick_rr == 0) {
             // I'm the lead
             self::setGameStateValue( 'trickRR', $railroad);
             self::setGameStateValue( 'leadCard', $card_played['id']);
-            $plays_card = "led the trick with";
+            $plays_card = totranslate("led the trick with");
         } else {
-            if ($railroad != $trick_color) {
+            if ($railroad != $trick_rr) {
                 // do I have a card of that color in my hand?
                 if ($this->hasCurrentTrick($player_id)) {
-                    throw new BgaUserException ( self::_( "You must play a ".$this->railroads[$trick_color]['name']." card" ));
+                    $company = $this->railroads[$trick_rr]['name'];
+                    throw new BgaUserException ( self::_( 'You must play a $company card' ));
                 }
             }
         }
@@ -644,7 +644,7 @@ class TrickOfTheRails extends Table
             }
 
             if ($ri == 0) {
-                throw new BgaVisibleSystemException( "No railway line with empty locomotive slot found!" );
+                throw new BgaVisibleSystemException(clienttranslate("No railway line with empty locomotive slot found!"));
             }
 
             // need to increment trick index to ∞ card
@@ -781,16 +781,16 @@ class TrickOfTheRails extends Table
         $action_2 = "";
 
         if ($rr == 0) {
-            $action_1 = "lead the trick";
+            $action_1 = totranslate("lead the trick");
             $action_2 = "";
             $company = '';
         } else if ($this->hasCurrentTrick(self::getActivePlayerId())) {
-            $action_1 = "play a ";
-            $action_2 = " card";
+            $action_1 = totranslate("play a ");
+            $action_2 = totranslate(" card");
             $company = $this->railroads[$rr]['name'];
         } else {
-            $action_1 = "play any card (no ";
-            $action_2 = " cards in hand)";
+            $action_1 = totranslate("play any card (no ");
+            $action_2 = totranslate(" cards in hand)");
             $company = $this->railroads[$rr]['name'];
         }
         return array(
@@ -891,7 +891,7 @@ class TrickOfTheRails extends Table
             }
             // should not happen!
             if ($bestCard == 0) {
-                throw new BgaVisibleSystemException( "no winner of trick determined!" );
+                throw new BgaVisibleSystemException( self::_("no winner of trick determined!") );
             } else {
                 $winner = self::getUniqueValueFromDB("
                     SELECT player_id FROM TRICK_ROW
@@ -934,7 +934,8 @@ class TrickOfTheRails extends Table
                 $reward = "city";
             } else {
                 // shouldn't get here!
-                throw new BgaVisibleSystemException("Invalid Trick Lane Card: type=".$rewardCard['type'].", type_arg=".$rewardCard['type_arg']);
+                $card_type = 'type='.$rewardCard['type'].', type_arg='.$rewardCard['type_arg'];// NOI18N
+                throw new BgaVisibleSystemException(self::_('Invalid Trick Lane card: $card_type'));
             }
         } else {
             // if it's not the last row, it's either an Exchange or Railway card
@@ -1059,6 +1060,8 @@ class TrickOfTheRails extends Table
         // first we calculate the values of every Railroad
         $this->scoreRailways();
 
+        $player_scores = array();
+        $highscore = 0;
         // now calculate how many shares of each RR each player has
         $players = self::loadPlayersBasicInfos();
         foreach( $players as $player_id => $player ) {
@@ -1087,21 +1090,52 @@ class TrickOfTheRails extends Table
                 self::setStat($rr_shares, $railway."_shares", $player_id);
                 self::setStat($rr_profit, $railway."_profits", $player_id);
             }
+            $player_scores[$player['player_name']] = $score;
+            $highscore = max($highscore, $score);
 
             self::DbQuery( "UPDATE player SET player_score=$score WHERE player_id=$player_id" );
 
             $score_table = $this->createFinalScoreTable();
 
+            $winner_label = $this->createWinnerList($player_scores, $highscore);
+
             $this->notifyAllPlayers( "tableWindow", '', array(
                 "id" => 'finalScoring',
                 "title" => clienttranslate("Final Score"),
-                "table" => $score_table
+                "table" => $score_table,
+                "header" => $winner_label,
+                "closing" => clienttranslate( "Choo! Choo!" )
             ) ); 
         }
 
         $this->gamestate->nextState( "" );
     }
 
+    /**
+     * Simple string function for header
+     */
+    function createWinnerList($player_scores, $highscore) {
+        $winners = array();
+        foreach ($player_scores as $player_name => $score) {
+            if ($score >= $highscore) {
+                $winners[] = $player_name;
+            }
+        }
+        $winner_str = $winners[0];
+        if (count($winners) > 1) {
+            for ($i = 1; $i < count($winners); $i++) {
+                $winner_str = $winner_str." ".$winners[$i];
+            }
+            $winner_str = self::_("Winners: ").$winner_str;
+        } else {
+            $winner_str = self::_("Winner: ").$winner_str;
+        }
+        return $winner_str;
+    }
+
+    /**
+     * Create the table for final score display.
+     */
     function createFinalScoreTable() {
         $table = array();
         // row 1
@@ -1141,7 +1175,7 @@ class TrickOfTheRails extends Table
             foreach( $this->railroads as $rr2 => $company) {
                 $shares = self::getStat($company['railway']."_shares", $player_id);
                 $profit = self::getStat($company['railway']."_profits", $player_id);
-                $profit_rows[$row++][] = array('str' => clienttranslate('${shares} shares=${profit}'),
+                $profit_rows[$row++][] = array('str' => clienttranslate('${profit} (${shares} shares)'),
                                              'args' => array('shares' => $shares, 'profit' => $profit));
                 $score += $profit;
             }
@@ -1178,14 +1212,14 @@ class TrickOfTheRails extends Table
     	$statename = $state['name'];
         // zombie has to play a acard
         if ($statename == 'playerTurn') {
-            $trick_color = self::getGameStateValue( 'trickRR' );
-            if ($trick_color == 0) {
+            $trick_rr = self::getGameStateValue( 'trickRR' );
+            if ($trick_rr == 0) {
                 // zombie leads with highest card in their hand
                 $sql = "SELECT card_id id, MAX(card_type_arg) val FROM CARDS WHERE card_location = 'hand' AND card_location_arg = $active_player";
                 $zombiecard = self::getUniqueValueFromDB( $sql );
             } else {
                 // play highest card in the trick color
-                $sql = "SELECT card_id id, MAX(card_type_arg) FROM CARDS WHERE card_location = 'hand' AND card_location_arg = $active_player AND card_type = $trick_color";
+                $sql = "SELECT card_id id, MAX(card_type_arg) FROM CARDS WHERE card_location = 'hand' AND card_location_arg = $active_player AND card_type = $trick_rr";
                 $zombiecard = self::getUniqueValueFromDB( $sql );
                 if ($zombiecard == null) {
                     // play any card, play lowest card
@@ -1193,7 +1227,6 @@ class TrickOfTheRails extends Table
                     $zombiecard = self::getUniqueValueFromDB( $sql );
                 }
             }
-            self::dump('zombiecard', $zombiecard);
             $this->playCard($zombiecard);
             return;
         }
@@ -1202,14 +1235,15 @@ class TrickOfTheRails extends Table
             $occupied = self::getCollectionFromDb("
             SELECT card_location railway, card_id FROM CARDS
             WHERE card_type = 6 AND card_type_arg <= 5 AND card_location_arg = 0", true);
-            // choose one of the empty ones
+            // choose first empty one
             foreach ($this->railroads as $rr => $rw) {
                 if (!array_key_exists($rw['railway'], $occupied)) {
                     $this->placeLocomotive($rr);
                     return;
                 }
             }
-            throw new BgaVisibleSystemException( "Zombie mode: Failed to find unoccupied railway");
+            // shouldn't happen...
+            throw new BgaVisibleSystemException( clienttranslate("Zombie mode: Failed to find unoccupied railway"));
             return;
         }
         if ($statename == 'addCity') {
@@ -1235,7 +1269,6 @@ class TrickOfTheRails extends Table
                     $this->gamestate->nextState( "zombiePass" );
                 	break;
             }
-
             return;
         }
 
@@ -1246,7 +1279,7 @@ class TrickOfTheRails extends Table
             return;
         }
 
-        throw new BgaVisibleSystemException( "Zombie mode not supported at this game state: ".$statename );
+        throw new BgaVisibleSystemException( clienttranslate('Zombie mode not supported at this game state: $statename' ));
     }
     
     function isZombie($player_id) {

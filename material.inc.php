@@ -19,33 +19,21 @@
  *
  */
 
-
-
 $this->railroads = array(
     1 => array( 'name' => clienttranslate('B&O'),
     'nametr' => self::_('B&O'),
-    'color' => clienttranslate('Blue'),
-    'colortr' => self::_('Blue'),
     'railway' => 'b_and_o_railway' ),
     2 => array( 'name' => clienttranslate('C&O'),
     'nametr' => self::_('C&O'),
-    'color' => clienttranslate('Green'),
-    'colortr' => self::_('Green'),
     'railway' => 'c_and_o_railway' ),
     3 => array( 'name' => clienttranslate('Erie'),
     'nametr' => self::_('Erie'),
-    'color' => clienttranslate('Yellow'),
-    'colortr' => self::_('Yellow'),
     'railway' => 'erie_railway' ),
     4 => array( 'name' => clienttranslate('NYC'),
     'nametr' => self::_('NYC'),
-    'color' => clienttranslate('Gray'),
-    'colortr' => self::_('Gray'),
     'railway' => 'nyc_railway' ),
     5 => array( 'name' => clienttranslate('PRR'),
     'nametr' => self::_('PRR'),
-    'color' => clienttranslate('Red'),
-    'colortr' => self::_('Red'),
     'railway' => 'prr_railway' ),
 );
 

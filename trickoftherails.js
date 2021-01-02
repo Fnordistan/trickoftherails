@@ -79,7 +79,7 @@ function (dojo, declare) {
         */
 
         setup: function( gamedatas ) {
-            dojo.destroy('debug_output');
+            // dojo.destroy('debug_output');
             // this will be an array of arrays by player_id => array of rr share piles
             this.sharePiles = [];
             // array of arrays by player_id => array of RR counters
@@ -133,12 +133,19 @@ function (dojo, declare) {
             this.cardsPlayed.onItemCreate = dojo.hitch(this, this.setUpCard);
 
             // Player hand
-            this.playerHand = new ebg.stock();
-            this.playerHand.create( this, $('myhand'), this.cardwidth, this.cardheight );
-            this.playerHand.image_items_per_row = COLS;
-            this.playerHand.extraClasses='nice_card';
-            // hitch adding railroad as a class to each hand
-            this.playerHand.onItemCreate = dojo.hitch(this, this.setUpCard);
+            if (!this.isSpectator) {
+                this.playerHand = new ebg.stock();
+                this.playerHand.create( this, $('myhand'), this.cardwidth, this.cardheight );
+                this.playerHand.image_items_per_row = COLS;
+                this.playerHand.extraClasses='nice_card';
+                // hitch adding railroad as a class to each hand
+                this.playerHand.onItemCreate = dojo.hitch(this, this.setUpCard);
+                // setup card selection action
+                dojo.connect( this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged' );
+            } else {
+                // Hide player hand area for spectators
+                dojo.style('myhand_wrap', 'display', 'none');
+            }
 
             // Now set up trick lane
             this.trickLane = new ebg.stock();
@@ -175,9 +182,6 @@ function (dojo, declare) {
             this.populateCardsPlayed();
             this.populateTrickLane();
             this.populateRailways();
-
-            // setup card selection action
-            dojo.connect( this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged' );
 
             this.setupLocomotiveActions();
             this.setupRailhouseActions();
@@ -274,7 +278,9 @@ function (dojo, declare) {
                             this.trickLane.addItemType( card_type_id, 0, g_gamethemeurl+CARD_SPRITES, card_type_id );
                             this.setupSharePiles(card_type_id, g_gamethemeurl+CARD_SPRITES);
                         } else {
-                            this.playerHand.addItemType( card_type_id, card_type_id, g_gamethemeurl+CARD_SPRITES, card_type_id );
+                            if (!this.isSpectator) {
+                                this.playerHand.addItemType( card_type_id, card_type_id, g_gamethemeurl+CARD_SPRITES, card_type_id );
+                            }
                             this.cardsPlayed.addItemType( card_type_id, 0, g_gamethemeurl+CARD_SPRITES, card_type_id );
                             this.railWays[rr-1].addItemType( card_type_id, 0, g_gamethemeurl+CARD_SPRITES, card_type_id );
                             this.setupSharePiles(card_type_id, g_gamethemeurl+CARD_SPRITES);
@@ -339,6 +345,9 @@ function (dojo, declare) {
          * Put the cards in current player's hand.
          */
         populatePlayerHand: function() {
+            if (this.isSpectator) {
+                return;
+            }
             // Cards in player's hand
             for ( const h in this.gamedatas.hand ) {
                 var mycard = this.gamedatas.hand[h];
@@ -687,6 +696,9 @@ function (dojo, declare) {
          * @param {int} trick_rr optional if is_current_player false, 0 means we're leading
          */
         updateHand: function(is_current_player, trick_rr) {
+            if (this.isSpectator) {
+                return;
+            }
             if (is_current_player) {
                 this.playerHand.setSelectionMode(1);
 

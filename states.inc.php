@@ -158,7 +158,7 @@ $machinestates = array(
 
     STATE_SCORE => array(
         "name" => "scoring",
-        "description" => "Adding scores...",
+        "description" => "",
         "type" => "game",
         "action" => "stScoring",
         "updateGameProgression" => true,

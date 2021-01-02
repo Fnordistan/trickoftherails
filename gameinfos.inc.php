@@ -13,13 +13,13 @@
 $gameinfos = array( 
 
 // Name of the game in English (will serve as the basis for translation) 
-'game_name' => "Trick of the Rails",
+'game_name' => totranslate("Trick of the Rails"),
 
 // Game designer (or game designers, separated by commas)
 'designer' => 'Hisashi Hayashi',       
 
 // Game artist (or game artists, separated by commas)
-'artist' => 'Ryo Nyamo', 'Ian O\'Toole', 'Todd Sanders',
+'artist' => 'Ryo Nyamo, Ian O\'Toole, Todd Sanders',
 
 // Year of FIRST publication of this game. Can be negative.
 'year' => 2011,
@@ -95,7 +95,7 @@ $gameinfos = array(
 'strategy' => 3,    
 
 // Diplomacy of the game, from 0 (no interaction in this game) to 5 (totally based on interaction and discussion between players)
-'diplomacy' => 0,    
+'diplomacy' => 1,
 
 // Colors attributed to players
 'player_colors' => array( "ff0000", "008000", "0000ff", "ffa500", "773300" ),
@@ -130,9 +130,8 @@ $gameinfos = array(
 // Each paragraph must be wrapped with totranslate() for translation and should not contain html (plain text without formatting).
 // A good length for this text is between 100 and 150 words (about 6 to 9 lines on a standard display)
 'presentation' => array(
-//    totranslate("This wonderful game is about geometric shapes!"),
-//    totranslate("It was awarded best triangle game of the year in 2005 and nominated for the Spiel des Jahres."),
-//    ...
+   totranslate("Trick of the Rails, themed on the rise of the American railway period, combines 18XX-like portfolio management and a trick-taking card game. Players collect stock certificates and make the companies more valuable by laying the rail network."),
+   totranslate("The game alternates between stock rounds and operating rounds. In stock rounds, the cards played become shares for the players. In operating rounds, the cards played become track for the companies. The companies get trains, which determine how many track cards they can count for their profit (the trains have costs as well, which may lead to companies not making any profit at all) and in the end, players simply count the value of their shares and highest value wins."),
 ),
 
 // Games categories
@@ -142,7 +141,7 @@ $gameinfos = array(
 //  http://en.doc.boardgamearena.com/Game_meta-information:_gameinfos.inc.php
 //  IMPORTANT: this list should be ORDERED, with the most important tag first.
 //  IMPORTANT: it is mandatory that the FIRST tag is 1, 2, 3 and 4 (= game category)
-'tags' => array( 2, 11, 200, 204 ),
+'tags' => array( 2, 11, 102, 200, 204 ),
 
 
 //////// BGA SANDBOX ONLY PARAMETERS (DO NOT MODIFY)
