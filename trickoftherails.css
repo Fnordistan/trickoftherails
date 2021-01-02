@@ -140,7 +140,7 @@
     color: #ffff;
     font-weight: bold;
     display: inline-block;
-    padding-inline: 10px 10px;
+    padding-inline: 8px 8px;
 }
 
 /** for locomotive value text in logs */

@@ -391,13 +391,11 @@ class TrickOfTheRails extends Table
         This method is called each time we are in a game state with the "updateGameProgression" property set to true 
         (see states.inc.php)
     */
-    function getGameProgression()
-    {
+    function getGameProgression() {
         $initialTricks = self::getGameStateValue('handSize');
-        $tricksLeft = $initialTricks - self::getGameStateValue('currentTrickIndex');
+        $tricksLeft = $initialTricks - self::getStat('turns_number');
         return 100*($initialTricks-$tricksLeft)/$initialTricks;
     }
-
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Utility functions
@@ -590,8 +588,7 @@ class TrickOfTheRails extends Table
             if ($railroad != $trick_rr) {
                 // do I have a card of that color in my hand?
                 if ($this->hasCurrentTrick($player_id)) {
-                    $company = $this->railroads[$trick_rr]['name'];
-                    throw new BgaUserException ( self::_( 'You must play a '.$company.' card' ));
+                    throw new BgaUserException ( self::_( 'You must play a '.$this->railroads[$trick_rr]['nametr'].' card' ));
                 }
             }
         }
@@ -604,12 +601,13 @@ class TrickOfTheRails extends Table
         ");
 
         // Notify all players about the card played
-        self::notifyAllPlayers('cardPlayed', '${player_name} ${action_verb} ${company} ${card_value_label}${rr}${card_value}', array (
-            'i18n' => array ('action_verb', 'company', 'card_value_label' ),
+        // ${rr} and ${card_value} at the end aresubstituted on the client-side with js hacks
+        self::notifyAllPlayers('cardPlayed', '${player_name} ${action} ${company} ${card_value_label}${rr}${card_value}', array (
+            'i18n' => array ('action', 'company', 'card_value_label' ),
             'card_id' => $card_id,
             'player_id' => self::getActivePlayerId(),
-            'action_verb' => $plays_card,
             'player_name' => self::getActivePlayerName(),
+            'action' => $plays_card,
             'card_value' => $card_played ['type_arg'],
             'card_value_label' => $this->values_label [$card_played ['type_arg']],
             'rr' => $railroad,
@@ -750,7 +748,8 @@ class TrickOfTheRails extends Table
         }
 
         // Notify all players about City placement
-        self::notifyAllPlayers('cityAdded', clienttranslate('${player_name} adds ${city} to ${endpoint} of the ${company} line ${rr}'), array (
+        // ${rr} at the end is substituted by js on the client-side
+        self::notifyAllPlayers('cityAdded', clienttranslate('${player_name} adds ${city} to ${endpoint} of the ${company} line${rr}'), array (
             'i18n' => array ('city', 'endpoint', 'company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
@@ -759,13 +758,12 @@ class TrickOfTheRails extends Table
             'city_type' => $citycard['type_arg'],
             'rr' => $rr,
             'company' => $this->railroads[$rr]['name'],
-            'endpoint' => $is_start ? 'start' : 'end',
+            'endpoint' => $is_start ? clienttranslate("start") : clienttranslate("end"),
             'railway' => $railway));
 
         // go to placing trick cards played
         $this->gamestate->nextState();
     }
-
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state arguments
@@ -778,28 +776,28 @@ class TrickOfTheRails extends Table
     */
 
     function argPlayCards() {
-        $company = '';
+        $company = "";
         $rr = self::getGameStateValue( 'trickRR' );
-        $action_1 = "";
-        $action_2 = "";
+        $action = "";
+        $qualifier = "";
 
         if ($rr == 0) {
-            $action_1 = clienttranslate("lead the trick");
-            $action_2 = "";
-            $company = '';
+            $action = clienttranslate("lead the trick");
+            $qualifier = "";
+            $company = "";
         } else if ($this->hasCurrentTrick(self::getActivePlayerId())) {
-            $action_1 = clienttranslate("play a ");
-            $action_2 = clienttranslate(" card");
+            $action = clienttranslate("play a");
+            $qualifier = clienttranslate("card");
             $company = $this->railroads[$rr]['name'];
         } else {
-            $action_1 = clienttranslate("play any card (no ");
-            $action_2 = clienttranslate(" cards in hand)");
+            $action = clienttranslate("play any card (no");
+            $qualifier = clienttranslate("cards in hand)");
             $company = $this->railroads[$rr]['name'];
         }
         return array(
-            "i18n" => array('card_action_1', 'card_action_2', 'company'),
-            'card_action_1' => $action_1,
-            'card_action_2' => $action_2,
+            "i18n" => array('card_action', 'qualifier', 'company'),
+            'card_action' => $action,
+            'qualifier' => $qualifier,
             'rr' => $rr,
             'company' => $company,
         );
@@ -859,7 +857,7 @@ class TrickOfTheRails extends Table
         self::setGameStateValue( 'trickRR', 0 );
         self::setGameStateValue( 'leadCard', 0 );
 
-        // 
+        // initial stats
         self::incStat(1, 'turns_number');
         self::incGameStateValue('currentTrickIndex', 1);
 
@@ -906,7 +904,8 @@ class TrickOfTheRails extends Table
 
             $this->gamestate->changeActivePlayer( $winner );
 
-            self::notifyAllPlayers('winTrick', clienttranslate('${player_name} wins the trick with ${company} ${card_value_label}${rr}${card_value}'), array (
+            // ${rr}${card_value} at the end are substituted on the client side with js hacks
+            self::notifyAllPlayers('winTrick', clienttranslate('${player_name} wins trick with ${company} ${card_value_label}${rr}${card_value}'), array (
                 'i18n' => array ('company', 'card_value_label' ),
                 'player_id' => self::getActivePlayerId(),
                 'player_name' => self::getActivePlayerName(),
@@ -1003,6 +1002,7 @@ class TrickOfTheRails extends Table
                 // notify everyone winner discards/exchanges a card with Reservation
                 $discarded = $this->cards->getCard($trick_id);
                 if ($reservation != null) {
+                    // ${rr}${card_value} at the end are replaced with js substitution on the client side
                     self::notifyAllPlayers('reservationSwapped', clienttranslate('${player_name} replaces Reservation card with ${company} ${card_value_label} in Trick Lane${rr}${card_value}'), array (
                         'i18n' => array ('company', 'card_value_label' ),
                         'player_id' => $player,
@@ -1015,6 +1015,7 @@ class TrickOfTheRails extends Table
                         'reservation_loc' => $reservation['location_arg'],
                         'company' => $this->railroads [$discarded['type']] ['name']));
                 } else {
+                    // ${rr}${card_value} at the end are replaced with js substitution on the client side
                     self::notifyAllPlayers('discardedShare', clienttranslate('${player_name} discards ${company} ${card_value_label}${rr}${card_value}'), array (
                         'i18n' => array ('company', 'card_value_label' ),
                         'player_id' => $player,
@@ -1035,6 +1036,7 @@ class TrickOfTheRails extends Table
                 $share = $this->cards->getCard($trick_id);
                 $this->cards->moveCard($share['id'], 'shares', $player);
             }
+            // ${rr}${card_value} at the end are replaced with js substitution on the client side
             self::notifyAllPlayers('shareAdded', clienttranslate('${player_name} adds ${card_value_label} to ${company} shares${rr}${card_value}'), array (
                 'i18n' => array ('company', 'card_value_label' ),
                 'player_id' => $player,

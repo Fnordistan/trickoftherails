@@ -86,8 +86,8 @@ $machinestates = array(
     
     STATE_PLAY_CARD => array(
         "name" => "playerTurn",
-        "description" => clienttranslate('${actplayer} must ${card_action_1}${company}${card_action_2}' ),
-        "descriptionmyturn" => clienttranslate('${you} must ${card_action_1}${company}${card_action_2}' ),
+        "description" => clienttranslate( '${actplayer} must ${card_action} ${company} ${qualifier}' ),
+        "descriptionmyturn" => clienttranslate( '${you} must ${card_action} ${company} ${qualifier}' ),
         "type" => "activeplayer",
         "possibleactions" => array( "playCard" ),
         "args" => "argPlayCards",
@@ -112,8 +112,8 @@ $machinestates = array(
 
     STATE_ADD_LOCOMOTIVE => array(
         "name" => "addLocomotive",
-        "description" => clienttranslate('${actplayer} places ${locomotive}'),
-        "descriptionmyturn" => clienttranslate('${you} must place ${locomotive}'),
+        "description" => clienttranslate( '${actplayer} must place ${locomotive}' ),
+        "descriptionmyturn" => clienttranslate( '${you} must place ${locomotive}' ),
         "type" => "activeplayer",
         "possibleactions" => array( "placeLocomotive" ),
         "args" => "argPlaceLocomotive",
@@ -122,8 +122,8 @@ $machinestates = array(
 
     STATE_ADD_CITY => array(
         "name" => "addCity",
-        "description" => clienttranslate('${actplayer} places ${city}'),
-        "descriptionmyturn" => clienttranslate('${you} must place ${city}'),
+        "description" => clienttranslate( '${actplayer} must place ${city}' ),
+        "descriptionmyturn" => clienttranslate( '${you} must place ${city}' ),
         "type" => "activeplayer",
         "possibleactions" => array( "placeCity" ),
         "args" => "argPlaceCity",
@@ -132,8 +132,10 @@ $machinestates = array(
 
     STATE_ADD_RAILWAY => array(
         "name" => "addRailway",
-        "description" => clienttranslate('${actplayer} adds ${card_value_label} to the ${company} railway.${card_value}'),
-        "descriptionmyturn" => clienttranslate('${you} must add ${card_value_label} to the ${company} railway.${card_value}'),
+        // ${card_value} at the end is a hack to enable js string substitution
+        // It is removed by the client side display
+        "description" => clienttranslate( '${actplayer} must add ${card_value_label} to the ${company} railway${card_value}' ),
+        "descriptionmyturn" => clienttranslate( '${you} must add ${card_value_label} to the ${company} railway${card_value}' ),
         "type" => "activeplayer",
         "args" => "argAddRailway",
         "possibleactions" => array( "addRailwayCard" ),

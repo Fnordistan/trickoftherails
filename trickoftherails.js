@@ -15,9 +15,8 @@
  *
  */
 
-ROWS = 6;
-COLS = 12;
-
+const ROWS = 6;
+const COLS = 12;
 const RR_PREFIXES = ["b_and_o", "c_and_o", "erie", "nyc", "prr"];
 const RR_COLORS = ['#004D7A', '#80933F', '#EDB630', '#B8B7AE', '#9A1D20'];
 const RAILROADS = ["B&O", "C&O", "Erie", "NYC", "PRR"];
@@ -109,9 +108,8 @@ function (dojo, declare) {
                     var rr_counter = new ebg.counter();
                     rr_counter.create(rr+'_shares_counter_'+player_id);
                     this.shareCounters[player_id].push(rr_counter);
-                    this.addTooltip(rr+'_counter_icon_'+player_id, RAILROADS[rri]+' Shares', '');
+                    this.addTooltip(rr+'_counter_icon_'+player_id, dojo.string.substitute(_("${rr} Shares"), {rr: RAILROADS[rri]}), '');
                 }
-
 
                 // create share piles for each player
                 this.sharePiles[player_id] = [];
@@ -231,7 +229,7 @@ function (dojo, declare) {
                     }
                 }
             } catch (e) {
-                console.error(log,args,"Exception thrown", e.stack);
+                console.error(log, args, "Exception thrown", e.stack);
             }
             return this.inherited(arguments);
         },
@@ -294,8 +292,8 @@ function (dojo, declare) {
 
         /**
          * Add StockItem to all share piles
-         * @param {*} card_type_id
-         * @param {*} sprite_url
+         * @param {string} card_type_id
+         * @param {string} sprite_url
          */
         setupSharePiles: function(card_type_id, sprite_url) {
             for (var ri = 0; ri < 5; ri++) {
@@ -335,9 +333,8 @@ function (dojo, declare) {
             // Show/Hide Player shares button
             dojo.connect($('shares_button'), 'onclick', this, 'onShowShares');
             // Station Values help card
-            this.addTooltipHtml( $('station_values'), '<div class="totr_large_station_values_card"></div>', .1 ); 
+            this.addTooltipHtml( $('station_values'), '<div class="totr_large_station_values_card"></div>', 0 ); 
         },
-
 
         //// POPULATE Functions actually put the cards into the Stocks, from Db
 
@@ -385,7 +382,7 @@ function (dojo, declare) {
          * Put cards played on table.
          */
         populateCardsPlayed: function() {
-            for ( const i in this.gamedatas.currenttrick) {
+            for (const i in this.gamedatas.currenttrick) {
                 var tcard = this.gamedatas.currenttrick[i];
                 var rr = tcard.type;
                 var value = tcard.type_arg;
@@ -401,8 +398,6 @@ function (dojo, declare) {
         populateTrickLane: function() {
             // Special counter for Reservation cards
             var rsv = 0;
-            // location of the UNL train
-            var loc_wt = -1;
             for (const i in this.gamedatas.tricklanecards) {
                 var tlcard = this.gamedatas.tricklanecards[i];
                 var tt = tlcard.type;
@@ -419,11 +414,11 @@ function (dojo, declare) {
         },
 
         /**
-         * Rearranges all cards after the unlimited locomotive.
+         * Rearranges all cards after the ∞ locomotive.
          */
         rearrangeTrickLane: function() {
             var unlimited_loco = false;
-            for (var i in this.trickLane.items) {
+            for (const i in this.trickLane.items) {
                 const card = this.trickLane.items[i];
                 var card_div = this.trickLane.getItemDivId(card.id);
                 if (card.type == LOCOMOTIVE_UNLIMITED_TYPE) {
@@ -441,7 +436,7 @@ function (dojo, declare) {
          */
         populateRailways: function() {
             var rw = 0;
-            for (rr of RR_PREFIXES) {
+            for (const rr of RR_PREFIXES) {
                 var railwaycards = this.gamedatas[rr+'_railway_cards'];
                 for (const i in railwaycards) {
                     var railwaycard = railwaycards[i];
@@ -538,7 +533,7 @@ function (dojo, declare) {
          * 
          * @param int $rr 
          * @param int $v
-         * @returns int card_type
+         * @returns {number} card_type
          */
         getUniqueTypeForCard: function(rr, v) {
             return ((rr-1)*12) + (v-1);
@@ -547,8 +542,8 @@ function (dojo, declare) {
         /**
          * Reverse of above function. Gets the Type/Arg from the card id.
          * 
-         * @param {*} card_type 
-         * @returns two-member array, type and type_arg (rr/value)
+         * @param {int} card_type 
+         * @returns {Array} [type, type_arg] (rr,value)
          */
         getTypeAndValue: function(card_type) {
             if (card_type >= RESERVATION_CARD_TYPE) {
@@ -559,7 +554,8 @@ function (dojo, declare) {
 
         /**
          * Create a Stock for a RR company.
-         * @param {*} rr 
+         * @param {int} rr
+         * @returns {Stock}
          */
         createRailroadStock: function(rr) {
             var railroad = new ebg.stock();
@@ -575,8 +571,9 @@ function (dojo, declare) {
 
         /**
          * Create the Stock for a player's shares of a company.
-         * @param {*} player_id 
-         * @param {*} company 
+         * @param {string} player_id 
+         * @param {string} company
+         * @returns {Stock}
          */
         createPlayerSharesStock: function(player_id, company) {
             var shares = new ebg.stock();
@@ -592,10 +589,10 @@ function (dojo, declare) {
         },
 
         /**
-         * 
-         * @param {*} card_div 
-         * @param {*} card_type 
-         * @param {*} myhand_item 
+         * Adds tooltips to card.
+         * @param {string} card_div
+         * @param {string} card_type 
+         * @param {string} myhand_item
          */
         setUpCard: function(card_div, card_type, myhand_item) {
             // Add a special tooltip on the card:
@@ -612,62 +609,63 @@ function (dojo, declare) {
                         tooltip = this.getLocomotiveLabel(type_arg);
                         break;
                     case 6:
-                        tooltip = "City (Pittsburgh)";
+                        tooltip = _("City (Pittsburgh)");
                         break;
                     case 7:
-                        tooltip = "City (Baltimore)";
+                        tooltip = _("City (Baltimore)");
                         break;
                     case 8:
-                        tooltip = "City (New York)";
+                        tooltip = _("City (New York)");
                         break;
                     case 9:
-                        tooltip = "Reservation Card";
+                        tooltip = _("Reservation Card");
                         break;
                     default:
-                        throw new Error("Unknown Card: type="+type+", type_arg="+type_arg+")");
+                        throw new Error("Unknown Card: type="+type+", type_arg="+type_arg+")");// NOI18N
                 }
             } else if (type_arg == STATION) {
-                tooltip = RAILROADS[rri]+ " Station";
+                tooltip = dojo.string.substitute(_("${rr} Station"), {rr: RAILROADS[rri]});
             } else if (type_arg == EXCHANGE) {
-                tooltip = RAILROADS[rri]+ " Exchange Card";
+                tooltip = dojo.string.substitute(_("${rr} Exchange Card"), {rr: RAILROADS[rri]});
             } else {
-                tooltip = RAILROADS[rri] + " (" + type_arg + ")";
+                tooltip = dojo.string.substitute(_("${rr} (${val})"), {rr: RAILROADS[rri], val: type_arg});
             }
-            this.addTooltip( card_div.id, _(tooltip), '');
+            this.addTooltip( card_div.id, tooltip, '');
         },
 
         /**
          * For tooltips for Locomotive cards
-         * @param {*} type_arg 
+         * @param {int} type_arg
+         * @returns {string} translated label string
          */
         getLocomotiveLabel: function(type_arg) {
             var label;
             switch (type_arg) {
                 case 1:
-                    label = "Locomotive [3]";
+                    label = _("Locomotive [3]");
                     break;
                 case 2:
-                    label = "Locomotive [4]";
+                    label = _("Locomotive [4]");
                     break;
                 case 3:
-                    label = "Locomotive [5]";
+                    label = _("Locomotive [5]");
                     break;
                 case 4:
-                    label = "Locomotive [6]";
+                    label = _("Locomotive [6]");
                     break;
                 case 5:
-                    label = "Locomotive [∞]";
+                    label = _("Locomotive [∞]");
                     break;
                 default:
-                    throw new Error("Unexpected Locomotive value: "+type_arg);
+                    throw new Error("Unexpected Locomotive value: "+type_arg);// NOI18N
             }
             return label;
         },
 
         /**
          * Put a Locomotive card in its railway.
-         * @param {*} loc index of locomotive (type_arg)
-         * @param {*} rr index of railway
+         * @param {int} loc index of locomotive (type_arg)
+         * @param {int} rr index of railway
          */
         placeLocomotiveCard: function(loc, rr) {
             // the id of the locomotive slot
@@ -681,10 +679,10 @@ function (dojo, declare) {
                 "background": "url("+g_gamethemeurl+CARD_SPRITES+") "+x+"px "+y +"px",
                 "z-index": 1,
             });
-            dojo.addClass( loconode, RAILROADS[rr-1]+ " totr_nice_card");
+            dojo.addClass( loconode, RAILROADS[rr-1]+" totr_nice_card");
             dojo.removeClass(loconode, "totr_locomotive_slot");
             var tooltip = this.getLocomotiveLabel(loc);
-            this.addTooltip( loconode, _(tooltip), '');
+            this.addTooltip( loconode, tooltip, '');
         },
 
         /**
@@ -692,7 +690,7 @@ function (dojo, declare) {
          * Highlights cards that are of the proper company and adds not-allowed cursor to others.
          * 
          * Must be activated on entry and exit of playerTurn, to switch selectability on and off.
-         * @param {bool} is_current_player
+         * @param {boolean} is_current_player
          * @param {int} trick_rr optional if is_current_player false, 0 means we're leading
          */
         updateHand: function(is_current_player, trick_rr) {
@@ -782,8 +780,8 @@ function (dojo, declare) {
          * Activate eligible railhouse icons if this is the current player.
          * Otherwise reset all to default.
          * 
-         * @param {*} is_city are we placing a city?
-         * @param {*} rr optional: railroad to activate. 0 means none
+         * @param {boolean} is_city are we placing a city?
+         * @param {int} rr optional: railroad to activate. 0 means none
          */
         updateRailhouses: function(is_city, rr) {
             var mode = RAILHOUSE_BUTTON.DEFAULT;
@@ -808,7 +806,7 @@ function (dojo, declare) {
 
         /**
          * For determining the railway line the current player can add a card to.
-         * Returns the number of the rr company, or 0 if no card in cardsplayed.
+         * @returns {int} the number of the rr company, or 0 if no card in cardsplayed.
          */
         getRailroadCompanyPlayed: function() {
             var company = 0;
@@ -828,7 +826,8 @@ function (dojo, declare) {
 
         /**
          * Given a prefix, get the index (integer 1 to 5)
-         * @param {*} railway 
+         * @param {string} railway 
+         * @returns {int} -1 if none found
          */
         getIndexByRR: function(railway) {
             var ix = 0;
@@ -878,7 +877,7 @@ function (dojo, declare) {
 
         /**
          * When player clicks a Locomotive slot.
-         * @param {*} event
+         * @param {Object} event
          */
         onLocomotiveSelected : function(event) {
             if (this.checkAction('placeLocomotive', true) && this.isEmptyLocomotiveSlot(event)) {
@@ -903,7 +902,7 @@ function (dojo, declare) {
 
         /**
          * Light up Locomotive slot being hovered over.
-         * @param {*} event 
+         * @param {Object} event 
          */
         onLocomotiveSlotActivate : function(event) {
             if (this.checkAction('placeLocomotive', true) && this.isEmptyLocomotiveSlot(event)) {
@@ -914,7 +913,7 @@ function (dojo, declare) {
 
         /**
          * Unhighlight slot.
-         * @param {*} event 
+         * @param {Object} event 
          */
         onLocomotiveSlotDeactivate : function(event) {
             var loc_id = event.target.id;
@@ -923,8 +922,8 @@ function (dojo, declare) {
 
         /**
          * Checks whether a Locomotive slot being selected already has a card.
-         * @param {*} event 
-         * @returns boolean
+         * @param {Object} event 
+         * @returns {boolean} true if no card here
          */
         isEmptyLocomotiveSlot: function(event) {
             var is_empty = false;
@@ -937,7 +936,7 @@ function (dojo, declare) {
 
         /**
          * When player clicks a start or endpoint on railway.
-         * @param {*} event 
+         * @param {Object} event 
          */
         onRailhouseSelected : function(event) {
             var endpoint_id = event.target.id;
@@ -964,7 +963,7 @@ function (dojo, declare) {
 
         /**
          * Highlights a chosen endpoint.
-         * @param {*} event 
+         * @param {Object} event 
          */
         onRailhouseActivate : function(event) {
             if (this.isReadyRailhouse(event)) {
@@ -978,6 +977,7 @@ function (dojo, declare) {
 
         /**
          * Puts a Railhouse back in READY state upon leaving.
+         * @param {Object} event
          */
         onRailhouseDeactivate : function(event) {
             if (this.isReadyRailhouse(event)) {
@@ -992,30 +992,31 @@ function (dojo, declare) {
 
         /**
          * Checks whether the Railhouse is currently Ready (meaning it was previously activated).
-         * @param {*} event 
+         * @param {Object} event 
+         * @returns {boolean} true if the target of the event is "ready" to be clicked
          */
         isReadyRailhouse: function(event) {
             return event.target.classList.contains('totr_ready_railhouse');
         },
 
         /**
-         * When show shares button is clicked
-         * @param {*} event 
+         * When show shares button is clicked, toggles it from "Show" to "Hide."
+         * @param {Object} event 
          */
         onShowShares : function(event) {
             var sharedisplay = dojo.getStyle("shares_wrapper", "display");
             // toggle display
             sharedisplay = (sharedisplay == 'none') ? 'block' : 'none';
-            var button_text = (sharedisplay == 'none') ? "Show Player Shares" : "Hide Player Shares";
+            var button_text = (sharedisplay == 'none') ? _("Show Player Shares") : _("Hide Player Shares");
             dojo.setStyle($('shares_wrapper'), 'display', sharedisplay);
-            $('shares_button').innerHTML = _(button_text);
+            $('shares_button').innerHTML = button_text;
         },
 
         /**
          * Sets the  appearance of an unselected railhouse.
-         * @param {*} railhouse_id the node id
-         * @param {*} rr index (1-5)
-         * @param mode should be a RailhouseButton MODE
+         * @param {string} railhouse_id the node id
+         * @param {int} rr index (1-5)
+         * @param {enum} should be a RailhouseButton MODE
          */
         setRailhouseButton: function(railhouse_id, rr, mode) {
             var position_string = "0px 0px";
@@ -1069,7 +1070,7 @@ function (dojo, declare) {
 
         /**
          * Someone played a trick card.
-         * @param {*} notif 
+         * @param {Object} notif 
          */
         notif_cardPlayed : function(notif) {
             // Play a trick on the table
@@ -1098,7 +1099,7 @@ function (dojo, declare) {
 
         /**
          * Card swapped for Reservation card in Trick Lane.
-         * @param {*} notif 
+         * @param {Object} notif 
          */
         notif_reservationSwapped : function(notif) {
             var card_id = notif.args.card_id;
@@ -1120,8 +1121,8 @@ function (dojo, declare) {
         },
 
         /**
-         * A share was discarded by the winner.
-         * @param {*} notif 
+         * A share was discarded (automatically) by the winner.
+         * @param {Object} notif 
          */
         notif_discardedShare : function(notif) {
             var card_id = toint(notif.args.card_id);
@@ -1135,8 +1136,8 @@ function (dojo, declare) {
         },
 
         /**
-         * A share was added.
-         * @param {*} notif 
+         * A share was added to a Stock pile.
+         * @param {Object} notif 
          */
         notif_shareAdded : function(notif) {
             var player_id = notif.args.player_id;
@@ -1162,7 +1163,7 @@ function (dojo, declare) {
 
         /**
          * A Locomotive was placed.
-         * @param {*} notif 
+         * @param {Object} notif
          */
         notif_locomotivePlaced : function(notif) {
             var card_id = toint(notif.args.card_id);
@@ -1175,7 +1176,7 @@ function (dojo, declare) {
 
         /**
          * Card was moved from trick area to railway line.
-         * @param {*} notif 
+         * @param {Object} notif 
          */
         notif_railwayCardAdded : function(notif) {
             var card_id = toint(notif.args.card_id);
@@ -1195,7 +1196,7 @@ function (dojo, declare) {
 
         /**
          * A City card was added to a railway line.
-         * @param {*} notif 
+         * @param {Object} notif 
          */
         notif_cityAdded : function(notif) {
             var card_id = toint(notif.args.card_id);
