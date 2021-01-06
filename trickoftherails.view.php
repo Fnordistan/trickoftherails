@@ -48,18 +48,16 @@
         $this->tpl['RAILWAY_LINES'] = self::_("Railway Lines");
         $this->tpl['SHARES_BUTTON'] = self::_("Show Player Shares");
 
-        $RAILCOS = array( 'b_and_o', 'c_and_o', 'erie', 'nyc', 'prr' );
-
         // this will inflate our player block with actual players data
         $this->page->begin_block($template, 'SHARES');
         $this->page->begin_block($template, 'PLAYERS');
         foreach ( $players as $player_id => $player) {
             $this->page->reset_subblocks( 'SHARES');
 
-            foreach ($RAILCOS as $rr) {
+            foreach ($this->game->railroads as $r => $rr) {
                 $this->page->insert_block("SHARES", array(
                     "PLAYER" => $player_id,
-                    "RR" => $rr
+                    "RR" => $rr['prefix']
                 ));
             }
 
@@ -70,16 +68,16 @@
         }
 
         $this->page->begin_block($template, 'DISCARDED_SHARES');
-        foreach ($RAILCOS as $rr) {
+        foreach ($this->game->railroads as $r => $rr) {
             $this->page->insert_block('DISCARDED_SHARES', array(
-                "RR" => $rr
+                "RR" => $rr['prefix']
             ));
         }
 
         
         $this->page->begin_block($template, "RAILROAD");
-        foreach ( $RAILCOS as $rr) {
-            $this->page->insert_block("RAILROAD", array ("RR" => $rr));
+        foreach ($this->game->railroads as $r => $rr) {
+            $this->page->insert_block("RAILROAD", array ("RR" => $rr['prefix'], "COMPANY" => $rr['name']));
         }
 
         /*

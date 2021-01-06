@@ -22,18 +22,23 @@
 $this->railroads = array(
     1 => array( 'name' => clienttranslate('B&O'),
     'nametr' => self::_('B&O'),
+    'prefix' => 'b_and_o',
     'railway' => 'b_and_o_railway' ),
     2 => array( 'name' => clienttranslate('C&O'),
     'nametr' => self::_('C&O'),
+    'prefix' => 'c_and_o',
     'railway' => 'c_and_o_railway' ),
     3 => array( 'name' => clienttranslate('Erie'),
     'nametr' => self::_('Erie'),
+    'prefix' => 'erie',
     'railway' => 'erie_railway' ),
     4 => array( 'name' => clienttranslate('NYC'),
     'nametr' => self::_('NYC'),
+    'prefix' => 'nyc',
     'railway' => 'nyc_railway' ),
     5 => array( 'name' => clienttranslate('PRR'),
     'nametr' => self::_('PRR'),
+    'prefix' => 'prr',
     'railway' => 'prr_railway' ),
 );
 

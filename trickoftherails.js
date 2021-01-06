@@ -1172,6 +1172,10 @@ function (dojo, declare) {
             this.placeLocomotiveCard(toint(notif.args.loc_num), rr);
             // remove locomotive from Trick Lane, move to Railroad
             this.trickLane.removeFromStockById(card_id, loc_div);
+            // to prevent last card(s) from being shifted unnecessarily
+            if (notif.args.loc_num == 5) {
+                this.rearrangeTrickLane();
+            }
         },
 
         /**
