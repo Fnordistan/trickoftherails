@@ -18,7 +18,6 @@
  * are available everywhere in your game logic code.
  *
  */
-
 $this->railroads = array(
     1 => array( 'name' => clienttranslate('B&O'),
     'nametr' => self::_('B&O'),
