@@ -780,6 +780,7 @@ class TrickOfTheRails extends Table
         $rr = self::getGameStateValue( 'trickRR' );
         $action = "";
         $qualifier = "";
+        $round_type = self::getStat('turns_number') % 2 == 0 ? self::_("Operating Round") : self::_("Stock Round");
 
         if ($rr == 0) {
             $action = clienttranslate("lead the trick");
@@ -795,7 +796,8 @@ class TrickOfTheRails extends Table
             $company = $this->railroads[$rr]['name'];
         }
         return array(
-            "i18n" => array('card_action', 'qualifier', 'company'),
+            "i18n" => array('round_type', 'card_action', 'qualifier', 'company'),
+            'round_type' => $round_type,
             'card_action' => $action,
             'qualifier' => $qualifier,
             'rr' => $rr,

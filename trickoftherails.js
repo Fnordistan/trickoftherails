@@ -136,8 +136,9 @@ function (dojo, declare) {
                 this.playerHand.create( this, $('myhand'), this.cardwidth, this.cardheight );
                 this.playerHand.image_items_per_row = COLS;
                 this.playerHand.extraClasses='totr_nice_card';
+                this.playerHand.item_margin = 7;
                 // this keeps selected but unselectable cards from changing
-                // this.playerHand.setSelectionAppearance('class');
+                this.playerHand.setSelectionAppearance('class');
                 // hitch adding railroad as a class to each hand
                 this.playerHand.onItemCreate = dojo.hitch(this, this.setUpCard);
                 // setup card selection action
@@ -152,6 +153,7 @@ function (dojo, declare) {
             this.trickLane.create(this, $('tricklane'), this.cardwidth, this.cardheight );
             this.trickLane.setSelectionMode(0);
             this.trickLane.image_items_per_row = COLS;
+            this.playerHand.item_margin = 7;
             this.trickLane.extraClasses='totr_nice_card';
             this.trickLane.onItemCreate = dojo.hitch(this, this.setUpCard);
 
@@ -683,6 +685,7 @@ function (dojo, declare) {
                 "z-index": 1,
             });
             dojo.addClass( loconode, RAILROADS[rr-1]+" totr_nice_card");
+            dojo.style(loconode, "margin", "5px");
             dojo.removeClass(loconode, "totr_locomotive_slot");
             dojo.removeAttr(loconode, "title");
             var tooltip = RAILROADS[rr-1] +' '+this.getLocomotiveLabel(loc);
