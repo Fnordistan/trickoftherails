@@ -136,6 +136,8 @@ function (dojo, declare) {
                 this.playerHand.create( this, $('myhand'), this.cardwidth, this.cardheight );
                 this.playerHand.image_items_per_row = COLS;
                 this.playerHand.extraClasses='totr_nice_card';
+                // this keeps selected but unselectable cards from changing
+                // this.playerHand.setSelectionAppearance('class');
                 // hitch adding railroad as a class to each hand
                 this.playerHand.onItemCreate = dojo.hitch(this, this.setUpCard);
                 // setup card selection action
@@ -193,6 +195,7 @@ function (dojo, declare) {
         /// Setup functions
         //
         //
+
 
        /** Inject html into log items  */
 
@@ -681,7 +684,8 @@ function (dojo, declare) {
             });
             dojo.addClass( loconode, RAILROADS[rr-1]+" totr_nice_card");
             dojo.removeClass(loconode, "totr_locomotive_slot");
-            var tooltip = this.getLocomotiveLabel(loc);
+            dojo.removeAttr(loconode, "title");
+            var tooltip = RAILROADS[rr-1] +' '+this.getLocomotiveLabel(loc);
             this.addTooltip( loconode, tooltip, '');
         },
 
@@ -860,15 +864,16 @@ function (dojo, declare) {
             if (items.length > 0) {
                 if (this.checkAction('playCard', true)) {
                     // Can play a card
-                    // var card_div = this.playerHand.getItemDivId(items[0].id);
-                    // if (!dojo.hasClass(card_div, 'totr_noselect')) {
-                        var card_id = items[0].id;
+                    var card_id = items[0].id;
 
-                        this.ajaxcall( "/trickoftherails/trickoftherails/playCard.html", { 
-                            id: card_id,
-                            lock: true 
-                            }, this, function( result ) {  }, function( is_error) { } );                        
+                    this.ajaxcall( "/trickoftherails/trickoftherails/playCard.html", { 
+                        id: card_id,
+                        lock: true 
+                    }, this, function( result ) {  }, function( is_error) { } );                        
     
+                    var card_div = this.playerHand.getItemDivId(card_id);
+                    // if ($(card_div).classList.contains('totr_noselect')) {
+                    //     console.log('not this card, dummy! ' + card_id);
                     // }
                 }
                 this.playerHand.unselectAll();
