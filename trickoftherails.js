@@ -418,16 +418,21 @@ function (dojo, declare) {
          */
         rearrangeTrickLane: function() {
             var unlimited_loco = false;
+            var last_top = Number.MAX_SAFE_INTEGER;
             for (const i in this.trickLane.items) {
                 const card = this.trickLane.items[i];
                 var card_div = this.trickLane.getItemDivId(card.id);
+                var top = dojo.getStyle(card_div, "top");
                 if (card.type == LOCOMOTIVE_UNLIMITED_TYPE) {
                     unlimited_loco = true;
                     dojo.style(card_div, "z-index", 1);
                 }
                 if (unlimited_loco) {
-                    dojo.style(card_div, "transform", "translateX(-50px)");
+                    if (!(last_top < top)) {
+                        dojo.style(card_div, "transform", "translateX(-50px)");
+                    }
                 }
+                last_top = top;
             }
         },
 

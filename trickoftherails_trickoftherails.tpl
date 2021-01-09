@@ -44,10 +44,10 @@
     <!-- BEGIN RAILROAD -->
     <div id="{RR}_lane" class="whiteblock totr_flex_lane">
         <div id="{RR}_logo" class="totr_rr_logo" title="{COMPANY} Railway Line"></div>
-        <div id="{RR}_locomotive" class="totr_locomotive_slot" title="Place {COMPANY} Locomotive here"></div>
-        <div id="{RR}_start" class="totr_railhouse" title="{COMPANY} Line Start"></div>
+        <div id="{RR}_locomotive" class="totr_locomotive_slot" title="{COMPANY} locomotive space"></div>
+        <div id="{RR}_start" class="totr_railhouse" title="{COMPANY} line start"></div>
         <div id="{RR}_railway"></div>
-        <div id="{RR}_end" class="totr_railhouse" title="{COMPANY} Line End"></div>
+        <div id="{RR}_end" class="totr_railhouse" title="{COMPANY} line end"></div>
     </div>
     <!-- END RAILROAD -->
 </div>
