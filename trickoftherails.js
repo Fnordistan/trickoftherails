@@ -18,7 +18,6 @@
 const ROWS = 6;
 const COLS = 12;
 const RR_PREFIXES = ["b_and_o", "c_and_o", "erie", "nyc", "prr"];
-const RR_COLORS = ['#004D7A', '#80933F', '#EDB630', '#B8B7AE', '#9A1D20'];
 const RAILROADS = ["B&O", "C&O", "Erie", "NYC", "PRR"];
 const RAILHOUSE_H = 112.5;
 const RAILHOUSE_W = 112.5;
@@ -201,12 +200,13 @@ function (dojo, declare) {
             try {
                 if (log && args && !args.processed) {
                     args.processed = true;
-                    
+
                     var rri = (args.rr) ? toint(args.rr)-1 : 0;
+                    var rr_label = RR_PREFIXES[rri];
                     if (args.card_value_label) {
                         args.card_value_label = this.format_block('jstpl_card_value_label', {
                             "card_value_label": args.card_value_label,
-                            "rr_color": RR_COLORS[rri]
+                            "rrname": rr_label
                         });
                         // hack because we had to insert ${card_value}
                         log = log.replace('${card_value}', '');
@@ -214,9 +214,9 @@ function (dojo, declare) {
                     if (args.company) {
                         args.company = this.format_block('jstpl_rr_name', {
                             "company": args.company,
-                            "rr_color": RR_COLORS[rri]
+                            "rrname": rr_label
                         }) + this.format_block('jstpl_rr_icon', {
-                            "rr": RR_PREFIXES[rri]
+                            "rrname": rr_label
                         });
                         // hack because we had to insert ${rr}
                         log = log.replace('${rr}', '');
@@ -1012,11 +1012,11 @@ function (dojo, declare) {
          * @param {Object} event 
          */
         onShowShares : function(event) {
-            var sharedisplay = dojo.getStyle("shares_wrapper", "display");
+            var sharedisplay = dojo.getStyle("shares_wrap", "display");
             // toggle display
             sharedisplay = (sharedisplay == 'none') ? 'block' : 'none';
             var button_text = (sharedisplay == 'none') ? _("Show Player Shares") : _("Hide Player Shares");
-            dojo.setStyle($('shares_wrapper'), 'display', sharedisplay);
+            dojo.setStyle($('shares_wrap'), 'display', sharedisplay);
             $('shares_button').innerHTML = button_text;
         },
 

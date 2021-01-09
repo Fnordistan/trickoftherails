@@ -45,8 +45,16 @@
 
 /* Note: you must not use any @import directive */
 
+:root {
+    --color_b_and_o: #004D7A;
+    --color_c_and_o: #80933F;
+    --color_erie: #EDB630;
+    --color_nyc: #B8B7AE;
+    --color_prr: #9A1D20;
+}
+
 /* Hide by default */
-.totr_shares_container {
+.totr_shares_display {
     display: none;
 }
 
@@ -175,6 +183,7 @@
     line-height: 35px;
 }
 
+/* base class for RR logs */
 .totr_rr_logo {
     margin: 5px;
     background-position: top;
@@ -187,43 +196,52 @@
     display: inline-block;
 }
 
+/* Shows share count on player boards */
+.totr_shares_ctr {
+    font-size: 24px;
+    font-weight: 700;
+    vertical-align: baseline;
+}
+
+/* scale can be resized separately in the tpl */
 .totr_rr_icon {
+    --scale: 1;
     display: inline-block;
-    background-size: 140px 25px;
+    background-size: calc(var(--scale) * 140px) calc(var(--scale) * 25px);
     vertical-align: -10px;
 }
 
 .totr_b_and_o_icon {
-    width: 25px;
-    height: 25px;
+    width: calc(var(--scale) *25px);
+    height: calc(var(--scale) *25px);
     background-position: 0px 0px;
 }
 
 .totr_c_and_o_icon {
-    width: 25px;
-    height: 25px;
-    background-position: -25px 0px;
+    width: calc(var(--scale) *25px);
+    height: calc(var(--scale) *25px);
+    background-position: calc(var(--scale) * -25px) 0px;
 }
 
 .totr_erie_icon {
-    width: 25px;
-    height: 25px;
-    background-position: -50px 0px;
+    width: calc(var(--scale) *25px);
+    height: calc(var(--scale) *25px);
+    background-position: calc(var(--scale) * -50px) 0px;
 }
 
 .totr_nyc_icon {
-    width: 40px;
-    height: 25px;
-    background-position: -100px 0px;
+    width: calc(var(--scale) *40px);
+    height: calc(var(--scale) *25px);
+    background-position: calc(var(--scale) *-100px) 0px;
 }
 
 .totr_prr_icon {
-    width: 25px;
-    height: 25px;
-    background-position: -75px 0px;
+    width: calc(var(--scale) *25px);
+    height: calc(var(--scale) *25px);
+    background-position: calc(var(--scale) *-75px) 0px;
 }
 
-.totr_help_container {
+.totr_help_display {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -243,7 +261,15 @@
     opacity: 0.6;
 }
 
-#b_and_o_logo {
+/* the NYC logo needs to be sized independently, or it takes up too much width */
+#nyc_logo {
+    background-size: 438px 78px;
+    width: 125px;
+    height: 78px;
+    background-position: -312px 0px;
+}
+
+/* #b_and_o_logo {
     background-size: 705px 125px;
     width: 125px;
     height: 125px;
@@ -276,4 +302,4 @@
     width: 126.5px;
     height: 125px;
     background-position: -375px 0px;
-}
+} */

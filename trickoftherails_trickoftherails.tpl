@@ -5,12 +5,12 @@
     <div id="myhand"></div>
 </div>
 
-<div id="help_wrapper" class="totr_help_container">
+<div id="help_wrap" class="totr_help_display">
     <a href="#" id="shares_button" class="bgabutton bgabutton_blue"><span>{SHARES_BUTTON}</span></a>
     <div id="station_values" class="totr_small_station_values_card"></div>
 </div>
 
-<div id="shares_wrapper" class="totr_shares_container">
+<div id="shares_wrap" class="totr_shares_display">
     <div id="shares_area" class="totr_shares_lane">
         <!-- BEGIN PLAYERS -->
         <div id="{PLAYER}_shares" class="whiteblock totr_player_shares">
@@ -38,12 +38,12 @@
     <div id="tricklane" class="totr_flex_lane"></div>
 </div>
 
-<div id="rr_lanes_container">
+<div id="rr_lanes_wrap">
     <div class="totr_lane_header">{RAILWAY_LINES}</div>
 
     <!-- BEGIN RAILROAD -->
     <div id="{RR}_lane" class="whiteblock totr_flex_lane">
-        <div id="{RR}_logo" class="totr_rr_logo" title="{COMPANY} Railway Line"></div>
+        <div id="{RR}_logo" class="totr_rr_logo totr_rr_icon totr_{RR}_icon" style="--scale: 5;" title="{COMPANY} Railway Line"></div>
         <div id="{RR}_locomotive" class="totr_locomotive_slot" title="{COMPANY} locomotive space"></div>
         <div id="{RR}_start" class="totr_railhouse" title="{COMPANY} line start"></div>
         <div id="{RR}_railway"></div>
@@ -57,15 +57,15 @@
 
 // Javascript HTML templates
 
-var jstpl_rr_name = '<span style="color: ${rr_color}; font-weight: bold;">${company}</span>';
+var jstpl_rr_name = '<span style="color: var(--color_${rrname}); font-weight: bold;">${company}</span>';
 
-var jstpl_card_value_label = '<span class="totr_card_value" style="background-color: ${rr_color};">${card_value_label}</span>';
+var jstpl_card_value_label = '<span class="totr_card_value" style="background-color: var(--color_${rrname});">${card_value_label}</span>';
 
-var jstpl_rr_icon = '<span class="totr_rr_logo totr_rr_icon totr_${rr}_icon"></span>';
+var jstpl_rr_icon = '<span class="totr_rr_logo totr_rr_icon totr_${rrname}_icon"></span>';
 
 var jstpl_rr_counter_block = '<div id="${rr}_counter_block" class="totr_rr_counter_container">\
-        <span id="${rr}_counter_icon_${id}" class="totr_rr_logo totr_rr_icon totr_${rr}_icon"></span>\
-        <span id="${rr}_shares_counter_${id}"></span>\
+        <span id="${rr}_counter_icon_${id}" class="totr_rr_logo totr_rr_icon totr_${rr}_icon" style="--scale: 1.5;"></span>\
+        <span id="${rr}_shares_counter_${id}" class="totr_shares_ctr totr_${rr}_shares_ctr" style="color: var(--color_${rr});"></span>\
     </div>'
 
 </script>  
