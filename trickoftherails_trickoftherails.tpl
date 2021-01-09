@@ -64,7 +64,7 @@ var jstpl_card_value_label = '<span class="totr_card_value" style="background-co
 var jstpl_rr_icon = '<span class="totr_rr_logo totr_rr_icon totr_${rrname}_icon"></span>';
 
 var jstpl_rr_counter_block = '<div id="${rr}_counter_block" class="totr_rr_counter_container">\
-        <span id="${rr}_counter_icon_${id}" class="totr_rr_logo totr_rr_icon totr_${rr}_icon" style="--scale: 1.5;"></span>\
+        <span id="${rr}_counter_icon_${id}" class="totr_rr_logo totr_rr_icon totr_${rr}_icon" style="--scale: 2;"></span>\
         <span id="${rr}_shares_counter_${id}" class="totr_shares_ctr totr_${rr}_shares_ctr" style="color: var(--color_${rr});"></span>\
     </div>'
 

@@ -45,6 +45,20 @@
 
 /* Note: you must not use any @import directive */
 
+@font-face {
+    font-family: 'Cinzel', serif;
+    src: local('Cinzel'), url(https://fonts.googleapis.com/css2?family=Cinzel:wght@700);
+    font-style: normal; 
+    font-weight: 700;
+}
+
+@font-face {
+    font-family: 'Frank Ruhl Libre', serif;
+    src: local('Frank Ruhl Libre'), url(https://fonts.googleapis.com/css2?family=Allerta+Stencil&family=Frank+Ruhl+Libre:wght@700&display=swap);
+    font-style: normal; 
+    font-weight: 700;
+}
+
 :root {
     --color_b_and_o: #004D7A;
     --color_c_and_o: #80933F;
@@ -135,6 +149,7 @@
 
 /** for card value text in logs */
 .totr_card_value {
+    /* font-family: 'Frank Ruhl Libre'; */
     color: #ffff;
     font-weight: bold;
     display: inline-block;
@@ -176,9 +191,10 @@
 }
 
 .totr_lane_header {
+    font-family: 'Cinzel';
     text-align: center;
     text-indent: 12px;
-    font-size: 20px;
+    font-size: 24px;
     font-weight: bold;
     line-height: 35px;
 }
@@ -193,14 +209,16 @@
 
 /* holds an rr icon and counter */
 .totr_rr_counter_container {
+    margin: 5px;
     display: inline-block;
 }
 
 /* Shows share count on player boards */
 .totr_shares_ctr {
-    font-size: 24px;
+    font-family: 'Frank Ruhl Libre';
+    font-size: 32px;
     font-weight: 700;
-    vertical-align: baseline;
+    vertical-align: 10px;
 }
 
 /* scale can be resized separately in the tpl */
