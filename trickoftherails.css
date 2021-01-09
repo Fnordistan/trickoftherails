@@ -144,7 +144,7 @@
 }
 
 .totr_noselect {
-    border: 2px gray solid;
+    border: 1px gray solid;
     border-style: inset;
     cursor: not-allowed;
     box-shadow: 0px 0px 0px 0px rgba(0,0,0,0.4);
@@ -182,9 +182,14 @@
     background-repeat: no-repeat;
 }
 
-.totr_rr_icon {
-    background-size: 140px 25px;
+/* holds an rr icon and counter */
+.totr_rr_counter_container {
     display: inline-block;
+}
+
+.totr_rr_icon {
+    display: inline-block;
+    background-size: 140px 25px;
     vertical-align: -10px;
 }
 

@@ -63,10 +63,10 @@ var jstpl_card_value_label = '<span class="totr_card_value" style="background-co
 
 var jstpl_rr_icon = '<span class="totr_rr_logo totr_rr_icon totr_${rr}_icon"></span>';
 
-// same as jstpl_rr_icon, but id added
-var jstpl_rr_counter_icon = '<span id="${rr}_counter_icon_${id}" class="totr_rr_logo totr_rr_icon totr_${rr}_icon"></span>';
-
-var jstpl_rr_counter = '<span id="${rr}_shares_counter_${id}"></span>';
+var jstpl_rr_counter_block = '<div id="${rr}_counter_block" class="totr_rr_counter_container">\
+        <span id="${rr}_counter_icon_${id}" class="totr_rr_logo totr_rr_icon totr_${rr}_icon"></span>\
+        <span id="${rr}_shares_counter_${id}"></span>\
+    </div>'
 
 </script>  
 

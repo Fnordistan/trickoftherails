@@ -95,12 +95,7 @@ function (dojo, declare) {
                 for (const rri in RR_PREFIXES) {
                     var rr = RR_PREFIXES[rri];
 
-                    dojo.place( this.format_block('jstpl_rr_counter_icon', {
-                        "rr": rr,
-                        "id": player_id
-                    }), player_board_div);
-
-                    dojo.place( this.format_block('jstpl_rr_counter', {
+                    dojo.place( this.format_block(' jstpl_rr_counter_block', {
                         "rr": rr,
                         "id": player_id
                     }), player_board_div);
