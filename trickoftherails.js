@@ -148,7 +148,7 @@ function (dojo, declare) {
             this.trickLane.create(this, $('tricklane'), this.cardwidth, this.cardheight );
             this.trickLane.setSelectionMode(0);
             this.trickLane.image_items_per_row = COLS;
-            this.playerHand.item_margin = 7;
+            this.trickLane.item_margin = 7;
             this.trickLane.extraClasses='totr_nice_card';
             this.trickLane.onItemCreate = dojo.hitch(this, this.setUpCard);
 
