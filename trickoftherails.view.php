@@ -23,16 +23,16 @@
  * Note: if the HTML of your game interface is always the same, you don't have to place anything here.
  *
  */
-  
+
   require_once( APP_BASE_PATH."view/common/game.view.php" );
-  
+
   class view_trickoftherails_trickoftherails extends game_view
   {
     function getGameName() {
         return "trickoftherails";
-    }    
-  	function build_page( $viewArgs )
-  	{		
+    }
+
+  	function build_page( $viewArgs ) {
   	    // Get players & players number
         $players = $this->game->loadPlayersBasicInfos();
         $players_nbr = count( $players );
@@ -80,21 +80,6 @@
             $this->page->insert_block("RAILROAD", array ("RR" => $rr['prefix'], "COMPANY" => $rr['name']));
         }
 
-        /*
-        
-        // Examples: set the value of some element defined in your tpl file like this: {MY_VARIABLE_ELEMENT}
-
-        // Display a specific number / string
-        $this->tpl['MY_VARIABLE_ELEMENT'] = $number_to_display;
-
-
-        // Display some HTML content of your own:
-        $this->tpl['MY_VARIABLE_ELEMENT'] = self::raw( $some_html_code );
-
-
-
         /*********** Do not change anything below this line  ************/
   	}
   }
-  
-

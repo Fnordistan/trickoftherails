@@ -19,6 +19,8 @@ const ROWS = 6;
 const COLS = 12;
 const RR_PREFIXES = ["b_and_o", "c_and_o", "erie", "nyc", "prr"];
 const RAILROADS = ["B&O", "C&O", "Erie", "NYC", "PRR"];
+const RR_COLORS = ["004D7A", "80933F", "EDB630", "B8B7AE", "9A1D20", "E2DAB4"];
+
 const RAILHOUSE_H = 112.5;
 const RAILHOUSE_W = 112.5;
 
@@ -595,6 +597,7 @@ function (dojo, declare) {
             var card_name;
             var card_text = '';
             const CITY_CARD_TEXT = _("Trick winner places this City at either end of any railway line");
+            const SWAP_TEXT = _("Trick winner takes this card as a company share; winning card replaces leftmost Reservation Card or is discarded");
             if (type == ROWS) {
                 switch (type_arg) {
                     case 1:
@@ -604,7 +607,7 @@ function (dojo, declare) {
                     case 5:
                         card_name = this.getLocomotiveLabel(type_arg);
                         if (type_arg == 5) {
-                            card_text = _("After trick winner places Locomotive [6], Locomotive [∞] is automatically placed on the last remaining railway line");
+                            card_text = _("After trick winner places Locomotive [6], Locomotive [∞] is automatically placed on last remaining railway line");
                         } else {
                             card_text = _("Trick winner places this Locomotive on any railway line that does not yet have one");
                         }
@@ -623,7 +626,7 @@ function (dojo, declare) {
                         break;
                     case 9:
                         card_name = _("Reservation Card");
-                        card_text = _("Leftmost Reservation Card is replaced with the winning card during Stock Rounds");
+                        card_text = _("Leftmost Reservation Card is replaced with winning card during next Stock Round");
                         break;
                     default:
                         throw new Error("Unknown Card: type="+type+", type_arg="+type_arg+")");// NOI18N
@@ -632,10 +635,10 @@ function (dojo, declare) {
                 card_name = dojo.string.substitute(_("${rr} Station"), {rr: RAILROADS[rri]});
             } else if (type_arg == EXCHANGE) {
                 card_name = dojo.string.substitute(_("${rr} Exchange Card"), {rr: RAILROADS[rri]});
-                card_text = _("Trick winner takes this card as a company share; winning card replaces leftmost Reservation Card (or is discarded if no remaining Reservation Cards)");
+                card_text = SWAP_TEXT;
             } else {
                 card_name = dojo.string.substitute(_("${rr} (${val})"), {rr: RAILROADS[rri], val: type_arg});
-                card_text = _("Trick winner takes this card as a company share");
+                card_text = SWAP_TEXT;
             }
             if (is_trick_lane) {
                 var tooltip = dojo.string.substitute("<div><h3>${label}</h3><span>${text}</span></div>", {label : card_name, text: card_text});
@@ -1078,7 +1081,9 @@ function (dojo, declare) {
             dojo.subscribe('locomotivePlaced', this, "notif_locomotivePlaced");
             dojo.subscribe('railwayCardAdded', this, "notif_railwayCardAdded");
             dojo.subscribe('cityAdded', this, "notif_cityAdded");
-        },      
+            dojo.subscribe('railroadScored', this, "notif_railroadScored");
+            this.notifqueue.setSynchronous( 'railroadScored', 100 );
+        },
 
         /**
          * Someone played a trick card.
@@ -1229,6 +1234,25 @@ function (dojo, declare) {
             this.railWays[rr-1].item_type[card_type].weight = wt;
 
             this.railWays[rr-1].addToStockWithId(card_type, card_id, trick_div);
+        },
+
+        /**
+         * Does the animation for scoring.
+         * @param {Object} notif 
+         */
+        notif_railroadScored : function(notif) {
+            debugger;
+            var rr = toint(notif.args.rr);
+            var loco = notif.args.train;
+            var loco_value = toint(notif.args.train_value);
+            var stations = notif.args.stations;
+            var station_values = notif.args.station_values;
+            debugger;
+            // var station_value = toint(notif.args.station_value);
+            // var card_type = this.getUniqueTypeForCard(ROWS, type_arg);
+            // var rr = toint(notif.args.rr);
+            // var scored_div = this.railWays[rr-1].getItemDivId(card_id);
+            // this.displayScoring( scored_div.id, RR_COLORS[rr-1], station_value, 250, 0, 0 );
         },
     });             
 });

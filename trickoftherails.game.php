@@ -466,9 +466,12 @@ class TrickOfTheRails extends Table
 
     /**
      * Score the values of all railways. Puts them in the stats.
+     * Returns a 2-element array of {$locomotive, {path}} arrays with locomotive as element 0
      */
     function scoreRailways() {
+        $paths = array();
         foreach ($this->railroads as $rr => $rw) {
+            $path = array();
             $railway = $rw['railway'];
             $railwaycards = self::getNonEmptyCollectionFromDB("
             SELECT card_location_arg location_arg, card_type type, card_type_arg type_arg
@@ -495,6 +498,7 @@ class TrickOfTheRails extends Table
             $route_end = 0;
             $scored_cards = 0;
 
+            $path[] = $locomotive;
             if ($loco_dist == 0 || $loco_dist >= $rw_len) {
                 $scored_cards = $rw_len;
                 // count all the card values
@@ -504,6 +508,7 @@ class TrickOfTheRails extends Table
                 }
                 $route_start = 1;
                 $route_end = $rw_len;
+                array_push($path, array_slice($railwaycards, 1, $rw_len));
             } else {
                 $scored_cards = $loco_dist;
                 // start with first loco distance, then successively add next and discard previous
@@ -534,6 +539,8 @@ class TrickOfTheRails extends Table
                     }
                     $lastscore = $nextscore;
                 }
+                array_push($path, array_slice($railwaycards, $route_start, $loco_dist));
+
                 $profit = $max;
             }
             // subtract value of locomotive
@@ -543,7 +550,9 @@ class TrickOfTheRails extends Table
 
             self::setStat($profit, $railway."_profit");
             self::setStat($scored_cards, $railway."_length");
+            $paths[] = $path;
         }
+        return $paths;
     }
 
     /**
@@ -1059,12 +1068,54 @@ class TrickOfTheRails extends Table
         }
     }
 
+
+    /**
+     * Create array of Station Values corresponding to each card in array
+     */
+    function stationValuesList($cards) {
+        $svs = array();
+        foreach ($cards as $card) {
+            $sv = $this->stationValue($card);
+            $svs[] = $sv;
+        }
+        return $svs;
+    }
+
+    /**
+     * Takes each rr path (2-element array of {$locomotive, {$path}} arrays)  and sends notifications that display the RR paths.
+     */
+    function displayRRScoring($rr_paths) {
+        $rri = 1;
+        foreach ($rr_paths as $path) {
+            $locomotive = $path[0];
+            $rrcards = $path[1];
+            self::dump('locomotive', $locomotive);
+            self::dump('path '.$rri, $rrcards);
+            $station_values = $this->stationValuesList($rrcards);
+            $loco_value = $this->stationValue($locomotive);
+            self::notifyAllPlayers('railroadScored', clienttranslate('scoring ${company} railway'), array (
+                'i18n' => array ('company'),
+                'company' => $this->railroads[$rri]['name'],
+                'rr' => $rri,
+                // DO NOT USE 'locomotive' as arg, gets replaced in logs!
+                'train' => $locomotive,
+                'train_value' => $loco_value,
+                'stations' => $rrcards,
+                'station_values' => $station_values,
+            ));
+            $rri++;
+        }
+    }
+
+
     /**
      * End of game, scoring done here.
      */
     function stScoring() {
         // first we calculate the values of every Railroad
-        $this->scoreRailways();
+        $rr_paths = $this->scoreRailways();
+
+        $this->displayRRScoring($rr_paths);
 
         $player_scores = array();
         $highscore = 0;
