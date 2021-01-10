@@ -176,14 +176,20 @@
 
 /* Decoration for cards when they are selectable (of the trick color) */
 .totr_trick_color {
-    border: white 2px;
-    border-style: solid double;
+    border: lightgray 2px;
+    border-style: solid;
     box-shadow: 4px 4px 5px 0px rgba(0,0,0,0.8);
 }
 
 .totr_trick_color:hover {
-    border-color: salmon;
+    border-color: orangered;
     box-shadow: 5px 5px 10px 0px rgba(0,0,0,0.2);
+}
+
+.totr_scored_card {
+    border: 3px #B5CDCE;
+    border-style: solid double;
+    outline: 2px solid black;
 }
 
 /** totr_ready_railhouse class is dynamically added and removed */

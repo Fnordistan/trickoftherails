@@ -1082,7 +1082,7 @@ function (dojo, declare) {
             dojo.subscribe('railwayCardAdded', this, "notif_railwayCardAdded");
             dojo.subscribe('cityAdded', this, "notif_cityAdded");
             dojo.subscribe('railroadScored', this, "notif_railroadScored");
-            this.notifqueue.setSynchronous( 'railroadScored', 100 );
+            this.notifqueue.setSynchronous( 'railroadScored', 1000 );
         },
 
         /**
@@ -1241,18 +1241,34 @@ function (dojo, declare) {
          * @param {Object} notif 
          */
         notif_railroadScored : function(notif) {
-            debugger;
             var rr = toint(notif.args.rr);
             var loco = notif.args.train;
             var loco_value = toint(notif.args.train_value);
             var stations = notif.args.stations;
             var station_values = notif.args.station_values;
+            var rr_score = 0;
+            var rr_color = RR_COLORS[rr-1];
+            for (let i = 0; i < stations.length; i++) {
+                var st = stations[i];
+                var sv = toint(station_values[i]);
+                var id = toint(st['id']);
+                var type = toint(st['type']);
+                var type_arg = toint(st['type_arg']);
+                var scored_div = this.railWays[rr-1].getItemDivId(id);
+                dojo.addClass(scored_div, "totr_scored_card");
+                this.displayScoring( scored_div, rr_color, sv, 1000, 0, 0 );
+                rr_score += sv;
+            }
+            // display the locomotive scoring
+            var loco_id = toint(loco['id']);
+            var loco_div = RR_PREFIXES[rr-1]+'_locomotive';
+            this.displayScoring( loco_div, 'ff0000', loco_value, 1000, 0, 0 );
+            // total at end of line
+            rr_score += loco_value;
+            rr_score = Math.max(rr_score, 0);
+            var rh_end_div = RR_PREFIXES[rr-1]+"_end";
+            this.displayScoring( rh_end_div, rr_color, rr_score, 1500, 100, 0 );
             debugger;
-            // var station_value = toint(notif.args.station_value);
-            // var card_type = this.getUniqueTypeForCard(ROWS, type_arg);
-            // var rr = toint(notif.args.rr);
-            // var scored_div = this.railWays[rr-1].getItemDivId(card_id);
-            // this.displayScoring( scored_div.id, RR_COLORS[rr-1], station_value, 250, 0, 0 );
         },
     });             
 });

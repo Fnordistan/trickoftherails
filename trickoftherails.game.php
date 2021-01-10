@@ -474,7 +474,7 @@ class TrickOfTheRails extends Table
             $path = array();
             $railway = $rw['railway'];
             $railwaycards = self::getNonEmptyCollectionFromDB("
-            SELECT card_location_arg location_arg, card_type type, card_type_arg type_arg
+            SELECT card_location_arg location_arg, card_type type, card_type_arg type_arg, card_id id
             FROM CARDS
             WHERE card_location = '".$railway."'"
             );
