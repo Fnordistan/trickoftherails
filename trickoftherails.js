@@ -79,7 +79,7 @@ function (dojo, declare) {
         */
 
         setup: function( gamedatas ) {
-            dojo.destroy('debug_output');
+            // dojo.destroy('debug_output');
             // this will be an array of arrays by player_id => array of rr share piles
             this.sharePiles = [];
             // array of arrays by player_id => array of RR counters
@@ -1082,7 +1082,7 @@ function (dojo, declare) {
             dojo.subscribe('railwayCardAdded', this, "notif_railwayCardAdded");
             dojo.subscribe('cityAdded', this, "notif_cityAdded");
             dojo.subscribe('railroadScored', this, "notif_railroadScored");
-            this.notifqueue.setSynchronous( 'railroadScored', 1000 );
+            this.notifqueue.setSynchronous( 'railroadScored', 2000 );
         },
 
         /**
@@ -1248,6 +1248,7 @@ function (dojo, declare) {
             var station_values = notif.args.station_values;
             var rr_score = 0;
             var rr_color = RR_COLORS[rr-1];
+            var animation_duration = 1000 * (6-rr);
             for (let i = 0; i < stations.length; i++) {
                 var st = stations[i];
                 var sv = toint(station_values[i]);
@@ -1256,19 +1257,18 @@ function (dojo, declare) {
                 var type_arg = toint(st['type_arg']);
                 var scored_div = this.railWays[rr-1].getItemDivId(id);
                 dojo.addClass(scored_div, "totr_scored_card");
-                this.displayScoring( scored_div, rr_color, sv, 1000, 0, 0 );
+                this.displayScoring( scored_div, rr_color, sv, animation_duration, 0, 0 );
                 rr_score += sv;
             }
             // display the locomotive scoring
             var loco_id = toint(loco['id']);
             var loco_div = RR_PREFIXES[rr-1]+'_locomotive';
-            this.displayScoring( loco_div, 'ff0000', loco_value, 1000, 0, 0 );
+            this.displayScoring( loco_div, 'ff0000', loco_value, animation_duration, 0, 0 );
             // total at end of line
             rr_score += loco_value;
             rr_score = Math.max(rr_score, 0);
             var rh_end_div = RR_PREFIXES[rr-1]+"_end";
-            this.displayScoring( rh_end_div, rr_color, rr_score, 1500, 100, 0 );
-            debugger;
+            this.displayScoring( rh_end_div, rr_color, rr_score, animation_duration, 100, 0 );
         },
     });             
 });

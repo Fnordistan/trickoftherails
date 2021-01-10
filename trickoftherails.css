@@ -182,14 +182,15 @@
 }
 
 .totr_trick_color:hover {
-    border-color: orangered;
-    box-shadow: 5px 5px 10px 0px rgba(0,0,0,0.2);
+    border-color: salmon;
+    box-shadow: 5px 5px 10px 0px lightgray;
 }
 
 .totr_scored_card {
-    border: 3px #B5CDCE;
+    border: 2px darkgray;
     border-style: solid double;
-    outline: 2px solid black;
+    outline: 3px solid black;
+    box-shadow: 5px 5px 1px 4px rgba(0,0,0,0.4);
 }
 
 /** totr_ready_railhouse class is dynamically added and removed */
