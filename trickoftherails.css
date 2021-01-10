@@ -65,6 +65,7 @@
     --color_erie: #EDB630;
     --color_nyc: #B8B7AE;
     --color_prr: #9A1D20;
+    --color_loc: #E2DAB4;
 }
 
 /* Hide by default */
@@ -158,7 +159,7 @@
 
 /** for locomotive value text in logs */
 .totr_locomotive_value {
-    background-color: #E2DAB4;
+    background-color: var(--color_loc);
     color: black;
     outline: 1px solid black;
     font-weight: bold;
@@ -263,6 +264,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.totr_unl_loc {
+    opacity: 0.6 !important;
+    border: var(--color_loc);
 }
 
 #discard_shares_header {

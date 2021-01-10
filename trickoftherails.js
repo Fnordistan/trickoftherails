@@ -149,7 +149,7 @@ function (dojo, declare) {
             this.trickLane.image_items_per_row = COLS;
             this.trickLane.item_margin = 7;
             this.trickLane.extraClasses='totr_nice_card';
-            this.trickLane.onItemCreate = dojo.hitch(this, this.setUpCard);
+            // this.trickLane.onItemCreate = dojo.hitch(this, this.setUpCard);
 
             // create the Stock items for all five railways
             this.railWays = [];
@@ -407,32 +407,12 @@ function (dojo, declare) {
                     ctype += rsv++;
                 }
                 this.trickLane.item_type[ctype].weight = toint(tlcard.location_arg);
-
                 this.trickLane.addToStockWithId(ctype, tlcard.id);
-            }
-            this.rearrangeTrickLane();
-        },
-
-        /**
-         * Rearranges all cards after the ∞ locomotive.
-         */
-        rearrangeTrickLane: function() {
-            var unlimited_loco = false;
-            var last_top = Number.MAX_SAFE_INTEGER;
-            for (const i in this.trickLane.items) {
-                const card = this.trickLane.items[i];
-                var card_div = this.trickLane.getItemDivId(card.id);
-                var top = dojo.getStyle(card_div, "top");
-                if (card.type == LOCOMOTIVE_UNLIMITED_TYPE) {
-                    unlimited_loco = true;
-                    dojo.style(card_div, "z-index", 1);
+                var card_div = this.trickLane.getItemDivId(tlcard.id);
+                if (ctype == LOCOMOTIVE_UNLIMITED_TYPE) {
+                    dojo.addClass(card_div, "totr_unl_loc");
                 }
-                if (unlimited_loco) {
-                    if (!(last_top < top)) {
-                        dojo.style(card_div, "transform", "translateX(-50px)");
-                    }
-                }
-                last_top = top;
+                this.addTooltipToCard(card_div, ctype, true);
             }
         },
 
@@ -600,10 +580,21 @@ function (dojo, declare) {
          * @param {string} myhand_item
          */
         setUpCard: function(card_div, card_type, myhand_item) {
-            // Add a special tooltip on the card:
+            this.addTooltipToCard(card_div.id, card_type, false);
+        },
+
+        /**
+         * Create tooltips, plain text for most cards, but descriptive HTML for Trick Lane.
+         * @param {string} card_div id
+         * @param {int} card_type type of card (type_arg)
+         * @param {boolean} is_trick_lane 
+         */
+        addTooltipToCard: function(card_div, card_type, is_trick_lane) {
             var [type, type_arg] = this.getTypeAndValue(card_type);
             var rri = type-1;
-            var tooltip;
+            var card_name;
+            var card_text = '';
+            const CITY_CARD_TEXT = _("Trick winner places this City at either end of any railway line");
             if (type == ROWS) {
                 switch (type_arg) {
                     case 1:
@@ -611,31 +602,47 @@ function (dojo, declare) {
                     case 3:
                     case 4:
                     case 5:
-                        tooltip = this.getLocomotiveLabel(type_arg);
+                        card_name = this.getLocomotiveLabel(type_arg);
+                        if (type_arg == 5) {
+                            card_text = _("After trick winner places Locomotive [6], Locomotive [∞] is automatically placed on the last remaining railway line");
+                        } else {
+                            card_text = _("Trick winner places this Locomotive on any railway line that does not yet have one");
+                        }
                         break;
                     case 6:
-                        tooltip = _("City (Pittsburgh)");
+                        card_name = _("City (Pittsburgh)");
+                        card_text = CITY_CARD_TEXT;
                         break;
                     case 7:
-                        tooltip = _("City (Baltimore)");
+                        card_name = _("City (Baltimore)");
+                        card_text = CITY_CARD_TEXT;
                         break;
                     case 8:
-                        tooltip = _("City (New York)");
+                        card_name = _("City (New York)");
+                        card_text = CITY_CARD_TEXT;
                         break;
                     case 9:
-                        tooltip = _("Reservation Card");
+                        card_name = _("Reservation Card");
+                        card_text = _("Leftmost Reservation Card is replaced with the winning card during Stock Rounds");
                         break;
                     default:
                         throw new Error("Unknown Card: type="+type+", type_arg="+type_arg+")");// NOI18N
                 }
             } else if (type_arg == STATION) {
-                tooltip = dojo.string.substitute(_("${rr} Station"), {rr: RAILROADS[rri]});
+                card_name = dojo.string.substitute(_("${rr} Station"), {rr: RAILROADS[rri]});
             } else if (type_arg == EXCHANGE) {
-                tooltip = dojo.string.substitute(_("${rr} Exchange Card"), {rr: RAILROADS[rri]});
+                card_name = dojo.string.substitute(_("${rr} Exchange Card"), {rr: RAILROADS[rri]});
+                card_text = _("Trick winner takes this card as a company share; winning card replaces leftmost Reservation Card (or is discarded if no remaining Reservation Cards)");
             } else {
-                tooltip = dojo.string.substitute(_("${rr} (${val})"), {rr: RAILROADS[rri], val: type_arg});
+                card_name = dojo.string.substitute(_("${rr} (${val})"), {rr: RAILROADS[rri], val: type_arg});
+                card_text = _("Trick winner takes this card as a company share");
             }
-            this.addTooltip( card_div.id, tooltip, '');
+            if (is_trick_lane) {
+                var tooltip = dojo.string.substitute("<div><h3>${label}</h3><span>${text}</span></div>", {label : card_name, text: card_text});
+                this.addTooltipHtml(card_div, tooltip, 0.5);
+            } else {
+                this.addTooltip(card_div, card_name, '');
+            }
         },
 
         /**
@@ -875,9 +882,6 @@ function (dojo, declare) {
                     }, this, function( result ) {  }, function( is_error) { } );                        
     
                     var card_div = this.playerHand.getItemDivId(card_id);
-                    // if ($(card_div).classList.contains('totr_noselect')) {
-                    //     console.log('not this card, dummy! ' + card_id);
-                    // }
                 }
                 this.playerHand.unselectAll();
             }
@@ -1124,8 +1128,9 @@ function (dojo, declare) {
             // move the (winning) trick card from the play area to the Trick Lane
             this.trickLane.addToStockWithId(card_type, card_id, trick_div);
             this.cardsPlayed.removeFromStockById(card_id, reserve_div);
-            // now we need to rearrange because of unlimited loc
-            this.rearrangeTrickLane();
+            // now put Trick Lane html tooltip on it
+            var new_card_divid = this.trickLane.getItemDivId(card_id);
+            this.addTooltipToCard(new_card_divid, card_type, true);
         },
 
         /**
@@ -1180,10 +1185,6 @@ function (dojo, declare) {
             this.placeLocomotiveCard(toint(notif.args.loc_num), rr);
             // remove locomotive from Trick Lane, move to Railroad
             this.trickLane.removeFromStockById(card_id, loc_div);
-            // to prevent last card(s) from being shifted unnecessarily
-            if (notif.args.loc_num == 5) {
-                this.rearrangeTrickLane();
-            }
         },
 
         /**
