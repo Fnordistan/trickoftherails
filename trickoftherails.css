@@ -66,6 +66,8 @@
     --color_nyc: #B8B7AE;
     --color_prr: #9A1D20;
     --color_loc: #E2DAB4;
+    --card_height: 114px;
+    --card_width: 76px;
 }
 
 /* Hide by default */
@@ -88,14 +90,14 @@
 
 .totr_locomotive_slot {
     margin: 5px;
-    background-size: 110px 51px;
+    background-size: 66px 33.6px;
     background-position: center;
     background-image: url(img/locomotive.png);
     background-repeat: no-repeat;
     background-color: lightgray;
     opacity: 0.5;
-    width: 114px;
-    height: 171px;
+    width: var(--card_width);
+    height: var(--card_height);
     border-radius: 5px;
     border-style: groove;
 }
@@ -107,12 +109,12 @@
 }
 
 .totr_railhouse {
-    background-size: 675px 337.5px;
+    background-size: 450px 225px;
     background-image: url(img/railhouse_sprites.png);
     background-repeat: no-repeat;
     background-position: 0px 0px;
-    width: 112.5px;
-    height: 112.5px;
+    width: 75px;
+    height: 75px;
 }
 
 .totr_nice_card {
@@ -176,7 +178,7 @@
 
 /* Decoration for cards when they are selectable (of the trick color) */
 .totr_trick_color {
-    border: lightgray 2px;
+    border: white 2px;
     border-style: solid;
     box-shadow: 4px 4px 5px 0px rgba(0,0,0,0.8);
 }
@@ -187,9 +189,8 @@
 }
 
 .totr_scored_card {
-    border: 2px darkgray;
-    border-style: solid double;
-    outline: 3px solid black;
+    border: 3px black;
+    border-style: double outset;
     box-shadow: 5px 5px 1px 4px rgba(0,0,0,0.4);
 }
 
@@ -278,6 +279,20 @@
     border: var(--color_loc);
 }
 
+#card_rows {
+    display: flex;
+}
+
+#cardsplayed_wrap {
+    margin: 5px;
+    flex: 0 0 415px;
+}
+
+#tricklane_wrap {
+    margin: 5px;
+    flex: 1;
+}
+
 #discard_shares_header {
     text-align: center;
     text-indent: 12px;
@@ -294,43 +309,8 @@
 
 /* the NYC logo needs to be sized independently, or it takes up too much width */
 #nyc_logo {
-    background-size: 438px 78px;
-    width: 125px;
-    height: 78px;
-    background-position: -312px 0px;
+    background-size: calc(var(--scale) *88px) calc(var(--scale) *15.6px);
+    width: calc(var(--scale) *25.1px);
+    height: calc(var(--scale) *15.6px);
+    background-position: calc(var(--scale) *-62.6px) 0px;
 }
-
-/* #b_and_o_logo {
-    background-size: 705px 125px;
-    width: 125px;
-    height: 125px;
-    background-position: 0px 0px;
-}
-
-#c_and_o_logo {
-    background-size: 705px 125px;
-    width: 125px;
-    height: 125px;
-    background-position: -125px 0px;
-}
-
-#erie_logo {
-    background-size: 705px 125px;
-    width: 125px;
-    height: 125px;
-    background-position: -250px 0px;
-}
-
-#nyc_logo {
-    background-size: 438px 78px;
-    width: 125px;
-    height: 78px;
-    background-position: -312px 0px;
-}
-
-#prr_logo {
-    background-size: 705px 125px;
-    width: 126.5px;
-    height: 125px;
-    background-position: -375px 0px;
-} */

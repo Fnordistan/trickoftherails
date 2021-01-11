@@ -29,13 +29,17 @@
     </div>
 </div>
 
-<div id="cardsplayed_wrap" class="whiteblock">
-    <div id="cardsplayed"></div>
-</div>
-
-<div id="tricklane_wrap" class="whiteblock">
-    <div class="totr_lane_header">{TRICK_LANE}</div>
-    <div id="tricklane" class="totr_flex_lane"></div>
+<div id="card_rows">
+    <div id="cardsplayed_wrap" class="whiteblock">
+        <div class="totr_lane_header">{CURRENT_TRICK}</div>
+        <div id="cardsplayed"></div>
+    </div>
+    
+    <div id="tricklane_wrap" class="whiteblock">
+        <div class="totr_lane_header">{TRICK_LANE}</div>
+        <div id="tricklane" class="totr_flex_lane"></div>
+    </div>
+    
 </div>
 
 <div id="rr_lanes_wrap">
@@ -43,7 +47,7 @@
 
     <!-- BEGIN RAILROAD -->
     <div id="{RR}_lane" class="whiteblock totr_flex_lane">
-        <div id="{RR}_logo" class="totr_rr_logo totr_rr_icon totr_{RR}_icon" style="--scale: 5;" title="{COMPANY} Railway Line"></div>
+        <div id="{RR}_logo" class="totr_rr_logo totr_rr_icon totr_{RR}_icon" style="--scale: 3;" title="{COMPANY} Railway Line"></div>
         <div id="{RR}_locomotive" class="totr_locomotive_slot" title="{COMPANY} locomotive space"></div>
         <div id="{RR}_start" class="totr_railhouse" title="{COMPANY} line start"></div>
         <div id="{RR}_railway"></div>

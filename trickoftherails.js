@@ -21,8 +21,11 @@ const RR_PREFIXES = ["b_and_o", "c_and_o", "erie", "nyc", "prr"];
 const RAILROADS = ["B&O", "C&O", "Erie", "NYC", "PRR"];
 const RR_COLORS = ["004D7A", "80933F", "EDB630", "B8B7AE", "9A1D20", "E2DAB4"];
 
-const RAILHOUSE_H = 112.5;
-const RAILHOUSE_W = 112.5;
+const RAILHOUSE_H = 75;
+const RAILHOUSE_W = 75;
+
+// ms used to set synchronous delay between scoring rrs in endgame
+const SCORING_DELAY = 3000;
 
 /**
  * Enum for Railhouse icons.
@@ -61,8 +64,8 @@ function (dojo, declare) {
     return declare("bgagame.trickoftherails", ebg.core.gamegui, {
         constructor: function(){
             // Here, you can init the global variables of your user interface
-            this.cardwidth = 114;
-            this.cardheight = 171;
+            this.cardwidth = 76;
+            this.cardheight = 114;
         },
 
         /*
@@ -77,7 +80,6 @@ function (dojo, declare) {
             
             "gamedatas" argument contains all datas retrieved by your "getAllDatas" PHP method.
         */
-
         setup: function( gamedatas ) {
             // dojo.destroy('debug_output');
             // this will be an array of arrays by player_id => array of rr share piles
@@ -1082,7 +1084,7 @@ function (dojo, declare) {
             dojo.subscribe('railwayCardAdded', this, "notif_railwayCardAdded");
             dojo.subscribe('cityAdded', this, "notif_cityAdded");
             dojo.subscribe('railroadScored', this, "notif_railroadScored");
-            this.notifqueue.setSynchronous( 'railroadScored', 2000 );
+            this.notifqueue.setSynchronous( 'railroadScored', SCORING_DELAY );
         },
 
         /**
@@ -1248,18 +1250,29 @@ function (dojo, declare) {
             var station_values = notif.args.station_values;
             var rr_score = 0;
             var rr_color = RR_COLORS[rr-1];
-            var animation_duration = 1000 * (6-rr);
+
+            var animation_duration = SCORING_DELAY * (6-rr);
+            var scored_ids = [];
             for (let i = 0; i < stations.length; i++) {
                 var st = stations[i];
                 var sv = toint(station_values[i]);
-                var id = toint(st['id']);
+                var card_id = toint(st['id']);
                 var type = toint(st['type']);
                 var type_arg = toint(st['type_arg']);
-                var scored_div = this.railWays[rr-1].getItemDivId(id);
+                var scored_div = this.railWays[rr-1].getItemDivId(card_id);
                 dojo.addClass(scored_div, "totr_scored_card");
                 this.displayScoring( scored_div, rr_color, sv, animation_duration, 0, 0 );
                 rr_score += sv;
+                scored_ids.push(card_id);
             }
+            // fade the unscored cards
+            for (const rrc of this.railWays[rr-1].getAllItems()) {
+                if (!scored_ids.includes(toint(rrc.id))) {
+                    var card_div = this.railWays[rr-1].getItemDivId(rrc.id);
+                    dojo.style(card_div, "opacity", "0.5");
+                }
+            } 
+
             // display the locomotive scoring
             var loco_id = toint(loco['id']);
             var loco_div = RR_PREFIXES[rr-1]+'_locomotive';
