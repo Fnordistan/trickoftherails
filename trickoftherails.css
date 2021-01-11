@@ -189,9 +189,9 @@
 }
 
 .totr_scored_card {
-    border: 3px black;
+    border: 3px #B5CDCE;
     border-style: double outset;
-    box-shadow: 5px 5px 1px 4px rgba(0,0,0,0.4);
+    box-shadow: 2px 5px 1px 4px rgba(0,0,0,0.4);
 }
 
 /** totr_ready_railhouse class is dynamically added and removed */

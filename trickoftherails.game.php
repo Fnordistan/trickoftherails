@@ -1089,8 +1089,6 @@ class TrickOfTheRails extends Table
         foreach ($rr_paths as $path) {
             $locomotive = $path[0];
             $rrcards = $path[1];
-            self::dump('locomotive', $locomotive);
-            self::dump('path '.$rri, $rrcards);
             $station_values = $this->stationValuesList($rrcards);
             $loco_value = $this->stationValue($locomotive);
             self::notifyAllPlayers('railroadScored', clienttranslate('scoring ${company} railway'), array (

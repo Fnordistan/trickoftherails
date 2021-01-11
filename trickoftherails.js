@@ -1271,7 +1271,9 @@ function (dojo, declare) {
                     var card_div = this.railWays[rr-1].getItemDivId(rrc.id);
                     dojo.style(card_div, "opacity", "0.5");
                 }
-            } 
+            }
+            // and put the scored highlighting on the scored ones
+
 
             // display the locomotive scoring
             var loco_id = toint(loco['id']);
