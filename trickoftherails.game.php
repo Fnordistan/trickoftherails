@@ -24,6 +24,8 @@ define('RESERVATION', 9);
 define('EXCHANGE', 11);
 define('RAILROAD_STATION', 12);
 
+define('TRICKLANE', "tricklane");
+
 class TrickOfTheRails extends Table
 {
 	function __construct( )
@@ -41,7 +43,8 @@ class TrickOfTheRails extends Table
             'currentTrickIndex' => 10, // index of next card to take in trick lane. Can't be turn # because of paired Loc6/∞
             'trickRR' => 20,// company of current trick
             'leadCard' => 21, // for keeping track of the lead card that was played for each hand
-            'wonLastTrick' => 30 // player id who won last trick
+            'wonLastTrick' => 30, // player id who won last trick
+            "trickLaneOption" => 100, // if expert option set
         ) );
 
         // all the cards in one deck, which can keep track of where everything is
@@ -129,7 +132,7 @@ class TrickOfTheRails extends Table
 
         // Create the trick deck, which varies by number of players
         $trick_cards = $this->createTrickCards($players_nbr);
-        $this->setupTrickDeck($players_nbr, $trick_cards);
+        $this->setupTrickLane($players_nbr, $trick_cards);
 
         // Activate first player
         self::activeNextPlayer();
@@ -230,7 +233,7 @@ class TrickOfTheRails extends Table
      * Create the trick deck.
      * Set up the Locomotives, Exchange, City, and Reservation cards that make the starting Trick Lane.
      */
-    protected function setupTrickDeck($players_nbr, $trick_cards) {
+    protected function setupTrickLane($players_nbr, $trick_cards) {
         // create trick deck
         $this->cards->createCards($trick_cards, 'trickdeck');
 
@@ -245,21 +248,37 @@ class TrickOfTheRails extends Table
         // 5 players
         // E 3 E 4 E 5 E 6/∞ E
 
+        // only used with Expert games
+        $expert_rand = array();
         switch ($players_nbr) {
             case 3:
                 $first_loco_card = 7;
+                $expert_rand = array(1, 3, 5, 7, 9, 11, 13);
                 break;
             case 4:
                 $first_loco_card = 3;
+                $expert_rand = array(1, 3, 5, 7, 9);
                 break;
             case 5:
                 $first_loco_card = 1;
+                $expert_rand = array(1, 3, 5, 7);
                 break;
             default:
                 // WTF happened?
                 throw new BgaVisibleSystemException("Invalid player count: {$players_nbr}");// NOI18N
         }
 
+        if ($this->isExpertVariant()) {
+            $this->expertShuffle($players_nbr, $expert_rand);
+        } else {
+            $this->basicShuffle($players_nbr, $first_loco_card);
+        }
+    }
+
+    /**
+     * For standard games, set up the Trick Lane in a fixed order.
+     */
+    protected function basicShuffle($players_nbr, $first_loco_card) {
         // First randomize the Exchange cards
         $exchange_rand = range(1,5);
         shuffle($exchange_rand);
@@ -271,16 +290,14 @@ class TrickOfTheRails extends Table
             if (($players_nbr == 5) && ($e == 4)) {
                 $slot = 9;
             }
-            $this->cards->moveCard($x_card['id'], "tricklane", $slot);
+            $this->cards->moveCard($x_card['id'], TRICKLANE, $slot);
         }
-
         // For a 3-player game, cities are shuffled and put in slots 1, 3, and 5
         $city_rand = array(1, 3, 5);
         shuffle($city_rand);
-        $cityx = 0;
+
         // For a 3-player game, Reserve cards are put in slots 10, 12, and 15
         $reserves = array(10, 12, 15);
-        $reservx = 0;
         // In a 4 player game, one Reserve card goes in slot 11
         $reserve_slot_4 = 11;
 
@@ -294,10 +311,10 @@ class TrickOfTheRails extends Table
                 case 2: // Loco 4
                 case 3: // Loco 5
                 case 4: // Loco 6
-                    $this->cards->moveCard($lastrow['id'], "tricklane", $first_loco_card+(2*($lastrow['type_arg']-1)));
+                    $this->cards->moveCard($lastrow['id'], TRICKLANE, $first_loco_card+(2*($lastrow['type_arg']-1)));
                     break;
                 case 5: // Loco ∞
-                    $this->cards->moveCard($lastrow['id'], "tricklane", $first_loco_card+7);
+                    $this->cards->moveCard($lastrow['id'], TRICKLANE, $first_loco_card+7);
                     break;
                 case 6: // City cards - put them in random slots
                 case 7:
@@ -305,12 +322,12 @@ class TrickOfTheRails extends Table
                     switch ($players_nbr) {
                         case 3:
                             // insert next shuffled city card
-                            $this->cards->moveCard($lastrow['id'], "tricklane", $city_rand[$cityx++]);
+                            $this->cards->moveCard($lastrow['id'], TRICKLANE, array_pop($city_rand));
                             break;
                         case 4:
                             // There's only one city card in 4-player games (type_arg should have been selected randomly 6-8)
                             // It always goes in slot 1
-                            $this->cards->moveCard($lastrow['id'], "tricklane", 1);
+                            $this->cards->moveCard($lastrow['id'], TRICKLANE, 1);
                             break;
                         default:
                             // shouldn't be any City cards in 5-player game!
@@ -320,11 +337,11 @@ class TrickOfTheRails extends Table
                 case 9: // Reservation cards
                     switch ($players_nbr) {
                         case 3:
-                            $this->cards->moveCard($lastrow['id'], "tricklane", $reserves[$reservx++]);
+                            $this->cards->moveCard($lastrow['id'], TRICKLANE, array_pop($reserves));
                             break;
                         case 4:
                             // only 1 Reservation card in a 4-player game
-                            $this->cards->moveCard($lastrow['id'], "tricklane", $reserve_slot_4);
+                            $this->cards->moveCard($lastrow['id'], TRICKLANE, $reserve_slot_4);
                             break;
                         default:
                             // shouldn't be any Reservation cards in 5-player game!
@@ -335,6 +352,96 @@ class TrickOfTheRails extends Table
                     throw new BgaVisibleSystemException("Invalid Card found! {$lastrow['id']}");// NOI18N
             }
        }
+    }
+
+    /**
+     * If 'Expert' mode, randomly shuffle City and Locomotive cards.
+     */
+    protected function expertShuffle($players_nbr, $expert_rand) {
+        // shuffle the city and loco cards
+        shuffle($expert_rand);
+
+        // pick the loco[6] first so we know where the loco[∞] goes
+        $loco_6 = array_pop($expert_rand);
+        $loco_unl = $loco_6+1;
+
+        // place the Exchange cards
+        // First randomize them
+        $exchange_rand = range(1,5);
+        shuffle($exchange_rand);
+        for ($e = 0; $e < 5; $e++) {
+            // one-member array
+            $ex_card = current($this->cards->getCardsOfType($exchange_rand[$e], EXCHANGE));
+            $ex_slot = $e*2;
+            
+            if ($ex_slot >= $loco_unl) {
+                $ex_slot++;
+            }
+            $this->cards->moveCard($ex_card['id'], TRICKLANE, $ex_slot);
+        }
+
+        // For a 3-player game, Reserve cards are put in slots 10, 12, and 14 (actually 15, but we have to shift because of the random unl loc position)
+        $reserves = array(10, 12, 14);
+        // In a 4 player game, one Reserve card goes in slot 11
+        $reserve_slot_4 = 11;
+
+        foreach ($this->cards->getCardsOfType(LASTROW) as $lastrow) {
+            switch ($lastrow['type_arg']) {
+                case 1: // Loco 3
+                case 2: // Loco 4
+                case 3: // Loco 5
+                    $loco_slot = array_pop($expert_rand);
+                    if ($loco_slot > $loco_unl) {
+                        $loco_slot++;
+                    }
+                    $this->cards->moveCard($lastrow['id'], TRICKLANE, $loco_slot);
+                    break;
+                case 4: // Loco 6
+                    $this->cards->moveCard($lastrow['id'], TRICKLANE, $loco_6);
+                    break;
+                case 5: // Loco ∞
+                    $this->cards->moveCard($lastrow['id'], TRICKLANE, $loco_unl);
+                    break;
+                case 6: // City cards - put them in random slots
+                case 7:
+                case 8:
+                    switch ($players_nbr) {
+                            case 3:
+                            case 4:
+                                // insert next shuffled city card
+                                $city_slot = array_pop($expert_rand);
+                                if ($city_slot > $loco_unl) {
+                                    $city_slot++;
+                                }
+                                $this->cards->moveCard($lastrow['id'], TRICKLANE, $city_slot);
+                                break;
+                            default:
+                                // shouldn't be any City cards in 5-player game!
+                                throw new BgaVisibleSystemException("Should not be City cards in a 5-player game!");// NOI18N
+                    }
+                    break;
+                    case 9: // Reservation cards
+                        switch ($players_nbr) {
+                            case 3:
+                                $reserve_slot = array_pop($reserves);
+                                if ($reserve_slot > $loco_unl) {
+                                    $reserve_slot++;
+                                }
+                                $this->cards->moveCard($lastrow['id'], TRICKLANE, $reserve_slot);
+                                break;
+                            case 4:
+                                // only 1 Reservation card in a 4-player game, and it will always be 11
+                                $this->cards->moveCard($lastrow['id'], TRICKLANE, $reserve_slot_4);
+                                break;
+                            default:
+                                // shouldn't be any Reservation cards in 5-player game!
+                                throw new BgaVisibleSystemException("Should not be Reservation cards in a 5-player game!");// NOI18N
+                        }
+                        break;
+                    default:
+                        throw new BgaVisibleSystemException("Invalid Card found! {$lastrow['id']}");// NOI18N
+            }
+        }
     }
 
     /*
@@ -378,6 +485,8 @@ class TrickOfTheRails extends Table
         $cards_sql = "SELECT player_id, card_id FROM TRICK_ROW";
         $result['cards_played'] = self::getCollectionFromDb($cards_sql, true);
 
+        $result['expert'] = $this->isExpertVariant();
+
         return $result;
     }
 
@@ -400,6 +509,13 @@ class TrickOfTheRails extends Table
 //////////////////////////////////////////////////////////////////////////////
 //////////// Utility functions
 ////////////    
+
+    /**
+     * Is this the Expert variant?
+     */
+    public function isExpertVariant() {
+        return $this->getGameStateValue('trickLaneOption') == 2;
+    }
 
     /**
      * Does this player_id have a card in hand of current trick color?
@@ -545,7 +661,7 @@ class TrickOfTheRails extends Table
             }
             // subtract value of locomotive
             $loco_pen = $this->stationValue($locomotive);
-            $share_value = $profit - $loco_pen;
+            $share_value = $profit + $loco_pen;
             $share_value = max(0, $share_value);
 
             self::setStat($share_value, $railway."_share_value");
@@ -633,34 +749,43 @@ class TrickOfTheRails extends Table
 
         $loconum = $this->doLocomotivePlacement($rr);
 
+        // by default, everyone adds station
+        $nextState = "addStation";
         // if this was Locomotive [6], the last one is automatically placed in the remaining empty slot
         if ($loconum == 4) {
-            // get the railways that already have locomotives
-            $placedRRs = self::getCollectionFromDB("
-            SELECT card_location railway FROM CARDS
-            WHERE card_location_arg = 0 and card_type = 6 AND card_type_arg <= 5
-            ", true);
+            if ($this->isExpertVariant()) {
+                // we get to also place the ∞ loco
+                // need to increment trick index to ∞ card
+                self::incGameStateValue('currentTrickIndex', 1);
+                $nextState = "addLocomotive";
+            } else {
+                // get the railways that already have locomotives
+                $placedRRs = self::getCollectionFromDB("
+                SELECT card_location railway FROM CARDS
+                WHERE card_location_arg = 0 and card_type = 6 AND card_type_arg <= 5
+                ", true);
 
-            $ri = 0;
-            foreach ($this->railroads as $rri => $rw) {
-                $lastrr = $rw['railway'];
-                if (!array_key_exists($lastrr, $placedRRs)) {
-                    $ri = $rri;
-                    break;
+                $ri = 0;
+                foreach ($this->railroads as $rri => $rw) {
+                    $lastrr = $rw['railway'];
+                    if (!array_key_exists($lastrr, $placedRRs)) {
+                        $ri = $rri;
+                        break;
+                    }
                 }
-            }
 
-            if ($ri == 0) {
-                throw new BgaVisibleSystemException("No railway with empty locomotive slot found!");// NOI18N
-            }
+                if ($ri == 0) {
+                    throw new BgaVisibleSystemException("No railway with empty locomotive slot found!");// NOI18N
+                }
 
-            // need to increment trick index to ∞ card
-            self::incGameStateValue('currentTrickIndex', 1);
-            $this->doLocomotivePlacement($ri);
+                // need to increment trick index to ∞ card
+                self::incGameStateValue('currentTrickIndex', 1);
+                $this->doLocomotivePlacement($ri);
+            }
         }
 
-        // other players add their cards to railway
-        $this->gamestate->nextState();
+        // all players add their cards to railway (or in Expert, may be adding ∞ loco)
+        $this->gamestate->nextState($nextState);
     }
 
     /**

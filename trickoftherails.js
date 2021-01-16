@@ -205,7 +205,7 @@ function (dojo, declare) {
                 if (log && args && !args.processed) {
                     args.processed = true;
 
-                    var rri = (args.rr) ? toint(args.rr)-1 : 0;
+                    var rri = (args.rr) ? parseInt(args.rr)-1 : 0;
                     var rr_label = RR_PREFIXES[rri];
                     if (args.card_value_label) {
                         args.card_value_label = this.format_block('jstpl_card_value_label', {
@@ -312,10 +312,11 @@ function (dojo, declare) {
         * Actions clicking or hovering on locomotive slots
         */
         setupLocomotiveActions: function() {
-            for (loconode of dojo.query('.totr_locomotive_slot')) {
-                dojo.connect(loconode, 'onclick', this, 'onLocomotiveSelected');
-                dojo.connect(loconode, 'mouseenter', this, 'onLocomotiveSlotActivate');
-                dojo.connect(loconode, 'mouseleave', this, 'onLocomotiveSlotDeactivate');
+            for (var rr in RR_PREFIXES) {
+                var loconode = RR_PREFIXES[rr]+'_locomotive';
+                dojo.connect($(loconode), 'onclick', this, 'onLocomotiveSelected');
+                dojo.connect($(loconode), 'mouseenter', this, 'onLocomotiveSlotActivate');
+                dojo.connect($(loconode), 'mouseleave', this, 'onLocomotiveSlotDeactivate');
             }
         },
 
@@ -391,7 +392,7 @@ function (dojo, declare) {
                 var rr = tcard.type;
                 var value = tcard.type_arg;
                 var ctype = this.getUniqueTypeForCard(rr, value);
-                this.cardsPlayed.item_type[ctype].weight = toint(tcard.location_arg);
+                this.cardsPlayed.item_type[ctype].weight = parseInt(tcard.location_arg);
                 this.cardsPlayed.addToStockWithId(ctype, tcard.id);
             }
         },
@@ -410,7 +411,7 @@ function (dojo, declare) {
                 if (ctype == RESERVATION_CARD_TYPE) {
                     ctype += rsv++;
                 }
-                this.trickLane.item_type[ctype].weight = toint(tlcard.location_arg);
+                this.trickLane.item_type[ctype].weight = parseInt(tlcard.location_arg);
                 this.trickLane.addToStockWithId(ctype, tlcard.id);
                 var card_div = this.trickLane.getItemDivId(tlcard.id);
                 if (ctype == LOCOMOTIVE_UNLIMITED_TYPE) {
@@ -433,10 +434,10 @@ function (dojo, declare) {
                     var value = railwaycard.type_arg;
                     if (railwaycard.location_arg == 0) {
                         // Locomotives go to the loco slot
-                        this.placeLocomotiveCard(toint(value), rw+1);
+                        this.placeLocomotiveCard(parseInt(value), rw+1);
                     } else {
                         var ctype = this.getUniqueTypeForCard(tt, value);
-                        this.railWays[rw].item_type[ctype].weight = toint(railwaycard.location_arg);
+                        this.railWays[rw].item_type[ctype].weight = parseInt(railwaycard.location_arg);
                         this.railWays[rw].addToStockWithId(ctype, railwaycard.id);
                     }
                 }
@@ -609,7 +610,12 @@ function (dojo, declare) {
                     case 5:
                         card_name = this.getLocomotiveLabel(type_arg);
                         if (type_arg == 5) {
-                            card_text = _("After trick winner places Locomotive [6], Locomotive [∞] is automatically placed on last remaining railway");
+                            if (this.gamedatas.expert) {
+                                // for expert variant
+                                card_text = _("After trick winner places Locomotive [6], Locomotive [∞] may immediately be placed on any other available railway");
+                            } else {
+                                card_text = _("After trick winner places Locomotive [6], Locomotive [∞] is automatically placed on last remaining railway");
+                            }
                         } else {
                             card_text = _("Trick winner places this Locomotive on any railway that does not yet have one");
                         }
@@ -696,6 +702,7 @@ function (dojo, declare) {
                 "background": "url("+g_gamethemeurl+CARD_SPRITES+") "+x+"px "+y +"px",
                 "z-index": 1,
             });
+
             dojo.addClass( loconode, RAILROADS[rr-1]+" totr_nice_card");
             dojo.style(loconode, "margin", "5px");
             dojo.removeClass(loconode, "totr_locomotive_slot");
@@ -933,8 +940,11 @@ function (dojo, declare) {
          * @param {Object} event 
          */
         onLocomotiveSlotDeactivate : function(event) {
-            var loc_id = event.target.id;
-            dojo.removeClass(loc_id, "totr_locomotive_slot_active");
+            // somehow this gets called sometimes on endgame animations?
+            if (this.checkAction('placeLocomotive', true)) {
+                var loc_id = event.target.id;
+                dojo.removeClass(loc_id, "totr_locomotive_slot_active");
+            }
         },
 
         /**
@@ -1078,11 +1088,11 @@ function (dojo, declare) {
         {
             dojo.subscribe('cardPlayed', this, "notif_cardPlayed");
             dojo.subscribe('discardedShare', this, "notif_discardedShare");
-            this.notifqueue.setSynchronous( 'discardedShare', 600 );
+            this.notifqueue.setSynchronous( 'discardedShare', 1000 );
             dojo.subscribe('reservationSwapped', this, "notif_reservationSwapped");
-            this.notifqueue.setSynchronous( 'reservationSwapped', 600 );
+            this.notifqueue.setSynchronous( 'reservationSwapped', 1000 );
             dojo.subscribe('shareAdded', this, "notif_shareAdded");
-            this.notifqueue.setSynchronous( 'shareAdded', 600 );
+            this.notifqueue.setSynchronous( 'shareAdded', 1000 );
             dojo.subscribe('locomotivePlaced', this, "notif_locomotivePlaced");
             dojo.subscribe('railwayCardAdded', this, "notif_railwayCardAdded");
             dojo.subscribe('cityAdded', this, "notif_cityAdded");
@@ -1134,7 +1144,7 @@ function (dojo, declare) {
             // remove the Reservation card
             this.trickLane.removeFromStockById(notif.args.reservation_id);
             // set the weight to that of the replaced Reservation card
-            this.trickLane.item_type[card_type].weight = toint(notif.args.reservation_loc);
+            this.trickLane.item_type[card_type].weight = parseInt(notif.args.reservation_loc);
             // move the (winning) trick card from the play area to the Trick Lane
             this.trickLane.addToStockWithId(card_type, card_id, trick_div);
             this.cardsPlayed.removeFromStockById(card_id, reserve_div);
@@ -1148,9 +1158,9 @@ function (dojo, declare) {
          * @param {Object} notif 
          */
         notif_discardedShare : function(notif) {
-            var card_id = toint(notif.args.card_id);
-            var rr = toint(notif.args.rr);
-            var val = toint(notif.args.card_value);
+            var card_id = parseInt(notif.args.card_id);
+            var rr = parseInt(notif.args.rr);
+            var val = parseInt(notif.args.card_value);
             var card_type = this.getUniqueTypeForCard(rr, val);
             var card_div = this.cardsPlayed.getItemDivId(card_id);
             this.sharePiles[DISCARD][rr-1].addToStockWithId(card_type, card_id, card_div);
@@ -1164,9 +1174,9 @@ function (dojo, declare) {
          */
         notif_shareAdded : function(notif) {
             var player_id = notif.args.player_id;
-            var card_id = toint(notif.args.card_id);
-            var rr = toint(notif.args.rr);
-            var val = toint(notif.args.card_value);
+            var card_id = parseInt(notif.args.card_id);
+            var rr = parseInt(notif.args.rr);
+            var val = parseInt(notif.args.card_value);
             var card_type = this.getUniqueTypeForCard(rr, val);
             // it was either in the cards played area, or won from the Trick Lane.
             if (this.cardsPlayed.getItemById(card_id) != null) {
@@ -1189,10 +1199,10 @@ function (dojo, declare) {
          * @param {Object} notif
          */
         notif_locomotivePlaced : function(notif) {
-            var card_id = toint(notif.args.card_id);
-            var rr = toint(notif.args.rr);
+            var card_id = parseInt(notif.args.card_id);
+            var rr = parseInt(notif.args.rr);
             var loc_div = RR_PREFIXES[rr-1]+'_locomotive';
-            this.placeLocomotiveCard(toint(notif.args.loc_num), rr);
+            this.placeLocomotiveCard(parseInt(notif.args.loc_num), rr);
             // remove locomotive from Trick Lane, move to Railroad
             this.trickLane.removeFromStockById(card_id, loc_div);
         },
@@ -1202,9 +1212,9 @@ function (dojo, declare) {
          * @param {Object} notif 
          */
         notif_railwayCardAdded : function(notif) {
-            var card_id = toint(notif.args.card_id);
-            var rr = toint(notif.args.rr);
-            var v = toint(notif.args.card_value);
+            var card_id = parseInt(notif.args.card_id);
+            var rr = parseInt(notif.args.rr);
+            var v = parseInt(notif.args.card_value);
             this.cardsPlayed.removeFromStockById(card_id);
             var card_type = this.getUniqueTypeForCard(rr, v);
             var card_div = this.cardsPlayed.getItemDivId(card_id);
@@ -1222,12 +1232,12 @@ function (dojo, declare) {
          * @param {Object} notif 
          */
         notif_cityAdded : function(notif) {
-            var card_id = toint(notif.args.card_id);
-            var type_arg = toint(notif.args.city_type);
+            var card_id = parseInt(notif.args.card_id);
+            var type_arg = parseInt(notif.args.city_type);
             var card_type = this.getUniqueTypeForCard(ROWS, type_arg);
 
             var railway = notif.args.railway;
-            var rr = toint(notif.args.rr);
+            var rr = parseInt(notif.args.rr);
             var trick_div = this.trickLane.getItemDivId(card_id);
 
             // remove City from Trick Lane
@@ -1246,9 +1256,9 @@ function (dojo, declare) {
          * @param {Object} notif 
          */
         notif_railroadScored : function(notif) {
-            var rr = toint(notif.args.rr);
+            var rr = parseInt(notif.args.rr);
             var loco = notif.args.train;
-            var loco_value = toint(notif.args.train_value);
+            var loco_value = parseInt(notif.args.train_value);
             var stations = notif.args.stations;
             var station_values = notif.args.station_values;
             var rr_score = 0;
@@ -1258,10 +1268,10 @@ function (dojo, declare) {
             var scored_ids = [];
             for (let i = 0; i < stations.length; i++) {
                 var st = stations[i];
-                var sv = toint(station_values[i]);
-                var card_id = toint(st['id']);
-                var type = toint(st['type']);
-                var type_arg = toint(st['type_arg']);
+                var sv = parseInt(station_values[i]);
+                var card_id = parseInt(st['id']);
+                var type = parseInt(st['type']);
+                var type_arg = parseInt(st['type_arg']);
                 var scored_div = this.railWays[rr-1].getItemDivId(card_id);
                 dojo.addClass(scored_div, "totr_scored_card");
                 this.displayScoring( scored_div, rr_color, sv, animation_duration, 0, 0 );
@@ -1270,7 +1280,7 @@ function (dojo, declare) {
             }
             // fade the unscored cards
             for (const rrc of this.railWays[rr-1].getAllItems()) {
-                if (!scored_ids.includes(toint(rrc.id))) {
+                if (!scored_ids.includes(parseInt(rrc.id))) {
                     var card_div = this.railWays[rr-1].getItemDivId(rrc.id);
                     dojo.style(card_div, "opacity", "0.5");
                 }
@@ -1279,7 +1289,7 @@ function (dojo, declare) {
 
 
             // display the locomotive scoring
-            var loco_id = toint(loco['id']);
+            var loco_id = parseInt(loco['id']);
             var loco_div = RR_PREFIXES[rr-1]+'_locomotive';
             this.displayScoring( loco_div, 'ff0000', loco_value, animation_duration, 0, 0 );
             // total at end of line
