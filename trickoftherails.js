@@ -598,7 +598,7 @@ function (dojo, declare) {
             var rri = type-1;
             var card_name;
             var card_text = '';
-            const CITY_CARD_TEXT = _("Trick winner places this City at either end of any railway line");
+            const CITY_CARD_TEXT = _("Trick winner places this City at either end of any railway");
             const SWAP_TEXT = _("Trick winner takes this card as a company share; winning card replaces leftmost Reservation Card or is discarded");
             if (type == ROWS) {
                 switch (type_arg) {
@@ -609,9 +609,9 @@ function (dojo, declare) {
                     case 5:
                         card_name = this.getLocomotiveLabel(type_arg);
                         if (type_arg == 5) {
-                            card_text = _("After trick winner places Locomotive [6], Locomotive [∞] is automatically placed on last remaining railway line");
+                            card_text = _("After trick winner places Locomotive [6], Locomotive [∞] is automatically placed on last remaining railway");
                         } else {
-                            card_text = _("Trick winner places this Locomotive on any railway line that does not yet have one");
+                            card_text = _("Trick winner places this Locomotive on any railway that does not yet have one");
                         }
                         break;
                     case 6:
@@ -643,7 +643,7 @@ function (dojo, declare) {
                 card_text = SWAP_TEXT;
             }
             if (is_trick_lane) {
-                var tooltip = dojo.string.substitute("<div><h3>${label}</h3><span>${text}</span></div>", {label : card_name, text: card_text});
+                var tooltip = this.format_block('jstpl_tooltip_text', {label : card_name, text: card_text});
                 this.addTooltipHtml(card_div, tooltip, 0.5);
             } else {
                 this.addTooltip(card_div, card_name, '');
@@ -1078,8 +1078,11 @@ function (dojo, declare) {
         {
             dojo.subscribe('cardPlayed', this, "notif_cardPlayed");
             dojo.subscribe('discardedShare', this, "notif_discardedShare");
+            this.notifqueue.setSynchronous( 'discardedShare', 600 );
             dojo.subscribe('reservationSwapped', this, "notif_reservationSwapped");
+            this.notifqueue.setSynchronous( 'reservationSwapped', 600 );
             dojo.subscribe('shareAdded', this, "notif_shareAdded");
+            this.notifqueue.setSynchronous( 'shareAdded', 600 );
             dojo.subscribe('locomotivePlaced', this, "notif_locomotivePlaced");
             dojo.subscribe('railwayCardAdded', this, "notif_railwayCardAdded");
             dojo.subscribe('cityAdded', this, "notif_cityAdded");

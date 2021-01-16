@@ -95,7 +95,7 @@ class TrickOfTheRails extends Table
         self::initStat('table', 'turns_number', 0);
         foreach ($this->railroads as $rr) {
             self::initStat('table', $rr['railway'].'_length', 0);
-            self::initStat('table', $rr['railway'].'_profit', 0);
+            self::initStat('table', $rr['railway'].'_share_value', 0);
             self::initStat('table', $rr['railway'].'_cards', 0);
         }
         // Init global values with their initial values
@@ -545,10 +545,10 @@ class TrickOfTheRails extends Table
             }
             // subtract value of locomotive
             $loco_pen = $this->stationValue($locomotive);
-            $profit += $loco_pen;
-            $profit = max(0, $profit);
+            $share_value = $profit - $loco_pen;
+            $share_value = max(0, $share_value);
 
-            self::setStat($profit, $railway."_profit");
+            self::setStat($share_value, $railway."_share_value");
             self::setStat($scored_cards, $railway."_length");
             $paths[] = $path;
         }
@@ -651,7 +651,7 @@ class TrickOfTheRails extends Table
             }
 
             if ($ri == 0) {
-                throw new BgaVisibleSystemException("No railway line with empty locomotive slot found!");// NOI18N
+                throw new BgaVisibleSystemException("No railway with empty locomotive slot found!");// NOI18N
             }
 
             // need to increment trick index to ∞ card
@@ -673,15 +673,16 @@ class TrickOfTheRails extends Table
         $railway = $this->railroads[$rr]['railway'];
 
         // Should no longer be necessary as the js interface checks?
-        // if (!$this->checkLocomotiveSlot($railway)) {
-        //     throw new BgaUserException( self::_( "You must choose a railway line that does not already have a locomotive." ));
-        // }
+        // Keep it in case someone tries something shady with JS
+        if (!$this->checkLocomotiveSlot($railway)) {
+            throw new BgaUserException( self::_( "You must choose a railway that does not already have a locomotive." ));
+        }
 
         // place it on location 0
         $this->cards->moveCard($lococard['id'], $railway, 0);
 
         // Notify all players about Locomotive placement
-        self::notifyAllPlayers('locomotivePlaced', clienttranslate('${player_name} places ${locomotive} on the ${company} line${rr}'), array (
+        self::notifyAllPlayers('locomotivePlaced', clienttranslate('${player_name} places ${locomotive} on the ${company} railway${rr}'), array (
             'i18n' => array ('locomotive', 'company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
@@ -715,7 +716,7 @@ class TrickOfTheRails extends Table
         }
 
         // Notify all players about Locomotive placement
-        self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} adds ${card_value_label} to ${endpoint} of the ${company} line${rr}${card_value}'), array (
+        self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} adds ${card_value_label} to ${endpoint} of the ${company} railway${rr}${card_value}'), array (
             'i18n' => array ('card_value_label', 'endpoint', 'company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
@@ -758,7 +759,7 @@ class TrickOfTheRails extends Table
 
         // Notify all players about City placement
         // ${rr} at the end is substituted by js on the client-side
-        self::notifyAllPlayers('cityAdded', clienttranslate('${player_name} adds ${city} to ${endpoint} of the ${company} line${rr}'), array (
+        self::notifyAllPlayers('cityAdded', clienttranslate('${player_name} adds ${city} to ${endpoint} of the ${company} railway${rr}'), array (
             'i18n' => array ('city', 'endpoint', 'company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
@@ -1130,7 +1131,7 @@ class TrickOfTheRails extends Table
 
             foreach($this->railroads as $rr => $rw) {
                 $railway = $rw['railway'];
-                $rr_profit = self::getStat($railway."_profit");
+                $share_value = self::getStat($railway."_share_value");
 
                 // how many shares does this player have?
                 $rr_shares = 0;
@@ -1139,7 +1140,7 @@ class TrickOfTheRails extends Table
                         $rr_shares++;
                     }
                 }
-                $rr_profit *= $rr_shares;
+                $rr_profit = $share_value * $rr_shares;
                 $score += $rr_profit;
 
                 self::setStat($rr_shares, $railway."_shares", $player_id);
@@ -1198,7 +1199,7 @@ class TrickOfTheRails extends Table
         $table_header[] = array('str' => clienttranslate("Company"), 
                                 'args' => array(), 
                                 'type' => 'header');
-        $table_header[] = array('str' => clienttranslate("Profits"),
+        $table_header[] = array('str' => clienttranslate("Share Value"),
                                 'args' => array(),
                                 'type' => 'header');
         // array of rows
@@ -1212,10 +1213,10 @@ class TrickOfTheRails extends Table
                                 'args' => array( 'company' => $comp['name'], 'rr' => $rr),
                                 'type' => 'header');
             // and its profits
-            $next_row[] = self::getStat($comp['railway']."_profit");
+            $next_row[] = self::getStat($comp['railway']."_share_value");
             $profit_rows[] = $next_row;
         }
-        $total_profits = array(clienttranslate("Total Profits"));
+        $total_profits = array(clienttranslate("Profits"));
         // empty cell
         $total_profits[] = "";
 

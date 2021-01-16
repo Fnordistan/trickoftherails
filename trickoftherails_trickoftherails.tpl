@@ -47,11 +47,11 @@
 
     <!-- BEGIN RAILROAD -->
     <div id="{RR}_lane" class="whiteblock totr_flex_lane">
-        <div id="{RR}_logo" class="totr_rr_logo totr_rr_icon totr_{RR}_icon" style="--scale: 3;" title="{COMPANY} Railway Line"></div>
+        <div id="{RR}_logo" class="totr_rr_logo totr_rr_icon totr_{RR}_icon" style="--scale: 3;" title="{COMPANY} Railway"></div>
         <div id="{RR}_locomotive" class="totr_locomotive_slot" title="{COMPANY} locomotive space"></div>
-        <div id="{RR}_start" class="totr_railhouse" title="{COMPANY} line start"></div>
+        <div id="{RR}_start" class="totr_railhouse" title="{COMPANY} railway start"></div>
         <div id="{RR}_railway"></div>
-        <div id="{RR}_end" class="totr_railhouse" title="{COMPANY} line end"></div>
+        <div id="{RR}_end" class="totr_railhouse" title="{COMPANY} railway end"></div>
     </div>
     <!-- END RAILROAD -->
 </div>
@@ -66,6 +66,8 @@ var jstpl_rr_name = '<span style="color: var(--color_${rrname}); font-weight: bo
 var jstpl_card_value_label = '<span class="totr_card_value" style="background-color: var(--color_${rrname});">${card_value_label}</span>';
 
 var jstpl_rr_icon = '<span class="totr_rr_logo totr_rr_icon totr_${rrname}_icon"></span>';
+
+var jstpl_tooltip_text = '<div><h3>${label}</h3><span>${text}</span></div>';
 
 var jstpl_rr_counter_block = '<div id="${rr}_counter_block" class="totr_rr_counter_container">\
         <span id="${rr}_counter_icon_${id}" class="totr_rr_logo totr_rr_icon totr_${rr}_icon" style="--scale: 2;"></span>\
