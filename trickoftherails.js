@@ -892,8 +892,6 @@ function (dojo, declare) {
                         id: card_id,
                         lock: true 
                     }, this, function( result ) {  }, function( is_error) { } );                        
-    
-                    var card_div = this.playerHand.getItemDivId(card_id);
                 }
                 this.playerHand.unselectAll();
             }

@@ -27,19 +27,27 @@
 $game_options = array(
     // note: game variant ID should start at 100 (ie: 100, 101, 102, ...). The maximum is 199.
     100 => array(
-                'name' => totranslate('Trick Lane setup'),    
-                'values' => array(
-                            1 => array( 'name' => totranslate('Basic'), 'description' => totranslate('Standard Trick Lane (fixed order for City and Locomotive cards)')),
+        'name' => totranslate('Trick Lane setup'),    
+        'values' => array(
+            1 => array( 'name' => totranslate('Basic'), 'description' => totranslate('Standard Trick Lane (fixed order for City and Locomotive cards)')),
 
-                            // Another value, with other options:
-                            //  description => this text will be displayed underneath the option when this value is selected to explain what it does
-                            //  beta=true => this option is in beta version right now (there will be a warning)
-                            //  alpha=true => this option is in alpha version right now (there will be a warning, and starting the game will be allowed only in training mode except for the developer)
-                            //  nobeginner=true  =>  this option is not recommended for beginners
-                            2 => array( 'name' => totranslate('Expert Variant'), 'description' => totranslate('Placement of Locomotive and City cards in the Trick Lane is randomized'), 'alpha' => true, 'nobeginner' => true )
-                        ),
-                'default' => 1
+            2 => array( 'name' => totranslate('Expert Variant'), 'description' => totranslate('Placement of Locomotive and City cards in the Trick Lane is randomized'), 'alpha' => true, 'nobeginner' => true )
+        ),
+        'default' => 1
+    ),
+    300 => array (
+        'name' => totranslate('Team Variant'),
+        'values' => array (
+            1 => array( 'name' => totranslate('No teams'), 'tmdisplay' => ('')),
+            2 => array( 'name' => totranslate('Teams'), 'description' => totranslate('Players play as partners in teams of 2'), 'tmdisplay' => totranslate('Teams'), 'alpha' => true)
+        ),
+        'default' => 1,
+        'startcondition' => array(
+            1 => array(),
+            2 => array(
+                array('type' => 'minplayers', 'value' => 4, 'message' => totranslate('Team Variant is only available for 4-player games')),
+                array('type' => 'maxplayers', 'value' => 4, 'message' => totranslate('Team Variant is only available for 4-player games'))
             ),
+        ),
+    )
 );
-
-
