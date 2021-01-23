@@ -117,7 +117,7 @@ $machinestates = array(
         "type" => "activeplayer",
         "possibleactions" => array( "placeLocomotive" ),
         "args" => "argPlaceLocomotive",
-        "transitions" => array( "addStation" => STATE_ADD_RAILWAY, "addLocomotive" => STATE_ADD_LOCOMOTIVE)
+        "transitions" => array( "addStation" => STATE_ADD_RAILWAY, "addUnlLocomotive" => STATE_ADD_LOCOMOTIVE)
     ),
 
     STATE_ADD_CITY => array(

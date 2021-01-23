@@ -143,6 +143,15 @@
     height: 320px;
 }
 
+.totr_tooltip {
+    font-family: 'Cinzel';
+    font-size: 16px;
+}
+
+.totr_tooltip.h3 {
+    font-size: 24px;
+}
+
 /* .card_lead {
     border: 2px solid white;
     box-shadow: 0px 0px 2px 3px;
@@ -281,16 +290,36 @@
     border: var(--color_loc);
 }
 
+.totr_team_banner {
+    padding: 2px;
+    border: #686763 solid 3px;
+    border-radius: 6px;
+    border-style: ridge;
+    width: 100%;
+}
+
+.totr_team_banner > * {
+    display: inline-block;
+}
+
 .totr_team_label {
     font-family: "Times New Roman", Times, serif;
     font-size: 24px;
     font-weight: bold;
     text-align: center;
     color: #1E1B18;
-    padding: 2px;
-    border: #686763 solid 3px;
-    border-radius: 6px;
-    border-style: ridge;
+    width: calc(100% - 88px);
+}
+
+.totr_locomotive_icon {
+    background-size: 44px 22.4px;
+    background-image: url(img/locomotive.png);
+    background-repeat: no-repeat;
+    width: 44px;
+    height: 22.4px;
+    opacity: 0.8;
+    margin-top: 6px;
+    vertical-align: bottom;
 }
 
 #card_rows {

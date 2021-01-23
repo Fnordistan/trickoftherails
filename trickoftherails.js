@@ -52,7 +52,26 @@ const LOCOMOTIVE_UNLIMITED_TYPE = 64
 
 const CARD_SPRITES = 'img/cards_sprites.jpg';
 
+// must match values in material.inc.php!
+const STATION_VALUES = [
+  /** B&O */    [10, 10, 10, 20, 20, 20, 20, 30, 30, 40, 0, 10],
+  /** C&O */    [40, 30, 30, 20, 20, 20, 20, 10, 10, 10, 0, 10],
+  /** Erie */   [30, 20, 20, 10, 30, 10, 20, 20, 40, 10, 0, 10],
+  /** NYC */    [20, 20, 30, 10, 20, 40, 10, 20, 30, 10, 0, 10],
+  /** PRR */    [10, 20, 20, 30, 40, 30, 20, 20, 10, 10, 0, 10],
+  /** LASTROW*/ [-40, -50, -60, -70, -80, 20, 30, 40, 0, 0, 0, 0]
+];
+
 const DISCARD = 'discarded_shares';
+
+// places cards can go
+const LOCATION = {
+    TRICK_LANE: "tricklane",
+    SHARE_PILE: "share_pile",
+    PLAYER_HAND: "player_hand",
+    CURRENT_TRICK: "current_trick",
+    RAILWAY: "railway_line"
+}
 
 define([
     "dojo","dojo/_base/declare","dojo/dom", "dojo/on",
@@ -135,7 +154,7 @@ function (dojo, declare) {
             this.cardsPlayed.image_items_per_row = COLS;
             // this.cardsPlayed.item_margin = 15;
             // hitch adding railroad as a class to each hand
-            this.cardsPlayed.onItemCreate = dojo.hitch(this, this.setUpCard);
+            this.cardsPlayed.onItemCreate = dojo.hitch(this, this.setUpCurrentTrickCard);
 
             // Player hand
             if (!this.isSpectator) {
@@ -147,7 +166,7 @@ function (dojo, declare) {
                 // this keeps selected but unselectable cards from changing
                 this.playerHand.setSelectionAppearance('class');
                 // hitch adding railroad as a class to each hand
-                this.playerHand.onItemCreate = dojo.hitch(this, this.setUpCard);
+                this.playerHand.onItemCreate = dojo.hitch(this, this.setUpPlayerHandCard);
                 // setup card selection action
                 dojo.connect( this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged' );
             } else {
@@ -162,7 +181,6 @@ function (dojo, declare) {
             this.trickLane.image_items_per_row = COLS;
             this.trickLane.item_margin = 7;
             this.trickLane.extraClasses='totr_nice_card';
-            // this.trickLane.onItemCreate = dojo.hitch(this, this.setUpCard);
 
             // create the Stock items for all five railways
             this.railWays = [];
@@ -426,7 +444,7 @@ function (dojo, declare) {
                 if (ctype == LOCOMOTIVE_UNLIMITED_TYPE) {
                     dojo.addClass(card_div, "totr_unl_loc");
                 }
-                this.addTooltipToCard(card_div, ctype, true);
+                this.addTooltipToCard(card_div, ctype, LOCATION.TRICK_LANE);
             }
         },
 
@@ -562,7 +580,7 @@ function (dojo, declare) {
             railroad.setSelectionMode(0);
             railroad.image_items_per_row = COLS;
             railroad.extraClasses='totr_nice_card';
-            railroad.onItemCreate = dojo.hitch(this, this.setUpCard);
+            railroad.onItemCreate = dojo.hitch(this, this.setUpRailwayCard);
             // for some reason they display vertically in rr_lane if this isn't set
             railroad.autowidth = true;
             return railroad;
@@ -583,8 +601,49 @@ function (dojo, declare) {
             shares.autowidth = true;
             shares.extraClasses='totr_nice_card';
             shares.setOverlap( 25, 0 );
-            shares.onItemCreate = dojo.hitch(this, this.setUpCard);
+            shares.onItemCreate = dojo.hitch(this, this.setUpPlayerSharesCard);
             return shares;
+        },
+
+
+        /**
+         * Convenience function for hitching to cards played
+         * @param {*} card_div 
+         * @param {*} card_type 
+         * @param {*} myhand_item 
+         */
+        setUpRailwayCard: function(card_div, card_type, myhand_item) {
+            this.setUpCard(card_div, card_type, myhand_item, LOCATION.RAILWAY);
+        },
+
+        /**
+         * Convenience function for hitching to cards played
+         * @param {*} card_div 
+         * @param {*} card_type 
+         * @param {*} myhand_item 
+         */
+        setUpCurrentTrickCard: function(card_div, card_type, myhand_item) {
+            this.setUpCard(card_div, card_type, myhand_item, LOCATION.CURRENT_TRICK);
+        },
+
+        /**
+         * Convenience function for hitching to player hand cards
+         * @param {*} card_div 
+         * @param {*} card_type 
+         * @param {*} myhand_item 
+         */
+        setUpPlayerHandCard: function(card_div, card_type, myhand_item) {
+            this.setUpCard(card_div, card_type, myhand_item, LOCATION.PLAYER_HAND);
+        },
+
+        /**
+         * Convenience function for hitching to player shares
+         * @param {*} card_div 
+         * @param {*} card_type 
+         * @param {*} myhand_item 
+         */
+        setUpPlayerSharesCard: function(card_div, card_type, myhand_item) {
+            this.setUpCard(card_div, card_type, myhand_item, LOCATION.SHARE_PILE);
         },
 
         /**
@@ -592,18 +651,19 @@ function (dojo, declare) {
          * @param {string} card_div
          * @param {string} card_type 
          * @param {string} myhand_item
+         * @param {enum} location optional
          */
-        setUpCard: function(card_div, card_type, myhand_item) {
-            this.addTooltipToCard(card_div.id, card_type, false);
+        setUpCard: function(card_div, card_type, myhand_item, location) {
+            this.addTooltipToCard(card_div.id, card_type, location);
         },
 
         /**
          * Create tooltips, plain text for most cards, but descriptive HTML for Trick Lane.
          * @param {string} card_div id
          * @param {int} card_type type of card (type_arg)
-         * @param {boolean} is_trick_lane 
+         * @param {enum} location where card is going to be placed
          */
-        addTooltipToCard: function(card_div, card_type, is_trick_lane) {
+        addTooltipToCard: function(card_div, card_type, location) {
             var [type, type_arg] = this.getTypeAndValue(card_type);
             var rri = type-1;
             var card_name;
@@ -657,13 +717,14 @@ function (dojo, declare) {
                 card_name = dojo.string.substitute(_("${rr} (${val})"), {rr: RAILROADS[rri], val: type_arg});
                 card_text = SWAP_TEXT;
             }
-            if (is_trick_lane) {
-                var tooltip = this.format_block('jstpl_tooltip_text', {label : card_name, text: card_text});
-                this.addTooltipHtml(card_div, tooltip, 0.5);
-            } else {
-                this.addTooltip(card_div, card_name, '');
+            if (location == LOCATION.SHARE_PILE) {
+                card_text = "";
+            } else if (!(location == LOCATION.TRICK_LANE || type_arg == EXCHANGE)) {
+                card_text = dojo.string.substitute(_("Station Value: ${sv}"), {sv: STATION_VALUES[rri][type_arg-1]});
             }
-        },
+            var tooltip = this.format_block('jstpl_tooltip_text', {label : card_name, text: card_text});
+            this.addTooltipHtml(card_div, tooltip, 0);
+    },
 
         /**
          * For tooltips for Locomotive cards
@@ -700,8 +761,9 @@ function (dojo, declare) {
          * @param {int} rr index of railway
          */
         placeLocomotiveCard: function(loc, rr) {
+            var rri = rr-1;
             // the id of the locomotive slot
-            var loconode = RR_PREFIXES[rr-1]+'_locomotive';
+            var loconode = RR_PREFIXES[rri]+'_locomotive';
             var x = -1 * (loc-1) * this.cardwidth;
             var y = -5 * this.cardheight;
 
@@ -712,12 +774,14 @@ function (dojo, declare) {
                 "z-index": 1,
             });
 
-            dojo.addClass( loconode, RAILROADS[rr-1]+" totr_nice_card");
+            dojo.addClass( loconode, RAILROADS[rri]+" totr_nice_card");
             dojo.style(loconode, "margin", "5px");
             dojo.removeClass(loconode, "totr_locomotive_slot");
             dojo.removeAttr(loconode, "title");
-            var tooltip = RAILROADS[rr-1] +' '+this.getLocomotiveLabel(loc);
-            this.addTooltip( loconode, tooltip, '');
+            var loco_lbl = RAILROADS[rri]+' '+this.getLocomotiveLabel(loc);
+            var loco_txt = RAILROADS[rri]+ _(' Profits: ') + STATION_VALUES[5][loc-1];
+            var tooltip = this.format_block('jstpl_tooltip_text', {label : loco_lbl, text: loco_txt});
+            this.addTooltipHtml(loconode, tooltip, 0);
         },
 
         /**
@@ -1157,7 +1221,7 @@ function (dojo, declare) {
             this.cardsPlayed.removeFromStockById(card_id, reserve_div);
             // now put Trick Lane html tooltip on it
             var new_card_divid = this.trickLane.getItemDivId(card_id);
-            this.addTooltipToCard(new_card_divid, card_type, true);
+            this.addTooltipToCard(new_card_divid, card_type, LOCATION.TRICK_LANE);
         },
 
         /**

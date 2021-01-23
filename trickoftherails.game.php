@@ -172,7 +172,7 @@ class TrickOfTheRails extends Table
             //  also stick Station cards here, though we'll immediately move them
             for ($value = 1; $value <= 12; $value++) {
                 if ($value != EXCHANGE) {
-                    $railroad_cards[] = array ('type' => $rr_id, 'type_arg' => $value, 'nbr' => 1 );
+                    $railroad_cards[] = array ('type' => $rr_id, 'type_arg' => $value, 'nbr' => 1);
                 }
             }
         }
@@ -794,11 +794,12 @@ class TrickOfTheRails extends Table
         $nextState = "addStation";
         // if this was Locomotive [6], the last one is automatically placed in the remaining empty slot
         if ($loconum == 4) {
+            // unless we're expert variant, in which case we manually place it
             if ($this->isExpertVariant()) {
                 // we get to also place the ∞ loco
                 // need to increment trick index to ∞ card
                 self::incGameStateValue('currentTrickIndex', 1);
-                $nextState = "addLocomotive";
+                $nextState = "addUnlLocomotive";
             } else {
                 // get the railways that already have locomotives
                 $placedRRs = self::getCollectionFromDB("
@@ -834,6 +835,7 @@ class TrickOfTheRails extends Table
      * Return the type_arg (loco card#) of the locomotive placed, so we know if it's the next-to-last one
      */
     function doLocomotivePlacement( $rr ) {
+        // TODO- saw a bug where this wound up being 10 in zombie mode? Cannot reproduce
         $lococard = current($this->cards->getCardsInLocation('tricklane', self::getGameStateValue('currentTrickIndex')));
         $locomotive = $this->trick_type[$lococard['type_arg']]['name'];
         $railway = $this->railroads[$rr]['railway'];
@@ -1532,9 +1534,9 @@ class TrickOfTheRails extends Table
         }
         if ($statename == 'addLocomotive') {
             // get all railways that already have locomotives
-            $occupied = self::getCollectionFromDb("
-            SELECT card_location railway, card_id FROM CARDS
-            WHERE card_type = 6 AND card_type_arg <= 5 AND card_location_arg = 0", true);
+            $sql = "SELECT card_location railway, card_id FROM CARDS WHERE card_type = 6 AND card_type_arg <= 5 AND card_location_arg = 0";
+            $occupied = self::getCollectionFromDb($sql, true);
+
             // choose first empty one
             foreach ($this->railroads as $rr => $rw) {
                 if (!array_key_exists($rw['railway'], $occupied)) {

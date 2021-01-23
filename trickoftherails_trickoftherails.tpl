@@ -67,14 +67,18 @@ var jstpl_card_value_label = '<span class="totr_card_value" style="background-co
 
 var jstpl_rr_icon = '<span class="totr_rr_logo totr_rr_icon totr_${rrname}_icon"></span>';
 
-var jstpl_tooltip_text = '<div><h3>${label}</h3><span>${text}</span></div>';
+var jstpl_tooltip_text = '<div class="totr_tooltip"><h3>${label}</h3><span>${text}</span></div>';
 
 var jstpl_rr_counter_block = '<div id="${rr}_counter_block" class="totr_rr_counter_container">\
         <span id="${rr}_counter_icon_${id}" class="totr_rr_logo totr_rr_icon totr_${rr}_icon" style="--scale: 2;"></span>\
         <span id="${rr}_shares_counter_${id}" class="totr_shares_ctr totr_${rr}_shares_ctr" style="color: var(--color_${rr});"></span>\
     </div>';
 
-var jstpl_team_heading = '<div id="${id}_team${team}" class="totr_team_label" style="background-color: var(--color_team${team});">Team ${team}</div>';
+var jstpl_team_heading = '<div id="${id}_team${team}" class="totr_team_banner" style="background-color: var(--color_team${team});">\
+                                <div id="${id}_team${team}_loco_l" class="totr_locomotive_icon" style="transform: scaleX(-1); float: left;"></div>\
+                                <span class="totr_team_label">Team ${team}</span>\
+                                <div id="${id}_team${team}_loco_r" class="totr_locomotive_icon" style="float: right;"></div>\
+                            </div>';
 
 </script>  
 
