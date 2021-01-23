@@ -35,13 +35,12 @@ $game_options = array(
         ),
         'default' => 1
     ),
-    300 => array (
+    101 => array (
         'name' => totranslate('Team Variant'),
         'values' => array (
             1 => array( 'name' => totranslate('No teams'), 'tmdisplay' => ('')),
             2 => array( 'name' => totranslate('Teams'), 'description' => totranslate('Players play as partners in teams of 2'), 'tmdisplay' => totranslate('Teams'), 'alpha' => true)
         ),
-        'default' => 1,
         'startcondition' => array(
             1 => array(),
             2 => array(
@@ -49,5 +48,6 @@ $game_options = array(
                 array('type' => 'maxplayers', 'value' => 4, 'message' => totranslate('Team Variant is only available for 4-player games'))
             ),
         ),
+        'default' => 1,
     )
 );

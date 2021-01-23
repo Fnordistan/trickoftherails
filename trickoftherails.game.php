@@ -45,6 +45,7 @@ class TrickOfTheRails extends Table
             'leadCard' => 21, // for keeping track of the lead card that was played for each hand
             'wonLastTrick' => 30, // player id who won last trick
             "trickLaneOption" => 100, // if expert option set
+            "teamsOption" => 101, // if partners variant set
         ) );
 
         // all the cards in one deck, which can keep track of where everything is
@@ -137,7 +138,27 @@ class TrickOfTheRails extends Table
         // Activate first player
         self::activeNextPlayer();
 
+        if ($this->isTeamsVariant()) {
+            // sanity check
+            if ($players_nbr != 4) {
+                throw new BgaVisibleSystemException("Invalid player count for Teams variant: {$players_nbr}");// NOI18N
+            }
+            $this->createTeams();
+        }
+
         /************ End of the game initialization *****/
+    }
+
+    /**
+     * Set up the 2-player teams
+     */
+    protected function createTeams() {
+        self::DbQuery("ALTER TABLE `player` ADD `team` TINYINT UNSIGNED NOT NULL");
+        $players = $this->loadPlayersBasicInfos();
+        foreach ($players as $player) {
+            $team = $player['player_no'] % 2 == 0 ? 2 : 1;
+            self::DbQuery( "UPDATE player SET team=$team WHERE player_id=".$player['player_id'] );
+        }
     }
 
     /**
@@ -486,6 +507,8 @@ class TrickOfTheRails extends Table
         $result['cards_played'] = self::getCollectionFromDb($cards_sql, true);
 
         $result['expert'] = $this->isExpertVariant();
+        // null if not teams variant
+        $result['teams'] = $this->getTeams();
 
         return $result;
     }
@@ -515,6 +538,24 @@ class TrickOfTheRails extends Table
      */
     public function isExpertVariant() {
         return $this->getGameStateValue('trickLaneOption') == 2;
+    }
+
+    /**
+     * Is this the teams option?
+     */
+    public function isTeamsVariant() {
+        return $this->getGameStateValue('teamsOption') == 2;
+    }
+
+    /**
+     * Returns associative array of teams if this is teams variant, otherwise returns null
+     */
+    public function getTeams() {
+        if ($this->isTeamsVariant()) {
+            return $this->getCollectionFromDB("SELECT player_id, team from player", true);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -1194,7 +1235,6 @@ class TrickOfTheRails extends Table
         }
     }
 
-
     /**
      * Create array of Station Values corresponding to each card in array
      */
@@ -1275,19 +1315,27 @@ class TrickOfTheRails extends Table
             $highscore = max($highscore, $score);
 
             self::DbQuery( "UPDATE player SET player_score=$score WHERE player_id=$player_id" );
-
-            $score_table = $this->createFinalScoreTable();
-
-            $winner_label = $this->createWinnerList($player_scores, $highscore);
-
-            $this->notifyAllPlayers( "tableWindow", '', array(
-                "id" => 'finalScoring',
-                "title" => clienttranslate("Final Score"),
-                "table" => $score_table,
-                "header" => $winner_label,
-                "closing" => clienttranslate( "Choo! Choo!" )
-            ) ); 
         }
+
+        // for teams, add the partners' scores
+        if ($this->isTeamsVariant()) {
+            for ($t = 1; $t <=2; $t++) {
+                $teamscore = self::getUniqueValueFromDB( "SELECT SUM(player_score) FROM player WHERE team=$t", true );
+                // now set each player's score to the teamscore
+                self::DbQuery( "UPDATE player SET player_score=$teamscore WHERE team=$t" );
+                $highscore = max($highscore, $teamscore);
+            }
+        }
+        $score_table = $this->createFinalScoreTable();
+        $winner_label = $this->isTeamsVariant() ? $this->createTeamWinnerList($highscore) : $this->createWinnerList($player_scores, $highscore);
+
+        $this->notifyAllPlayers( "tableWindow", '', array(
+            "id" => 'finalScoring',
+            "title" => clienttranslate("Final Score"),
+            "table" => $score_table,
+            "header" => $winner_label,
+            "closing" => clienttranslate( "Choo! Choo!" )
+        ) ); 
 
         $this->gamestate->nextState( "" );
     }
@@ -1312,6 +1360,24 @@ class TrickOfTheRails extends Table
             $winner_str = clienttranslate("Winner: ").$winner_str;
         }
         return $winner_str;
+    }
+
+    /**
+     * Create string for winning team
+     */
+    function createTeamWinnerList($highscore) {
+        $player_scores = self::getNonEmptyCollectionFromDB( "SELECT player_name, player_score score, team FROM player" );
+        $winners = array();
+        $team = 0;
+        foreach ($player_scores as $player) {
+            if ($player['score'] == $highscore) {
+                $winners[] = $player['player_name'];
+                $team = $player['team'];
+            }
+        }
+        $teamlbl = $team == 1 ? clienttranslate("One") : clienttranslate("Two");
+        $teamwinners = clienttranslate("Team $teamlbl Winners: ".$winners[0].", ".$winners[1]);
+        return $teamwinners;
     }
 
     /**
@@ -1347,10 +1413,23 @@ class TrickOfTheRails extends Table
 
         // now iterate players
         $players = self::loadPlayersBasicInfos();
-        foreach( $players as $player_id => $player ) {
+        // order players by teams
+        if ($this->isTeamsVariant()) {
+            $teams = $this->getTeams();
+            $players = $this->sortPlayersByTeams($players, $teams);
+        }
+        $team1score = 0;
+        $team2score = 0;
+        foreach( $players as $player ) {
+            $player_id = $player['player_id'];
             $score = 0;
-            $table_header[] = array('str' => '${player_name}',
-                                    'args' => array( 'player_name' => $player['player_name'] ),
+            $teamstr = "";
+            if ($this->isTeamsVariant()) {
+                $team = $teams[$player_id];
+                $teamstr = clienttranslate(" (Team $team)");
+            }
+            $table_header[] = array('str' => '${player_name}${teamstr}',
+                                    'args' => array( 'player_name' => $player['player_name'], 'teamstr' => $teamstr),
                                     'type' => 'header');
 
             $row = 0;
@@ -1363,14 +1442,52 @@ class TrickOfTheRails extends Table
                 $score += $profit;
             }
             $total_profits[] = $score;
+            if ($this->isTeamsVariant()) {
+                $team = $teams[$player_id];
+                if ($team == 1) {
+                    $team1score += $score;
+                } else {
+                    $team2score += $score;
+                }
+            }
         }
         $table[] = $table_header;
         foreach ($profit_rows as $p) {
             $table[] = $p;
         }
         $table[] = $total_profits;
+        if ($this->isTeamsVariant()) {
+            $team_row = array();
+            $team_row[] = array('str' => clienttranslate('Team Scores'), 'args' => array(), 'type' => 'header' );
+            $team_row[] = array('str' => ' ', 'args' => array(), 'type' => 'header' );
+            $team_row[] = array('str' => clienttranslate('Team 1'), 'args' => array(), 'type' => 'header' );
+            $team_row[] = array('str' => clienttranslate('${team1}'), 'args' => array('team1' => $team1score), 'type' => 'header' );
+            $team_row[] = array('str' => clienttranslate('Team 2'), 'args' => array(), 'type' => 'header' );
+            $team_row[] = array('str' => clienttranslate('${team2}'), 'args' => array('team2' => $team2score), 'type' => 'header' );
+            $table[] = $team_row;
+        }
 
         return $table;
+    }
+
+    /**
+     * Make sure players are sorted by teams
+     */
+    function sortPlayersByTeams($players, $teams) {
+        $team1 = array();
+        $team2 = array();
+        // player_id => team
+        foreach( $players as $player_id => $player ) {
+            if ($teams[$player_id] == 1) {
+                $team1[$player_id] = $player;
+            } else if ($teams[$player_id] == 2) {
+                $team2[$player_id] = $player;
+            } else {
+                // something happened!
+                throw new BgaVisibleSystemException("Player $player_id not in team!"); // NOI18N
+            }
+        }
+        return array_merge($team1, $team2);
     }
 
 //////////////////////////////////////////////////////////////////////////////

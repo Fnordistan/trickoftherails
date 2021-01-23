@@ -81,24 +81,33 @@ function (dojo, declare) {
             "gamedatas" argument contains all datas retrieved by your "getAllDatas" PHP method.
         */
         setup: function( gamedatas ) {
-            // dojo.destroy('debug_output');
+            dojo.destroy('debug_output');
             // this will be an array of arrays by player_id => array of rr share piles
             this.sharePiles = [];
             // array of arrays by player_id => array of RR counters
             this.shareCounters = [];
             // Setting up player boards
-            for( const player_id in gamedatas.players )
-            {
+            var teams = this.gamedatas.teams;
+
+            for ( const player_id in gamedatas.players ) {
                 var player = gamedatas.players[player_id];
      
                 // Setting up player board
                 var player_board_div = $('player_board_'+player_id);
+
+                if (teams) {
+                    dojo.place( this.format_block( 'jstpl_team_heading', {
+                        "team": teams[player_id],
+                        "id": player_id
+                    }), player_board_div);
+                }
+    
                 // create RR counters
                 this.shareCounters[player_id] = [];
                 for (const rri in RR_PREFIXES) {
                     var rr = RR_PREFIXES[rri];
 
-                    dojo.place( this.format_block(' jstpl_rr_counter_block', {
+                    dojo.place( this.format_block( 'jstpl_rr_counter_block', {
                         "rr": rr,
                         "id": player_id
                     }), player_board_div);

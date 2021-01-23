@@ -66,6 +66,8 @@
     --color_nyc: #B8B7AE;
     --color_prr: #9A1D20;
     --color_loc: #E2DAB4;
+    --color_team1:  #EFE7C6;
+    --color_team2: #C5BF87;
     --card_height: 114px;
     --card_width: 76px;
 }
@@ -277,6 +279,18 @@
 .totr_unl_loc {
     opacity: 0.6 !important;
     border: var(--color_loc);
+}
+
+.totr_team_label {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    color: #1E1B18;
+    padding: 2px;
+    border: #686763 solid 3px;
+    border-radius: 6px;
+    border-style: ridge;
 }
 
 #card_rows {

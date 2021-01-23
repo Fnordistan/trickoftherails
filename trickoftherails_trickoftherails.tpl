@@ -72,7 +72,9 @@ var jstpl_tooltip_text = '<div><h3>${label}</h3><span>${text}</span></div>';
 var jstpl_rr_counter_block = '<div id="${rr}_counter_block" class="totr_rr_counter_container">\
         <span id="${rr}_counter_icon_${id}" class="totr_rr_logo totr_rr_icon totr_${rr}_icon" style="--scale: 2;"></span>\
         <span id="${rr}_shares_counter_${id}" class="totr_shares_ctr totr_${rr}_shares_ctr" style="color: var(--color_${rr});"></span>\
-    </div>'
+    </div>';
+
+var jstpl_team_heading = '<div id="${id}_team${team}" class="totr_team_label" style="background-color: var(--color_team${team});">Team ${team}</div>';
 
 </script>  
 

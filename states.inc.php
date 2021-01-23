@@ -76,12 +76,12 @@ $machinestates = array(
     ),
 
     STATE_NEW_TRICK => array(
-    		"name" => "newTrick",
-    		"description" => "",
-            "type" => "game",
-            "action" => "stNewTrick",
-            "updateGameProgression" => true,
-    		"transitions" => array( "" => STATE_PLAY_CARD )
+    	"name" => "newTrick",
+    	"description" => "",
+        "type" => "game",
+        "action" => "stNewTrick",
+        "updateGameProgression" => true,
+    	"transitions" => array( "" => STATE_PLAY_CARD )
     ),
     
     STATE_PLAY_CARD => array(
