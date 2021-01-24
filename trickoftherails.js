@@ -1286,14 +1286,16 @@ function (dojo, declare) {
             var card_id = parseInt(notif.args.card_id);
             var rr = parseInt(notif.args.rr);
             var v = parseInt(notif.args.card_value);
+            // will be -1 for start, 1 for end
+            var wt = parseInt(notif.args.weight);
             this.cardsPlayed.removeFromStockById(card_id);
             var card_type = this.getUniqueTypeForCard(rr, v);
             var card_div = this.cardsPlayed.getItemDivId(card_id);
 
             // have to explicitly set weight while sliding into place or it goes into wrong order before refresh from Db
             // We add increasingly negative weights when inserted in front, because otherwise 0 wts get unordered
-            var wt = (notif.args.endpoint == "start") ? (-1*this.railWays[rr-1].count()) : this.railWays[rr-1].count();
-            this.railWays[rr-1].item_type[card_type].weight = wt;
+            var weight = wt*this.railWays[rr-1].count();
+            this.railWays[rr-1].item_type[card_type].weight = weight;
 
             this.railWays[rr-1].addToStockWithId(card_type, card_id, card_div);
         },
@@ -1306,6 +1308,7 @@ function (dojo, declare) {
             var card_id = parseInt(notif.args.card_id);
             var type_arg = parseInt(notif.args.city_type);
             var card_type = this.getUniqueTypeForCard(ROWS, type_arg);
+            var wt = parseInt(notif.args.weight);
 
             var railway = notif.args.railway;
             var rr = parseInt(notif.args.rr);
@@ -1316,8 +1319,8 @@ function (dojo, declare) {
             // move it to the chosen Railroad lane
             // have to explicitly set weight while sliding into place or it goes into wrong order before refresh from Db
             // We add increasingly negative weights when inserted in front, because otherwise 0 wts get unordered
-            var wt = (notif.args.endpoint == "start") ? (-1*this.railWays[rr-1].count()) : this.railWays[rr-1].count();
-            this.railWays[rr-1].item_type[card_type].weight = wt;
+            var weight = wt*this.railWays[rr-1].count();
+            this.railWays[rr-1].item_type[card_type].weight = weight;
 
             this.railWays[rr-1].addToStockWithId(card_type, card_id, trick_div);
         },
@@ -1329,9 +1332,9 @@ function (dojo, declare) {
         notif_railroadScored : function(notif) {
             var rr = parseInt(notif.args.rr);
             var loco = notif.args.train;
-            var loco_value = parseInt(notif.args.train_value);
+            var trainno = parseInt(loco['type_arg']);
+            var loco_value = STATION_VALUES[5][trainno-1];
             var stations = notif.args.stations;
-            var station_values = notif.args.station_values;
             var rr_score = 0;
             var rr_color = RR_COLORS[rr-1];
 
@@ -1339,10 +1342,10 @@ function (dojo, declare) {
             var scored_ids = [];
             for (let i = 0; i < stations.length; i++) {
                 var st = stations[i];
-                var sv = parseInt(station_values[i]);
-                var card_id = parseInt(st['id']);
                 var type = parseInt(st['type']);
                 var type_arg = parseInt(st['type_arg']);
+                var sv = STATION_VALUES[type-1][type_arg-1];
+                var card_id = parseInt(st['id']);
                 var scored_div = this.railWays[rr-1].getItemDivId(card_id);
                 dojo.addClass(scored_div, "totr_scored_card");
                 this.displayScoring( scored_div, rr_color, sv, animation_duration, 0, 0 );

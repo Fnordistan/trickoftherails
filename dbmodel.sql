@@ -36,7 +36,6 @@ CREATE TABLE IF NOT EXISTS `TRICK_ROW` (
   PRIMARY KEY (`player_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
- -- add info about first player
- ALTER TABLE `player` ADD `player_first` BOOLEAN NOT NULL DEFAULT '0';
- -- add teams, for team variants
- ALTER TABLE `player` ADD `team` TINYINT NOT NULL;
+-- add info about first player
+ALTER TABLE `player` ADD `player_first` BOOLEAN NOT NULL DEFAULT '0';
+ALTER TABLE `player` ADD `team` TINYINT NOT NULL;

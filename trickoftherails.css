@@ -291,15 +291,14 @@
 }
 
 .totr_team_banner {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
     padding: 2px;
     border: #686763 solid 3px;
     border-radius: 6px;
     border-style: ridge;
-    width: 100%;
-}
-
-.totr_team_banner > * {
-    display: inline-block;
 }
 
 .totr_team_label {
@@ -308,7 +307,6 @@
     font-weight: bold;
     text-align: center;
     color: #1E1B18;
-    width: calc(100% - 88px);
 }
 
 .totr_locomotive_icon {

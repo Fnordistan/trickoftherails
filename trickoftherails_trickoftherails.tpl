@@ -76,7 +76,7 @@ var jstpl_rr_counter_block = '<div id="${rr}_counter_block" class="totr_rr_count
 
 var jstpl_team_heading = '<div id="${id}_team${team}" class="totr_team_banner" style="background-color: var(--color_team${team});">\
                                 <div id="${id}_team${team}_loco_l" class="totr_locomotive_icon" style="transform: scaleX(-1); float: left;"></div>\
-                                <span class="totr_team_label">Team ${team}</span>\
+                                <div class="totr_team_label">Team ${team}</div>\
                                 <div id="${id}_team${team}_loco_r" class="totr_locomotive_icon" style="float: right;"></div>\
                             </div>';
 

@@ -67,7 +67,7 @@ class TrickOfTheRails extends Table
         the game is ready to be played.
     */
     protected function setupNewGame( $players, $options = array() )
-    {    
+    {
         // Set the colors of the players with HTML color code
         // The default below is red/green/blue/orange/brown
         // The number of colors defined here must correspond to the maximum number of players allowed for the gams
@@ -153,7 +153,7 @@ class TrickOfTheRails extends Table
      * Set up the 2-player teams
      */
     protected function createTeams() {
-        $players = $this->loadPlayersBasicInfos();
+        $players = self::loadPlayersBasicInfos();
         foreach ($players as $player) {
             $team = $player['player_no'] % 2 == 0 ? 2 : 1;
             self::DbQuery( "UPDATE player SET team=$team WHERE player_id=".$player['player_id'] );
@@ -651,53 +651,42 @@ class TrickOfTheRails extends Table
 
             $profit = 0;
             $route_start = 0;
-            $route_end = 0;
             $scored_cards = 0;
 
             $path[] = $locomotive;
             if ($loco_dist == 0 || $loco_dist >= $rw_len) {
+                // every card is scored
                 $scored_cards = $rw_len;
                 // count all the card values
-                for ($i = 1; $i <= $scored_cards; $i++) {
-                    $next_card = $railwaycards[$i];
-                    $profit += $this->stationValue($next_card);
-                }
+                $profit = $this->scoreStations($railwaycards, 1, $rw_len);
                 $route_start = 1;
-                $route_end = $rw_len;
                 array_push($path, array_slice($railwaycards, 1, $rw_len));
             } else {
                 $scored_cards = $loco_dist;
                 // start with first loco distance, then successively add next and discard previous
                 // to find longest route
-                $max = 0;
-                $lastscore = 0;
                 $route_start = 1;
                 $route_end = $loco_dist;
                 // get first route
-                for ($i = 1; $i <= $loco_dist; $i++) {
-                    $next_card = $railwaycards[$i];
-                    $lastscore += $this->stationValue($next_card);
-                }
-                $max = $lastscore;
-                // check the next route by adding the next card and discarding the previous
+                $profit = $this->scoreStations($railwaycards, 1, $loco_dist);
+                $maxprofit = $profit;
+                // successively move ahead one and use the new route if it's the most profitable
                 for ($j = 2; ($j+$loco_dist) <= $num_rw_cards; $j++ ) {
-                    $nextscore = $lastscore;
                     // subtract value of last card
                     $prev_card = $railwaycards[$j-1];
-                    $nextscore -= $this->stationValue($prev_card);
-                    // add value of next card in lie
-                    $end_card = $railwaycards[$j+$loco_dist-1];
-                    $nextscore += $this->stationValue($end_card);
-                    if ($nextscore > $max) {
-                        $max = $nextscore;
+                    // add value of next card
+                    $next_card = $railwaycards[$j+$loco_dist-1];
+                    $newprofit = $profit - $this->stationValue($prev_card) + $this->stationValue($next_card);
+                    // is this a more profitable route?
+                    if ($newprofit > $maxprofit) {
+                        $maxprofit = $newprofit;
                         $route_start = $j;
-                        $route_end = $j+$loco_dist-1;
                     }
-                    $lastscore = $nextscore;
+                    $profit = $newprofit;
                 }
+                // now we should have the most profitable slice
+                $profit = $maxprofit;
                 array_push($path, array_slice($railwaycards, $route_start, $loco_dist));
-
-                $profit = $max;
             }
             // subtract value of locomotive
             $loco_pen = $this->stationValue($locomotive);
@@ -709,6 +698,29 @@ class TrickOfTheRails extends Table
             $paths[] = $path;
         }
         return $paths;
+    }
+
+    // function _debugPaths() {
+    //     $paths = $this->scoreRailways();
+    //     $rr = 1;
+    //     foreach($paths as $loco => $path) {
+    //         self::debug("Railroad $rr");
+    //         self::dump('Loco', $loco);
+    //         self::dump('path', $path);
+    //         $rr++;
+    //     }
+    // }
+
+    /**
+     * Given a sequence of rr cards in order, score from first to last, inclusive
+     */
+    function scoreStations($railwaycards, $first, $last) {
+        $profit = 0;
+        for ($i = $first; $i <= $last; $i++) {
+            $next_card = $railwaycards[$i];
+            $profit += $this->stationValue($next_card);
+        }
+        return $profit;
     }
 
     /**
@@ -754,7 +766,7 @@ class TrickOfTheRails extends Table
                 // do I have a card of that color in my hand?
                 if ($this->hasCurrentTrick($player_id)) {
                     $compname = $this->railroads[$trick_rr]['nametr'];
-                    throw new BgaUserException( self::_( 'You must play a ${compname} card' ));
+                    throw new BgaUserException( self::_( "You must play a $compname card" ));
                 }
             }
         }
@@ -893,7 +905,9 @@ class TrickOfTheRails extends Table
             'card_value_label' => $this->values_label[$card_value],
             'rr' => $railwaycard['type'],
             'company' => $company,
-            'endpoint' => $is_start ? 'start' : 'end',
+            'endpoint' => $is_start ? clienttranslate('start') : clienttranslate('end'),
+            // need a numeric here that doesn't get bollixed by translation <<>>
+            'weight' => $is_start ? -1 : 1,
             'railway' => $railway));
 
         // Next player
@@ -937,6 +951,7 @@ class TrickOfTheRails extends Table
             'rr' => $rr,
             'company' => $this->railroads[$rr]['name'],
             'endpoint' => $is_start ? clienttranslate("start") : clienttranslate("end"),
+            'weight' => $is_start ? -1 : 1,
             'railway' => $railway));
 
         // go to placing trick cards played
@@ -1237,17 +1252,17 @@ class TrickOfTheRails extends Table
         }
     }
 
-    /**
-     * Create array of Station Values corresponding to each card in array
-     */
-    function stationValuesList($cards) {
-        $svs = array();
-        foreach ($cards as $card) {
-            $sv = $this->stationValue($card);
-            $svs[] = $sv;
-        }
-        return $svs;
-    }
+    // /**
+    //  * Create array of Station Values corresponding to each card in array
+    //  */
+    // function stationValuesList($cards) {
+    //     $svs = array();
+    //     foreach ($cards as $card) {
+    //         $sv = $this->stationValue($card);
+    //         $svs[] = $sv;
+    //     }
+    //     return $svs;
+    // }
 
     /**
      * Takes each rr path (2-element array of {$locomotive, {$path}} arrays)  and sends notifications that display the RR paths.
@@ -1257,7 +1272,6 @@ class TrickOfTheRails extends Table
         foreach ($rr_paths as $path) {
             $locomotive = $path[0];
             $rrcards = $path[1];
-            $station_values = $this->stationValuesList($rrcards);
             $loco_value = $this->stationValue($locomotive);
             self::notifyAllPlayers('railroadScored', clienttranslate('scoring ${company} railway'), array (
                 'i18n' => array ('company'),
@@ -1265,9 +1279,7 @@ class TrickOfTheRails extends Table
                 'rr' => $rri,
                 // DO NOT USE 'locomotive' as arg, gets replaced in logs!
                 'train' => $locomotive,
-                'train_value' => $loco_value,
                 'stations' => $rrcards,
-                'station_values' => $station_values,
             ));
             $rri++;
         }
@@ -1379,7 +1391,7 @@ class TrickOfTheRails extends Table
         }
         $teamlbl = $team == 1 ? clienttranslate("One") : clienttranslate("Two");
         $winnerlbl = $winners[0].", ".$winners[1];
-        $teamwinners = clienttranslate('Team ${teamlbl} Winners: ${winnerlbl}');
+        $teamwinners = clienttranslate("Team $teamlbl Winners: $winnerlbl");
         return $teamwinners;
     }
 
@@ -1429,7 +1441,7 @@ class TrickOfTheRails extends Table
             $teamstr = "";
             if ($this->isTeamsVariant()) {
                 $team = $teams[$player_id];
-                $teamstr = clienttranslate(' (Team ${team})');
+                $teamstr = clienttranslate(" (Team $team)");
             }
             $table_header[] = array('str' => '${player_name}${teamstr}',
                                     'args' => array( 'player_name' => $player['player_name'], 'teamstr' => $teamstr),
