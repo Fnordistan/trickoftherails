@@ -444,7 +444,7 @@ class TrickOfTheRails extends Table
                         switch ($players_nbr) {
                             case 3:
                                 $reserve_slot = array_pop($reserves);
-                                if ($reserve_slot > $loco_unl) {
+                                if ($reserve_slot >= $loco_unl) {
                                     $reserve_slot++;
                                 }
                                 $this->cards->moveCard($lastrow['id'], TRICKLANE, $reserve_slot);
@@ -804,7 +804,7 @@ class TrickOfTheRails extends Table
 
         // by default, everyone adds station
         $nextState = "addStation";
-        // if this was Locomotive [6], the last one is automatically placed in the remaining empty slot
+        // if we just placed Locomotive [6], the ∞ loco is automatically placed in the remaining empty slot
         if ($loconum == 4) {
             // unless we're expert variant, in which case we manually place it
             if ($this->isExpertVariant()) {
