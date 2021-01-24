@@ -153,7 +153,6 @@ class TrickOfTheRails extends Table
      * Set up the 2-player teams
      */
     protected function createTeams() {
-        self::DbQuery("ALTER TABLE `player` ADD `team` TINYINT UNSIGNED NOT NULL");
         $players = $this->loadPlayersBasicInfos();
         foreach ($players as $player) {
             $team = $player['player_no'] % 2 == 0 ? 2 : 1;
@@ -754,7 +753,8 @@ class TrickOfTheRails extends Table
             if ($railroad != $trick_rr) {
                 // do I have a card of that color in my hand?
                 if ($this->hasCurrentTrick($player_id)) {
-                    throw new BgaUserException ( self::_( 'You must play a '.$this->railroads[$trick_rr]['nametr'].' card' ));
+                    $compname = $this->railroads[$trick_rr]['nametr'];
+                    throw new BgaUserException( self::_( 'You must play a ${compname} card' ));
                 }
             }
         }
@@ -768,7 +768,7 @@ class TrickOfTheRails extends Table
 
         // Notify all players about the card played
         // ${rr} and ${card_value} at the end aresubstituted on the client-side with js hacks
-        self::notifyAllPlayers('cardPlayed', '${player_name} ${action} ${company} ${card_value_label}${rr}${card_value}', array (
+        self::notifyAllPlayers('cardPlayed', '${player_name} ${action} ${company} ${card_value_label}${rr}${card_value}', array ( // NOI18N
             'i18n' => array ('action', 'company', 'card_value_label' ),
             'card_id' => $card_id,
             'player_id' => self::getActivePlayerId(),
@@ -1378,7 +1378,8 @@ class TrickOfTheRails extends Table
             }
         }
         $teamlbl = $team == 1 ? clienttranslate("One") : clienttranslate("Two");
-        $teamwinners = clienttranslate("Team $teamlbl Winners: ".$winners[0].", ".$winners[1]);
+        $winnerlbl = $winners[0].", ".$winners[1];
+        $teamwinners = clienttranslate('Team ${teamlbl} Winners: ${winnerlbl}');
         return $teamwinners;
     }
 
@@ -1428,7 +1429,7 @@ class TrickOfTheRails extends Table
             $teamstr = "";
             if ($this->isTeamsVariant()) {
                 $team = $teams[$player_id];
-                $teamstr = clienttranslate(" (Team $team)");
+                $teamstr = clienttranslate(' (Team ${team})');
             }
             $table_header[] = array('str' => '${player_name}${teamstr}',
                                     'args' => array( 'player_name' => $player['player_name'], 'teamstr' => $teamstr),

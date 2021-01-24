@@ -38,3 +38,5 @@ CREATE TABLE IF NOT EXISTS `TRICK_ROW` (
 
  -- add info about first player
  ALTER TABLE `player` ADD `player_first` BOOLEAN NOT NULL DEFAULT '0';
+ -- add teams, for team variants
+ ALTER TABLE `player` ADD `team` TINYINT NOT NULL;
