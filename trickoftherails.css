@@ -286,8 +286,8 @@
 }
 
 .totr_unl_loc {
-    opacity: 0.6 !important;
-    border: var(--color_loc);
+    opacity: 0.8 !important;
+    border: black 4px;
 }
 
 .totr_team_banner {

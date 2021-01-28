@@ -1332,8 +1332,9 @@ function (dojo, declare) {
         notif_railroadScored : function(notif) {
             var rr = parseInt(notif.args.rr);
             var loco = notif.args.train;
-            var trainno = parseInt(loco['type_arg']);
-            var loco_value = STATION_VALUES[5][trainno-1];
+            // trainless railway?
+            var trainno = (loco == 0) ? 0 : parseInt(loco['type_arg']);
+            var loco_value = (loco == 0) ? 0 : STATION_VALUES[5][trainno-1];
             var stations = notif.args.stations;
             var rr_score = 0;
             var rr_color = RR_COLORS[rr-1];
@@ -1359,18 +1360,19 @@ function (dojo, declare) {
                     dojo.style(card_div, "opacity", "0.5");
                 }
             }
-            // and put the scored highlighting on the scored ones
-
-
-            // display the locomotive scoring
-            var loco_id = parseInt(loco['id']);
-            var loco_div = RR_PREFIXES[rr-1]+'_locomotive';
-            this.displayScoring( loco_div, 'ff0000', loco_value, animation_duration, 0, 0 );
-            // total at end of line
-            rr_score += loco_value;
-            rr_score = Math.max(rr_score, 0);
             var rh_end_div = RR_PREFIXES[rr-1]+"_end";
-            this.displayScoring( rh_end_div, rr_color, rr_score, animation_duration, 100, 0 );
+            if (loco == 0) {
+                this.displayScoring( rh_end_div, rr_color, 0, animation_duration, 100, 0 );
+            } else {
+                // display the locomotive scoring
+                var loco_id = parseInt(loco['id']);
+                var loco_div = RR_PREFIXES[rr-1]+'_locomotive';
+                this.displayScoring( loco_div, 'ff0000', loco_value, animation_duration, 0, 0 );
+                // total at end of line
+                rr_score += loco_value;
+                rr_score = Math.max(rr_score, 0);
+                this.displayScoring( rh_end_div, rr_color, rr_score, animation_duration, 100, 0 );
+            }
         },
 
 

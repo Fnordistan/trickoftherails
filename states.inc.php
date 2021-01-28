@@ -134,8 +134,8 @@ $machinestates = array(
         "name" => "addRailway",
         // ${card_value} at the end is a hack to enable js string substitution
         // It is removed by the client side display
-        "description" => clienttranslate( '${actplayer} must add ${card_value_label} to the ${company} railway${card_value}' ),
-        "descriptionmyturn" => clienttranslate( '${you} must add ${card_value_label} to the ${company} railway${card_value}' ),
+        "description" => clienttranslate( '${actplayer} must add ${card_value_label} to the ${company} railway' ).'${card_value}',
+        "descriptionmyturn" => clienttranslate( '${you} must add ${card_value_label} to the ${company} railway' ).'${card_value}',
         "type" => "activeplayer",
         "args" => "argAddRailway",
         "possibleactions" => array( "addRailwayCard" ),
