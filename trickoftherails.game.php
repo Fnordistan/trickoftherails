@@ -23,7 +23,6 @@ define('LASTROW', 6);
 define('RESERVATION', 9);
 define('EXCHANGE', 11);
 define('RAILROAD_STATION', 12);
-
 define('TRICKLANE', "tricklane");
 
 class TrickOfTheRails extends Table
@@ -1076,9 +1075,6 @@ class TrickOfTheRails extends Table
                 $share = $this->cards->getCard($trick_id);
                 $this->cards->moveCard($share['id'], 'shares', $player);
             }
-            self::dump('share', $share);
-            self::dump('card_value_label', $this->values_label[$share['type_arg']]);
-            self::dump('company', $this->railroads[$share['type']] ['name']);
             // ${rr}${card_value} at the end are replaced with js substitution on the client side
             self::notifyAllPlayers('shareAdded', clienttranslate('${player_name} adds ${card_value_label} to ${company} shares').'${rr}${card_value}', array (
                 'i18n' => array ('company', 'card_value_label' ),
