@@ -544,17 +544,6 @@ class TrickOfTheRails extends Table
         return $paths;
     }
 
-    // function _debugPaths() {
-    //     $paths = $this->scoreRailways();
-    //     $rr = 1;
-    //     foreach($paths as $loco => $path) {
-    //         self::debug("Railroad $rr");
-    //         self::dump('Loco', $loco);
-    //         self::dump('path', $path);
-    //         $rr++;
-    //     }
-    // }
-
     /**
      * Given a sequence of rr cards in order, score from first to last, inclusive
      */

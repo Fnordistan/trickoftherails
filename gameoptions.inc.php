@@ -30,7 +30,6 @@ $game_options = array(
         'name' => totranslate('Trick Lane setup'),    
         'values' => array(
             1 => array( 'name' => totranslate('Basic'), 'description' => totranslate('Standard Trick Lane (fixed order for City and Locomotive cards)')),
-
             2 => array( 'name' => totranslate('Expert Variant'), 'description' => totranslate('Placement of Locomotive and City cards in the Trick Lane is randomized'), 'alpha' => true, 'nobeginner' => true )
         ),
         'default' => 1
@@ -46,8 +45,16 @@ $game_options = array(
             2 => array(
                 array('type' => 'minplayers', 'value' => 4, 'message' => totranslate('Team Variant is only available for 4-player games')),
                 array('type' => 'maxplayers', 'value' => 4, 'message' => totranslate('Team Variant is only available for 4-player games'))
-            ),
+            )
         ),
+        'displaycondition' => array(
+            // Note: do not display this option unless these conditions are met
+            array( 'type' => 'otheroption',
+                    'id' => 201, // ELO OFF hardcoded framework option
+                    'value' => 1, // 1 if OFF
+            )
+        ),
+        'notdisplayedmessage' => totranslate('Team Variant only available with ELO off'),
         'default' => 1,
     )
 );

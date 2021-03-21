@@ -220,12 +220,8 @@ function (dojo, declare) {
 
         ///////////////////////////////////////////////////
         /// Setup functions
-        //
-        //
-
 
        /** Inject html into log items  */
-
         /* @Override */
         format_string_recursive : function(log, args) {
             try {
@@ -503,44 +499,26 @@ function (dojo, declare) {
         //
         onLeavingState: function( stateName )
         {
-            switch( stateName )
-            {
-            
-            case 'playerTurn':
-                this.updateHand(false);
-                break;
-            case 'addRailway':
-                this.updateRailhouses(false, 0);
-                break;
-            case 'addCity':
-                this.updateRailhouses(false, 0);
-                break;
-            case 'dummmy':
-                break;
-            }               
+            switch( stateName ) {
+                case 'playerTurn':
+                    this.updateHand(false);
+                    break;
+                case 'addRailway':
+                    this.updateRailhouses(false, 0);
+                    break;
+                case 'addCity':
+                    this.updateRailhouses(false, 0);
+                    break;
+                case 'dummmy':
+                    break;
+            }
         }, 
 
         // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
         //                        action status bar (ie: the HTML links in the status bar).
         //        
-        onUpdateActionButtons: function( stateName, args )
-        {
-                      
-            // if( this.isCurrentPlayerActive() )
-            // {            
-            //     switch( stateName )
-            //     {
-            //      case 'playerTurn':
-            //          this.updateHand(true);
-                    
-            //         // // Add 3 action buttons in the action status bar:
-            //         // this.addActionButton( 'button_1_id', _('Button 1 label'), 'onMyMethodToCall1' ); 
-            //         // this.addActionButton( 'button_2_id', _('Button 2 label'), 'onMyMethodToCall2' ); 
-            //         // this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' ); 
-            //         break;
-            //     }
-            // }
-        },        
+        onUpdateActionButtons: function( stateName, args ) {
+        },
 
         ///////////////////////////////////////////////////
         //// Utility methods
@@ -845,36 +823,6 @@ function (dojo, declare) {
             }
         },
 
-
-        // /**
-        //  * Decorates the lead card and moves over the remaining cards in the cardsPlayed area.
-        //  */
-        // decorateLeadCard: function() {
-        //     var lead_id = this.gamedatas.lead;
-        //     console.log('lead_id from gamedatas: ' + lead_id);
-        //     if (lead_id == 0) {
-        //     // in the case where we are in playerTurn state and haven't refreshed or pulled from Db,
-        //     // the lead card is card 0
-        //         if (this.cardsPlayed.count() != 0) {
-        //             lead_id = this.cardsPlayed.items[0].id;
-        //             console.log('lead_id from cardsPlayed: ' + lead_id);
-        //         }
-        //     }
-        //     if (lead_id != 0) {
-        //         lead_card = this.cardsPlayed.getItemById(lead_id);
-        //         // it might have already been sent to discard or railway
-        //         console.log('lead card found: ' + lead_card);
-        //         if (lead_card != null) {
-        //             for (var i = 0; i < this.cardsPlayed.count(); i++) {
-        //                 var card = this.cardsPlayed.items[i];
-        //                 var card_div = this.cardsPlayed.getItemDivId(card.id);
-        //                 var cardcls = card.id == lead_id ? "card_lead" : "card_played_not_lead";
-        //                 dojo.addClass(card_div, cardcls);
-        //             }
-        //         }
-        //     }
-        // },
-
         /**
          * Activate eligible railhouse icons if this is the current player.
          * Otherwise reset all to default.
@@ -1142,7 +1090,6 @@ function (dojo, declare) {
             dojo.style(railhouse_id, "background-position", position_string);
         },
 
-
         ///////////////////////////////////////////////////
         //// Client-side reactions to notifications.
 
@@ -1375,7 +1322,6 @@ function (dojo, declare) {
             }
         },
 
-
         // notif_loadBug: function (n) {
         //     function fetchNextUrl() {
         //       var url = n.args.urls.shift();
@@ -1399,6 +1345,5 @@ function (dojo, declare) {
         //     fetchNextUrl();
         //   },
 
-    });             
+    });
 });
-
