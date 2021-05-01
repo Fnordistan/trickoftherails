@@ -156,10 +156,15 @@
     border: 2px solid white;
     box-shadow: 0px 0px 2px 3px;
 }
-
-.card_played_not_lead {
-    transform: translate(15px, 0);
-} */
+*/
+.card_played_lbl {
+    position: absolute;
+    bottom: 0;
+    font-size: 0.5em;
+    font-weight: 700;
+    text-align: center;
+    transform: translateY(10px);
+}
 
 /** for card value text in logs */
 .totr_card_value {

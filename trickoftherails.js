@@ -410,6 +410,10 @@ function (dojo, declare) {
          * Put cards played on table.
          */
         populateCardsPlayed: function() {
+            const played = {};
+            for (const pid in this.gamedatas.cards_played) {
+                played[this.gamedatas.cards_played[pid]] = pid;
+            }
             for (const i in this.gamedatas.currenttrick) {
                 var tcard = this.gamedatas.currenttrick[i];
                 var rr = tcard.type;
@@ -417,7 +421,17 @@ function (dojo, declare) {
                 var ctype = this.getUniqueTypeForCard(rr, value);
                 this.cardsPlayed.item_type[ctype].weight = parseInt(tcard.location_arg);
                 this.cardsPlayed.addToStockWithId(ctype, tcard.id);
+                this.addPlayerLabel(i, played[i]);
             }
+        },
+
+        /**
+         * Place a label showing who played each card
+         */
+        addPlayerLabel: function(id, player_id) {
+            const card_div = document.getElementById('cardsplayed_item_'+id);
+            const player = this.gamedatas.players[player_id];
+            dojo.place(this.format_block('jstpl_player_label', {pid: player_id, pname: player['name'], color: player['color']}), card_div);
         },
 
         /**
@@ -1145,6 +1159,7 @@ function (dojo, declare) {
                 // now disable my hand again
                 this.updateHand(false);
             }
+            this.addPlayerLabel(card_id, notif.args.player_id);
         },
 
         /**
