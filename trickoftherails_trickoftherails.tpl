@@ -1,8 +1,7 @@
 {OVERALL_GAME_HEADER}
 
-<div id="myhand_wrap" class="whiteblock">
+<div id="myhand_wrap_top" class="whiteblock">
     <div class="totr_lane_header">{MY_HAND}</div>
-    <div id="myhand"></div>
 </div>
 
 <div id="help_wrap" class="totr_help_display">
@@ -54,6 +53,10 @@
         <div id="{RR}_end" class="totr_railhouse" title="{COMPANY} railway end"></div>
     </div>
     <!-- END RAILROAD -->
+</div>
+
+<div id="myhand_wrap_bottom" class="whiteblock">
+    <div class="totr_lane_header">{MY_HAND}</div>
 </div>
 
 

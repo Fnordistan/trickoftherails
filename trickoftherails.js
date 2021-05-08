@@ -157,6 +157,19 @@ function (dojo, declare) {
             this.cardsPlayed.onItemCreate = dojo.hitch(this, this.setUpCurrentTrickCard);
 
             // Player hand
+            var myhand = document.createElement("DIV");
+            myhand.id = "myhand";
+
+            var myhand_wrap = "myhand_wrap_top";
+            var myhand_wrap_hide = "myhand_wrap_bottom";
+            if (this.prefs[100].value == 2) {
+                myhand_wrap = "myhand_wrap_bottom";
+                myhand_wrap_hide = "myhand_wrap_top";
+            }
+
+            document.getElementById(myhand_wrap).appendChild(myhand);
+            document.getElementById(myhand_wrap_hide).remove();
+
             if (!this.isSpectator) {
                 this.playerHand = new ebg.stock();
                 this.playerHand.create( this, $('myhand'), this.cardwidth, this.cardheight );
@@ -171,7 +184,7 @@ function (dojo, declare) {
                 dojo.connect( this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged' );
             } else {
                 // Hide player hand area for spectators
-                dojo.style('myhand_wrap', 'display', 'none');
+                dojo.style('myhand_wrap_top', 'display', 'none');
             }
 
             // Now set up trick lane
