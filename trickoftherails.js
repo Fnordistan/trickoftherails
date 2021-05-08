@@ -658,8 +658,10 @@ function (dojo, declare) {
         addTooltipToCard: function(card_div, card_type, location) {
             var [type, type_arg] = this.getTypeAndValue(card_type);
             var rri = type-1;
-            var card_name;
+            var lbl;
+            var lbl_val = '';
             var card_text = '';
+            var hdr_color = RR_PREFIXES[rri];
             const CITY_CARD_TEXT = _("Trick winner places this City at either end of any railway");
             const SWAP_TEXT = _("Trick winner takes this card as a company share; winning card replaces leftmost Reservation Card or is discarded");
             if (type == ROWS) {
@@ -669,7 +671,9 @@ function (dojo, declare) {
                     case 3:
                     case 4:
                     case 5:
-                        card_name = this.getLocomotiveLabel(type_arg);
+                        lbl = "Locomotive";
+                        lbl_val = this.getLocomotiveLabel(type_arg);
+                        hdr_color = 'locomotive';
                         if (type_arg == 5) {
                             if (this.gamedatas.expert) {
                                 // for expert variant
@@ -682,31 +686,36 @@ function (dojo, declare) {
                         }
                         break;
                     case 6:
-                        card_name = _("City (Pittsburgh)");
+                        lbl = _("City (Pittsburgh)");
                         card_text = CITY_CARD_TEXT;
+                        hdr_color = 'city';
                         break;
                     case 7:
-                        card_name = _("City (Baltimore)");
+                        lbl = _("City (Baltimore)");
                         card_text = CITY_CARD_TEXT;
+                        hdr_color = 'city';
                         break;
                     case 8:
-                        card_name = _("City (New York)");
+                        lbl = _("City (New York)");
                         card_text = CITY_CARD_TEXT;
+                        hdr_color = 'city';
                         break;
                     case 9:
-                        card_name = _("Reservation Card");
+                        lbl = _("Reservation Card");
                         card_text = _("Leftmost Reservation Card is replaced with winning card during next Stock Round");
+                        hdr_color = 'reservation';
                         break;
                     default:
                         throw new Error("Unknown Card: type="+type+", type_arg="+type_arg+")");// NOI18N
                 }
             } else if (type_arg == STATION) {
-                card_name = dojo.string.substitute(_("${rr} Station"), {rr: RAILROADS[rri]});
+                lbl = dojo.string.substitute(_("${rr} Station"), {rr: RAILROADS[rri]});
             } else if (type_arg == EXCHANGE) {
-                card_name = dojo.string.substitute(_("${rr} Exchange Card"), {rr: RAILROADS[rri]});
+                lbl = dojo.string.substitute(_("${rr} Exchange Card"), {rr: RAILROADS[rri]});
                 card_text = SWAP_TEXT;
             } else {
-                card_name = dojo.string.substitute(_("${rr} (${val})"), {rr: RAILROADS[rri], val: type_arg});
+                lbl = RAILROADS[rri];
+                lbl_val = type_arg;
                 card_text = SWAP_TEXT;
             }
             if (location == LOCATION.SHARE_PILE) {
@@ -714,7 +723,18 @@ function (dojo, declare) {
             } else if (!(location == LOCATION.TRICK_LANE || type_arg == EXCHANGE)) {
                 card_text = dojo.string.substitute(_("Station Value: ${sv}"), {sv: STATION_VALUES[rri][type_arg-1]});
             }
-            var tooltip = this.format_block('jstpl_tooltip_text', {label : card_name, text: card_text});
+            var tooltip = lbl_val == '' ?
+            this.format_block('jstpl_tooltip_text', {
+                "label": lbl,
+                "text": card_text,
+                "hdr_bgcolor": hdr_color
+            }) :
+            this.format_block('jstpl_tooltip_text_val', {
+                "label": lbl,
+                "label_val": lbl_val,
+                "text": card_text,
+                "hdr_bgcolor": hdr_color
+            });
             this.addTooltipHtml(card_div, tooltip, 0);
     },
 
@@ -727,19 +747,19 @@ function (dojo, declare) {
             var label;
             switch (type_arg) {
                 case 1:
-                    label = _("Locomotive [3]");
+                    label = "3";
                     break;
                 case 2:
-                    label = _("Locomotive [4]");
+                    label = "4";
                     break;
                 case 3:
-                    label = _("Locomotive [5]");
+                    label = "5";
                     break;
                 case 4:
-                    label = _("Locomotive [6]");
+                    label = "6";
                     break;
                 case 5:
-                    label = _("Locomotive [∞]");
+                    label = "∞";
                     break;
                 default:
                     throw new Error("Unexpected Locomotive value: "+type_arg);// NOI18N
@@ -770,9 +790,14 @@ function (dojo, declare) {
             dojo.style(loconode, "margin", "5px");
             dojo.removeClass(loconode, "totr_locomotive_slot");
             dojo.removeAttr(loconode, "title");
-            var loco_lbl = RAILROADS[rri]+' '+this.getLocomotiveLabel(loc);
+            var loco_lbl = RAILROADS[rri];
             var loco_txt = RAILROADS[rri]+ _(' Profits: ') + STATION_VALUES[5][loc-1];
-            var tooltip = this.format_block('jstpl_tooltip_text', {label : loco_lbl, text: loco_txt});
+            var tooltip = this.format_block('jstpl_tooltip_text', {
+                "label": loco_lbl,
+                "label_val": this.getLocomotiveLabel(loc),
+                "text": loco_txt,
+                "hdr_bgcolor": 'locomotive'
+            });
             this.addTooltipHtml(loconode, tooltip, 0);
         },
 

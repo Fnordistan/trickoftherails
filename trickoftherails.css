@@ -66,6 +66,9 @@
     --color_nyc: #B8B7AE;
     --color_prr: #9A1D20;
     --color_loc: #E2DAB4;
+    --color_locomotive: #B8D2D4;
+    --color_city: #D0C88C;
+    --color_reservation: #E8E1C4;
     --color_team1:  #EFE7C6;
     --color_team2: #C5BF87;
     --card_height: 114px;
@@ -148,8 +151,18 @@
     font-size: 16px;
 }
 
-.totr_tooltip.h3 {
+.totr_tooltip > h1 {
     font-size: 24px;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    border-bottom: 4px solid #1C1916;
+}
+
+.totr_tt_hdr_val {
+    border: 2px white;
+    border-style: outset;
+    padding: 2px;
 }
 
 /* .card_lead {
@@ -168,7 +181,7 @@
 
 /** for card value text in logs */
 .totr_card_value {
-    /* font-family: 'Frank Ruhl Libre'; */
+    font-family: 'Cinzel';
     color: #ffff;
     font-weight: bold;
     display: inline-block;

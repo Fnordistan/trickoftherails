@@ -67,7 +67,17 @@ var jstpl_card_value_label = '<span class="totr_card_value" style="background-co
 
 var jstpl_rr_icon = '<span class="totr_rr_logo totr_rr_icon totr_${rrname}_icon"></span>';
 
-var jstpl_tooltip_text = '<div class="totr_tooltip"><h3>${label}</h3><span>${text}</span></div>';
+// without a label value
+var jstpl_tooltip_text = '<div class="totr_tooltip">\
+                            <h1 style="background-color: var(--color_${hdr_bgcolor});">${label}</h1>\
+                            <span>${text}</span>\
+                        </div>';
+
+// with a label value
+var jstpl_tooltip_text_val = '<div class="totr_tooltip">\
+                            <h1 style="background-color: var(--color_${hdr_bgcolor});">${label} <span class="totr_tt_hdr_val">${label_val}</span></h1>\
+                            <span>${text}</span>\
+                        </div>';
 
 var jstpl_rr_counter_block = '<div id="${rr}_counter_block" class="totr_rr_counter_container">\
         <span id="${rr}_counter_icon_${id}" class="totr_rr_logo totr_rr_icon totr_${rr}_icon" style="--scale: 2;"></span>\
