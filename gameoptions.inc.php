@@ -61,7 +61,7 @@ $game_options = array(
 
 $game_preferences = array(
     100 => array(
-        'name' => totranslate('My Hand location'),
+        'name' => totranslate('My hand location'),
         'needReload' => true, // after user changes this preference game interface would auto-reload
         'values' => array(
             1 => array( 'name' => totranslate( 'Top' )),

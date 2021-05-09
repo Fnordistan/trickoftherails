@@ -184,7 +184,7 @@ function (dojo, declare) {
                 dojo.connect( this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged' );
             } else {
                 // Hide player hand area for spectators
-                dojo.style('myhand_wrap_top', 'display', 'none');
+                dojo.style(myhand_wrap, 'display', 'none');
             }
 
             // Now set up trick lane
@@ -663,7 +663,7 @@ function (dojo, declare) {
         },
 
         /**
-         * Create tooltips, plain text for most cards, but descriptive HTML for Trick Lane.
+         * Create tooltips.
          * @param {string} card_div id
          * @param {int} card_type type of card (type_arg)
          * @param {enum} location where card is going to be placed
@@ -674,7 +674,10 @@ function (dojo, declare) {
             var lbl;
             var lbl_val = '';
             var card_text = '';
-            var hdr_color = RR_PREFIXES[rri];
+            var hdr_color_type = RR_PREFIXES[rri];
+            var hdr_class = 'totr_tt_hdr_val';
+            var icon_type = '';
+            var station_value = 0;
             const CITY_CARD_TEXT = _("Trick winner places this City at either end of any railway");
             const SWAP_TEXT = _("Trick winner takes this card as a company share; winning card replaces leftmost Reservation Card or is discarded");
             if (type == ROWS) {
@@ -686,7 +689,10 @@ function (dojo, declare) {
                     case 5:
                         lbl = "Locomotive";
                         lbl_val = this.getLocomotiveLabel(type_arg);
-                        hdr_color = 'locomotive';
+                        hdr_color_type = 'locomotive';
+                        hdr_class = 'totr_tt_hdr_loc_val';
+                        icon_type = 'locomotive';
+                        station_value = STATION_VALUES[rri][type_arg-1];
                         if (type_arg == 5) {
                             if (this.gamedatas.expert) {
                                 // for expert variant
@@ -701,55 +707,141 @@ function (dojo, declare) {
                     case 6:
                         lbl = _("City (Pittsburgh)");
                         card_text = CITY_CARD_TEXT;
-                        hdr_color = 'city';
+                        hdr_color_type = 'city';
+                        icon_type = 'railroad';
+                        station_value = STATION_VALUES[rri][type_arg-1];
                         break;
                     case 7:
                         lbl = _("City (Baltimore)");
                         card_text = CITY_CARD_TEXT;
-                        hdr_color = 'city';
+                        hdr_color_type = 'city';
+                        icon_type = 'railroad';
+                        station_value = STATION_VALUES[rri][type_arg-1];
                         break;
                     case 8:
                         lbl = _("City (New York)");
                         card_text = CITY_CARD_TEXT;
-                        hdr_color = 'city';
+                        hdr_color_type = 'city';
+                        icon_type = 'railroad';
+                        station_value = STATION_VALUES[rri][type_arg-1];
                         break;
                     case 9:
                         lbl = _("Reservation Card");
                         card_text = _("Leftmost Reservation Card is replaced with winning card during next Stock Round");
-                        hdr_color = 'reservation';
+                        hdr_color_type = 'reservation';
+                        icon_type = 'reservation';
                         break;
                     default:
                         throw new Error("Unknown Card: type="+type+", type_arg="+type_arg+")");// NOI18N
                 }
             } else if (type_arg == STATION) {
                 lbl = dojo.string.substitute(_("${rr} Station"), {rr: RAILROADS[rri]});
+                icon_type = 'station';
             } else if (type_arg == EXCHANGE) {
                 lbl = dojo.string.substitute(_("${rr} Exchange Card"), {rr: RAILROADS[rri]});
+                icon_type = 'exchange';
                 card_text = SWAP_TEXT;
             } else {
                 lbl = RAILROADS[rri];
                 lbl_val = type_arg;
+                icon_type = 'railroad';
                 card_text = SWAP_TEXT;
             }
             if (location == LOCATION.SHARE_PILE) {
                 card_text = "";
+                icon_type = 'share';
             } else if (!(location == LOCATION.TRICK_LANE || type_arg == EXCHANGE)) {
-                card_text = dojo.string.substitute(_("Station Value: ${sv}"), {sv: STATION_VALUES[rri][type_arg-1]});
+                station_value = STATION_VALUES[rri][type_arg-1];
+                card_text = '';
+                if (location == LOCATION.PLAYER_HAND) {
+                    icon_type = '';
+                } else {
+                    icon_type = 'railroad';
+                }
             }
-            var tooltip = lbl_val == '' ?
-            this.format_block('jstpl_tooltip_text', {
+            var tooltip = this.format_block('jstpl_tooltip_text', {
                 "label": lbl,
                 "text": card_text,
-                "hdr_bgcolor": hdr_color
-            }) :
-            this.format_block('jstpl_tooltip_text_val', {
-                "label": lbl,
-                "label_val": lbl_val,
-                "text": card_text,
-                "hdr_bgcolor": hdr_color
+                "hdr_bgcolor": hdr_color_type,
             });
+            tooltip = this.decorateTooltipHdr(tooltip, lbl_val, hdr_class, hdr_color_type, icon_type, station_value);
             this.addTooltipHtml(card_div, tooltip, 0);
-    },
+        },
+
+        /**
+         * Create a Station Values icon
+         * @param {string} txt
+         * @param {int} sv 
+         * @returns span with SV icon
+         */
+        stationValuesIcon: function(txt, sv) {
+            var x = 0;
+            var y = 0;
+            if (sv > 0) {
+                x = ((sv/10)-1)*-50;
+                y = -50;
+            } else {
+                x = ((sv/-10)-4)*-50;
+                y = 0;
+            }
+            var sv_span = this.format_block('jstpl_tooltip_sv', {text: txt, xpos: x, ypos: y});
+
+            return sv_span;
+        },
+
+        /**
+         * Add icons and things to tooltip Header
+         * @param {string} tooltip 
+         * @param {string} val 
+         * @param {string} clz 
+         * @param {string} clr
+         * @param {string} icon
+         * @param {int} sv
+         * @returns modified tooltip
+         */
+        decorateTooltipHdr: function(tooltip, val, clz, clr, icon, sv) {
+            if (val == '') {
+                tooltip = tooltip.replace("_VAL_", '');
+            } else {
+                var lbl_span = this.format_block('jstpl_tootip_hdr_val', {val: val, cls: clz});
+                tooltip = tooltip.replace("_VAL_", lbl_span);
+            }
+            if (RR_PREFIXES.includes(clr)) {
+                var rr_icon = this.format_block('jstpl_rr_icon', {rrname: clr});
+                tooltip = tooltip.replace("_RR_", rr_icon);
+            } else {
+                tooltip = tooltip.replace("_RR_", '');
+            }
+            if (icon) {
+                var icon_class = '';
+                if (icon == 'locomotive') {
+                    icon_class = "totr_locomotive_card_icon";
+                } else if (icon == 'share') {
+                    icon_class = "totr_share_icon";
+                } else if (icon == 'station') {
+                    icon_class = "totr_railhouse";
+                } else if (icon == 'railroad') {
+                    icon_class = "totr_rail_icon";
+                } else if (icon == 'reservation') {
+                    icon_class = "totr_reservation_icon";
+                } else if (icon == 'exchange') {
+                    icon_class = "totr_exchange_icon";
+                }
+                var icon_span = this.format_block('jstpl_tooltip_icon', {cls: icon_class});
+                tooltip = tooltip.replace("_ICON_", icon_span);
+            } else {
+                tooltip = tooltip.replace("_ICON_", '');
+            }
+            if (sv == 0) {
+                tooltip = tooltip.replace("_SV_", '');
+            } else {
+                var txt = clz == "totr_tt_hdr_loc_val" ? _("Profits") : _("Station Value");
+                var svicon = this.stationValuesIcon(txt, sv);
+                tooltip = tooltip.replace("_SV_", svicon);
+            }
+
+            return tooltip;
+        },
 
         /**
          * For tooltips for Locomotive cards
@@ -803,14 +895,12 @@ function (dojo, declare) {
             dojo.style(loconode, "margin", "5px");
             dojo.removeClass(loconode, "totr_locomotive_slot");
             dojo.removeAttr(loconode, "title");
-            var loco_lbl = RAILROADS[rri];
-            var loco_txt = RAILROADS[rri]+ _(' Profits: ') + STATION_VALUES[5][loc-1];
             var tooltip = this.format_block('jstpl_tooltip_text', {
-                "label": loco_lbl,
-                "label_val": this.getLocomotiveLabel(loc),
-                "text": loco_txt,
-                "hdr_bgcolor": 'locomotive'
+                "label": "Locomotive",
+                "text": '',
+                "hdr_bgcolor": 'locomotive',
             });
+            tooltip = this.decorateTooltipHdr(tooltip, this.getLocomotiveLabel(loc), "totr_tt_hdr_loc_val", "locomotive", "locomotive", STATION_VALUES[5][loc-1]);
             this.addTooltipHtml(loconode, tooltip, 0);
         },
 
