@@ -48,6 +48,7 @@
         $this->tpl['RAILWAY_LINES'] = self::_("Railway Lines");
         $this->tpl['SHARES_BUTTON'] = self::_("Show Player Shares");
         $this->tpl['CURRENT_TRICK'] = self::_("Current Trick");
+        $this->tpl['SHARE_VALUES'] = self::_("Current Share Values");
 
         // this will inflate our player block with actual players data
         $this->page->begin_block($template, 'SHARES');

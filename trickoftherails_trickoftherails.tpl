@@ -4,6 +4,10 @@
     <div class="totr_lane_header">{MY_HAND}</div>
 </div>
 
+<div id="share_value_display" class="whiteblock">
+    <div class="totr_lane_header">{SHARE_VALUES}</div>
+</div>
+
 <div id="help_wrap" class="totr_help_display">
     <a href="#" id="shares_button" class="bgabutton bgabutton_blue"><span>{SHARES_BUTTON}</span></a>
     <div id="station_values" class="totr_small_station_values_card"></div>
@@ -88,8 +92,8 @@ var jstpl_tooltip_icon = '<div class="totr_card_icon ${cls}"></div>';
 
 var jstpl_tooltip_loc_val = '<span style="background-color: #E2DAB4; border: 1px solid black; padding: 0 2px;">${val}</span>';
 
-var jstpl_rr_counter_block = '<div id="${rr}_counter_block" class="totr_rr_counter_container">\
-        <span id="${rr}_counter_icon_${id}" class="totr_rr_logo totr_rr_icon totr_${rr}_icon" style="--scale: 2;"></span>\
+var jstpl_rr_counter_block = '<div id="${rr}_counter_block_${id}" class="totr_rr_counter_container">\
+        <span id="${rr}_counter_icon_${id}" class="totr_rr_logo totr_rr_icon totr_${rr}_icon" style="--scale: ${scale};"></span>\
         <span id="${rr}_shares_counter_${id}" class="totr_shares_ctr totr_${rr}_shares_ctr" style="color: var(--color_${rr});"></span>\
     </div>';
 

@@ -343,6 +343,14 @@ class TrickOfTheRails extends Table
         // null if not teams variant
         $result['teams'] = $this->getTeams();
 
+        $current_share_val = array();
+        $this->scoreRailways();
+        foreach ($this->railroads as $rr => $rw) {
+            $current_share_val[$rr] = self::getStat($rw['railway']."_share_value");
+        }
+        $result['current_share_values'] = $current_share_val;
+
+        $result['round'] = self::getStat('turns_number') % 2 == 0 ? "operating" : "stock";
         return $result;
     }
 
@@ -544,6 +552,12 @@ class TrickOfTheRails extends Table
         return $paths;
     }
 
+    function getScoreForRailway($rr) {
+        $this->scoreRailways();
+        $rw = $this->railroads[$rr];
+        return self::getStat($rw['railway']."_share_value");
+    }
+
     /**
      * Given a sequence of rr cards in order, score from first to last, inclusive
      */
@@ -703,6 +717,7 @@ class TrickOfTheRails extends Table
             'locomotive' => $locomotive,
             'loc_num' => $lococard['type_arg'],
             'rr' => $rr,
+            'share_value' => $this->getScoreForRailway($rr),
             'company' => $this->railroads[$rr]['name']));
 
         return $lococard['type_arg'];
@@ -718,8 +733,9 @@ class TrickOfTheRails extends Table
         // card we're going to insert in front or back
         $railwaycard = $this->cards->getCard($mycard_id);
 
-        $railway = $this->railroads[$railwaycard['type']]['railway'];
-        $company = $this->railroads[$railwaycard['type']]['name'];
+        $rr = $railwaycard['type'];
+        $railway = $this->railroads[$rr]['railway'];
+        $company = $this->railroads[$rr]['name'];
         $card_value = $railwaycard['type_arg'];
 
         if ($is_start) {
@@ -736,7 +752,8 @@ class TrickOfTheRails extends Table
             'card_id' => $mycard_id,
             'card_value' => $card_value,
             'card_value_label' => $this->values_label[$card_value],
-            'rr' => $railwaycard['type'],
+            'rr' => $rr,
+            'share_value' => $this->getScoreForRailway($rr),
             'company' => $company,
             'endpoint' => $is_start ? clienttranslate('start') : clienttranslate('end'),
             // need a numeric here that doesn't get bollixed by translation <<>>
@@ -782,6 +799,7 @@ class TrickOfTheRails extends Table
             'city' => $this->trick_type[$citycard['type_arg']]['name'],
             'city_type' => $citycard['type_arg'],
             'rr' => $rr,
+            'share_value' => $this->getScoreForRailway($rr),
             'company' => $this->railroads[$rr]['name'],
             'endpoint' => $is_start ? clienttranslate("start") : clienttranslate("end"),
             'weight' => $is_start ? -1 : 1,

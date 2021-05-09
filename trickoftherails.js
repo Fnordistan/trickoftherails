@@ -105,12 +105,13 @@ function (dojo, declare) {
             this.sharePiles = [];
             // array of arrays by player_id => array of RR counters
             this.shareCounters = [];
+            // shows current Share Values
+            this.currentShareValues = [];
             // Setting up player boards
             var teams = this.gamedatas.teams;
+            this.round_type = this.gamedatas.round;
 
             for ( const player_id in gamedatas.players ) {
-                var player = gamedatas.players[player_id];
-     
                 // Setting up player board
                 var player_board_div = $('player_board_'+player_id);
 
@@ -128,7 +129,8 @@ function (dojo, declare) {
 
                     dojo.place( this.format_block( 'jstpl_rr_counter_block', {
                         "rr": rr,
-                        "id": player_id
+                        "id": player_id,
+                        "scale": 2
                     }), player_board_div);
 
                     var rr_counter = new ebg.counter();
@@ -226,6 +228,8 @@ function (dojo, declare) {
             this.setupLocomotiveActions();
             this.setupRailhouseActions();
             this.setupHelpButtons();
+
+            this.displayShareValues();
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
@@ -451,6 +455,8 @@ function (dojo, declare) {
          * Put cards in Trick Lane.
          */
         populateTrickLane: function() {
+            // first we need to know, because of tooltip text, if any reservation cards are in the lane
+            this.countReservationCardsInTrickLane();
             // Special counter for Reservation cards
             var rsv = 0;
             for (const i in this.gamedatas.tricklanecards) {
@@ -472,19 +478,27 @@ function (dojo, declare) {
         },
 
         /**
-         * Checks whether there are Reservation Cards in the Trick Lane.
+         * 
+         * @returns Check whether there is a reservation card in the trick lane.
          */
-        existsReservationCard: function() {
+        countReservationCardsInTrickLane: function() {
+            this.reservation_cards = 0;
             for (const i in this.gamedatas.tricklanecards) {
                 var tlcard = this.gamedatas.tricklanecards[i];
                 var tt = tlcard.type;
                 var value = tlcard.type_arg;
                 var ctype = this.getUniqueTypeForCard(tt, value);
                 if (ctype == RESERVATION_CARD_TYPE) {
-                    return true;
+                    this.reservation_cards++;
                 }
             }
-            return false;
+        },
+
+        /**
+         * Checks whether there are Reservation Cards in the Trick Lane.
+         */
+        existsReservationCard: function() {
+            return this.reservation_cards > 0;
         },
 
         /**
@@ -511,6 +525,45 @@ function (dojo, declare) {
             }
         },
 
+        /**
+         * If player preference to show current share values has been set.
+         */
+        displayShareValues: function() {
+            if (this.prefs[101].value == 2) {
+                $curr_share_vals = this.gamedatas.current_share_values;
+
+                for (const s in $curr_share_vals) {
+                    const rri = s-1;
+                    const rr = RR_PREFIXES[rri];
+
+                    dojo.place( this.format_block( 'jstpl_rr_counter_block', {
+                        "rr": rr,
+                        "id": "current_value",
+                        "scale": 2
+                    }), share_value_display);
+                    var scv_counter = new ebg.counter();
+                    scv_counter.create(rr+'_shares_counter_current_value');
+                    scv_counter.setValue($curr_share_vals[s]);
+                    this.currentShareValues[rr] = scv_counter;
+                    this.addTooltip(rr+'_counter_icon_current_value', dojo.string.substitute(_("${rr} current share value"), {rr: RAILROADS[rri]}), '');
+                }
+            } else {
+                document.getElementById("share_value_display").style['display'] = "none";
+            }
+        },
+
+        /**
+         * Set value for current share value.
+         * @param {int} rr
+         * @param {int} sv
+         */
+        updateShareValue: function(rr, sv) {
+            if (this.prefs[101].value == 2) {
+                const rw = RR_PREFIXES[rr-1];
+                this.currentShareValues[rw].setValue(sv);
+            }
+        },
+
         ///////////////////////////////////////////////////
         //// Game & client states
         
@@ -520,7 +573,9 @@ function (dojo, declare) {
         onEnteringState: function( stateName, args )
         {
             switch( stateName ) {
-            
+                case 'newTrick':
+                    this.round_type = this.round_type == "operating" ? "stock" : "operating";
+                    break;
                 case 'playerTurn':
                     this.updateHand(this.isCurrentPlayerActive(), args.args.rr);
                 break;
@@ -773,7 +828,13 @@ function (dojo, declare) {
             } else if (!(location == LOCATION.TRICK_LANE || type_arg == EXCHANGE)) {
                 station_value = STATION_VALUES[rri][type_arg-1];
                 card_text = '';
-                if (location == LOCATION.PLAYER_HAND) {
+                if (location == LOCATION.CURRENT_TRICK) {
+                    if (this.round_type == 'operating') {
+                        icon_type = 'railroad';
+                    } else {
+                        icon_type = 'share';
+                    }
+                } else if (location == LOCATION.PLAYER_HAND) {
                     icon_type = '';
                 } else {
                     icon_type = 'railroad';
@@ -1049,6 +1110,17 @@ function (dojo, declare) {
             return -1;
         },
 
+        /**
+         * For calculating share values on the fly
+         */
+        calculateShareValues: function() {
+            for (const r in RR_PREFIXES) {
+                var sv = 0;
+                var rr = RR_PREFIXES[r];
+                
+            }
+        },
+
         ///////////////////////////////////////////////////
         //// Player's action
         
@@ -1247,7 +1319,7 @@ function (dojo, declare) {
                     break;
                 default:
                     // this is an error, should not happen!
-                    console.log("ERROR: Unknown Railhouse Button mode: " + mode + " for " + railhouse_id + ": " + rr);
+                    showMessage("ERROR: Unknown Railhouse Button mode: " + mode + " for " + railhouse_id + ": " + rr, "error");
             }
             dojo.style(railhouse_id, "background-position", position_string);
         },
@@ -1308,6 +1380,7 @@ function (dojo, declare) {
                 this.updateHand(false);
             }
             this.addPlayerLabel(card_id, notif.args.player_id);
+            this.addTooltipToCard('cards_played_'+card_type, card_type, LOCATION.CURRENT_TRICK);
         },
 
         /**
@@ -1329,9 +1402,14 @@ function (dojo, declare) {
             // move the (winning) trick card from the play area to the Trick Lane
             this.trickLane.addToStockWithId(card_type, card_id, trick_div);
             this.cardsPlayed.removeFromStockById(card_id, reserve_div);
-            // now put Trick Lane html tooltip on it
-            var new_card_divid = this.trickLane.getItemDivId(card_id);
-            this.addTooltipToCard(new_card_divid, card_type, LOCATION.TRICK_LANE);
+            // now refresh TrickLane tooltips
+            this.reservation_cards--;
+            for (var t of this.trickLane.items) {
+                debugger;
+                var ct = t.type;
+                var new_card_divid = this.trickLane.getItemDivId(ct);
+                this.addTooltipToCard(new_card_divid, ct, LOCATION.TRICK_LANE);
+            }
         },
 
         /**
@@ -1386,6 +1464,8 @@ function (dojo, declare) {
             this.placeLocomotiveCard(parseInt(notif.args.loc_num), rr);
             // remove locomotive from Trick Lane, move to Railroad
             this.trickLane.removeFromStockById(card_id, loc_div);
+            var share_val = parseInt(notif.args.share_value);
+            this.updateShareValue(rr, share_val);
         },
 
         /**
@@ -1408,6 +1488,8 @@ function (dojo, declare) {
             this.railWays[rr-1].item_type[card_type].weight = weight;
 
             this.railWays[rr-1].addToStockWithId(card_type, card_id, card_div);
+            var share_val = parseInt(notif.args.share_value);
+            this.updateShareValue(rr, share_val);
         },
 
         /**
@@ -1420,7 +1502,6 @@ function (dojo, declare) {
             var card_type = this.getUniqueTypeForCard(ROWS, type_arg);
             var wt = parseInt(notif.args.weight);
 
-            var railway = notif.args.railway;
             var rr = parseInt(notif.args.rr);
             var trick_div = this.trickLane.getItemDivId(card_id);
 
@@ -1433,6 +1514,8 @@ function (dojo, declare) {
             this.railWays[rr-1].item_type[card_type].weight = weight;
 
             this.railWays[rr-1].addToStockWithId(card_type, card_id, trick_div);
+            var share_val = parseInt(notif.args.share_value);
+            this.updateShareValue(rr, share_val);
         },
 
         /**

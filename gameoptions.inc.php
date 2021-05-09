@@ -62,11 +62,21 @@ $game_options = array(
 $game_preferences = array(
     100 => array(
         'name' => totranslate('My hand location'),
-        'needReload' => true, // after user changes this preference game interface would auto-reload
+        'needReload' => true,
         'values' => array(
             1 => array( 'name' => totranslate( 'Top' )),
             2 => array( 'name' => totranslate( 'Bottom' ))
         ),
         'default' => 1
+    ),
+    101 => array(
+        'name' => totranslate('Show current share values'),
+        'needReload' => true,
+        'values' => array(
+            1 => array( 'name' => totranslate( "Don't show" )),
+            2 => array( 'name' => totranslate( "Show" ))
+        ),
+        'default' => 1
     )
+
 );
