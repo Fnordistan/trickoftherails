@@ -472,6 +472,22 @@ function (dojo, declare) {
         },
 
         /**
+         * Checks whether there are Reservation Cards in the Trick Lane.
+         */
+        existsReservationCard: function() {
+            for (const i in this.gamedatas.tricklanecards) {
+                var tlcard = this.gamedatas.tricklanecards[i];
+                var tt = tlcard.type;
+                var value = tlcard.type_arg;
+                var ctype = this.getUniqueTypeForCard(tt, value);
+                if (ctype == RESERVATION_CARD_TYPE) {
+                    return true;
+                }
+            }
+            return false;
+        },
+
+        /**
          * Put cards in the railway lines.
          */
         populateRailways: function() {
@@ -679,7 +695,8 @@ function (dojo, declare) {
             var icon_type = '';
             var station_value = 0;
             const CITY_CARD_TEXT = _("Trick winner places this City at either end of any railway");
-            const SWAP_TEXT = _("Trick winner takes this card as a company share; winning card replaces leftmost Reservation Card or is discarded");
+            var swap_action = this.existsReservationCard() ? _("winning card replaces leftmost Reservation Card") : _("winning card is discarded");
+            const SWAP_TEXT = _("Trick winner takes this card as a company share; ") + swap_action;
             if (type == ROWS) {
                 switch (type_arg) {
                     case 1:
@@ -700,6 +717,9 @@ function (dojo, declare) {
                             } else {
                                 card_text = _("After trick winner places Locomotive [6], Locomotive [∞] is automatically placed on last remaining railway");
                             }
+                            
+                            card_text = card_text.replace("[6]", this.format_block('jstpl_tooltip_loc_val', {val: '6'}));
+                            card_text = card_text.replace("[∞]", this.format_block('jstpl_tooltip_loc_val', {val: '∞'}));
                         } else {
                             card_text = _("Trick winner places this Locomotive on any railway that does not yet have one");
                         }

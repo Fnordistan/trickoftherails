@@ -80,11 +80,13 @@ var jstpl_tooltip_text = '<div class="totr_tooltip">\
 
 var jstpl_tootip_hdr_val = '<span class="${cls}">${val}</span>';
 
-var jstpl_tooltip_sv = '<div style="display: inline-block; position: relative; padding-top: 10px;">\
-                            <span class="totr_sv_text">${text}</span><span class="totr_station_value" style="background-position: ${xpos}px ${ypos}px;"></span>\
+var jstpl_tooltip_sv = '<div class="totr_tt_sv">\
+                            <span class="totr_tt_sv_text">${text}</span><span class="totr_tt_sv_icon" style="background-position: ${xpos}px ${ypos}px;"></span>\
                         </div>';
 
 var jstpl_tooltip_icon = '<div class="totr_card_icon ${cls}"></div>';
+
+var jstpl_tooltip_loc_val = '<span style="background-color: #E2DAB4; border: 1px solid black; padding: 0 2px;">${val}</span>';
 
 var jstpl_rr_counter_block = '<div id="${rr}_counter_block" class="totr_rr_counter_container">\
         <span id="${rr}_counter_icon_${id}" class="totr_rr_logo totr_rr_icon totr_${rr}_icon" style="--scale: 2;"></span>\

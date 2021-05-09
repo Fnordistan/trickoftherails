@@ -146,26 +146,6 @@
     height: 320px;
 }
 
-.totr_station_value {
-    margin: 0 0 0 5px;
-    background-size: 250px 100px;
-    background-image: url(img/station_values.png);
-    background-repeat: no-repeat;
-    width: 50px;
-    height: 50px;
-    float: right;
-}
-
-.totr_sv_text{
-    margin: 0 5px;
-    font-family: 'Cinzel';
-    font-weight: 500;
-    font-size: 18px;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
 .totr_tooltip {
     font-family: 'Cinzel';
     font-size: 16px;
@@ -193,6 +173,34 @@
     background-color: var(--color_loc);
     border-style: outset;
     padding: 2px;
+}
+
+.totr_tt_sv {
+    margin-top: 10px;
+    padding-top: 5px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    border-top: 3px groove gray;
+    border-bottom: 3px groove gray;
+    border-radius: 8px;
+}
+
+.totr_tt_sv_text {
+    margin: 0 5px;
+    font-family: 'Frank Ruhl Libre';
+    font-weight: 500;
+    font-size: 24px;
+}
+
+.totr_tt_sv_icon {
+    margin: 0 0 0 5px;
+    background-size: 250px 100px;
+    background-image: url(img/station_values.png);
+    background-repeat: no-repeat;
+    width: 50px;
+    height: 50px;
 }
 
 /* .card_lead {
