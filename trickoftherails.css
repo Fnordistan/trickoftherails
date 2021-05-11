@@ -394,29 +394,33 @@
 }
 
 .totr_exchange_icon {
-    background-size: 25px 25px;
-    background-image: url(img/exchange_x_icon.png);
+    background-size: 90px 25px;
+    background-image: url(img/icon_sprites.png);
+    background-position: -65px 0;
     height: 25px;
     width: 25px;
 }
 
 .totr_reservation_icon {
-    background-size: 25px 25px;
-    background-image: url(img/reservation_plus_icon.png);
+    background-size: 90px 25px;
+    background-image: url(img/icon_sprites.png);
+    background-position: -40px 0;
     height: 25px;
     width: 25px;
 }
 
 .totr_share_icon {
-    background-size: 19px 25px;
-    background-image: url(img/share_icon.png);
+    background-size: 90px 25px;
+    background-image: url(img/icon_sprites.png);
+    background-position: 0 0;
     height: 25px;
     width: 19px;
 }
 
 .totr_rail_icon {
-    background-size: 21px 25px;
-    background-image: url(img/railroad_icon.png);
+    background-size: 90px 25px;
+    background-image: url(img/icon_sprites.png);
+    background-position: -18.6px 0;
     height: 25px;
     width: 21px;
 }
