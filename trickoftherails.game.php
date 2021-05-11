@@ -610,24 +610,25 @@ class TrickOfTheRails extends Table
     {
         self::checkAction( 'playCard' ); 
 
+        $player_id = self::getActivePlayerId();
         $card_played = $this->cards->getCard($card_id);
         $railroad = $card_played['type'];
-        $player_id = self::getActivePlayerId();
-        
+        $company = $this->railroads[$railroad]['name'];
+
         // am I the first to play this trick?
-        $plays_card = clienttranslate("plays");
+        $action = clienttranslate("plays ${company}");
         $trick_rr = self::getGameStateValue( 'trickRR' );
         if ($trick_rr == 0) {
             // I'm the lead
             self::setGameStateValue( 'trickRR', $railroad);
             self::setGameStateValue( 'leadCard', $card_played['id']);
-            $plays_card = clienttranslate("leads the trick with");
+            $action = clienttranslate("leads the trick with ${company}");
         } else {
             if ($railroad != $trick_rr) {
                 // do I have a card of that color in my hand?
                 if ($this->hasCurrentTrick($player_id)) {
                     $compname = $this->railroads[$trick_rr]['nametr'];
-                    throw new BgaUserException( self::_( 'You must play a $compname card' ));
+                    throw new BgaUserException( self::_( "You must play a ${compname} card" ));
                 }
             }
         }
@@ -635,22 +636,19 @@ class TrickOfTheRails extends Table
         $wt = $this->cards->countCardsInLocation( 'currenttrick' );
         $this->cards->insertCard( $card_id, 'currenttrick', $wt );
         // update our trick table
-        self::DbQuery("
-        INSERT INTO TRICK_ROW (player_id, card_id) VALUES (".$player_id.",".$card_id.")
-        ");
+        self::DbQuery("INSERT INTO TRICK_ROW (player_id, card_id) VALUES (".$player_id.",".$card_id.")");
 
         // Notify all players about the card played
         // ${rr} and ${card_value} at the end are substituted on the client-side with js hacks
-        self::notifyAllPlayers('cardPlayed', '${player_name} ${action} ${company} ${card_value_label}${rr}${card_value}', array ( // NOI18N
-            'i18n' => array ('action', 'company', 'card_value_label' ),
+        self::notifyAllPlayers('cardPlayed', '${player_name} ${action} ${card_value_label}'.'${rr}${card_value}', array ( // NOI18N
             'card_id' => $card_id,
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
-            'action' => $plays_card,
+            'action' => $action,
             'card_value' => $card_played ['type_arg'],
             'card_value_label' => $this->values_label [$card_played ['type_arg']],
             'rr' => $railroad,
-            'company' => $this->railroads [$railroad] ['name']));
+            'company' => $company));
         // Next player
         $this->gamestate->nextState();
     }
@@ -843,13 +841,13 @@ class TrickOfTheRails extends Table
             $action = clienttranslate("must lead the trick");
         } else if ($this->hasCurrentTrick(self::getActivePlayerId())) {
             $company = $this->railroads[$rr]['name'];
-            $action = clienttranslate('must play a ${company} card').'${rr}';
+            $action = clienttranslate('must play a ${company} card');
         } else {
             $company = $this->railroads[$rr]['name'];
-            $action = clienttranslate('must play any card (no ${company} cards in hand)').'${rr}';
+            $action = clienttranslate('must play any card (no ${company} cards in hand)');
         }
         return array(
-            "i18n" => array('round_type', 'action', 'company', 'rr'),
+            "i18n" => array('round_type', 'action'),
             'round_type' => $round_type,
             'action' => $action,
             'rr' => $rr,
@@ -1242,9 +1240,9 @@ class TrickOfTheRails extends Table
                 $team = $player['team'];
             }
         }
-        $teamlbl = $team == 1 ? clienttranslate("One") : clienttranslate("Two");
-        $winnerlbl = $winners[0].", ".$winners[1];
-        $teamwinners = clienttranslate('Team $teamlbl Winners: $winnerlbl');
+        $teamname = $team == 1 ? clienttranslate("One") : clienttranslate("Two");
+        $winnernames = $winners[0]." & ".$winners[1];
+        $teamwinners = clienttranslate("Team $teamname wins: $winnernames");
         return $teamwinners;
     }
 
@@ -1294,7 +1292,7 @@ class TrickOfTheRails extends Table
             $teamstr = "";
             if ($this->isTeamsVariant()) {
                 $team = $teams[$player_id];
-                $teamstr = ' ('.clienttranslate('Team $team').')';
+                $teamstr = ' ('.clienttranslate("Team $team").')';
             }
             $table_header[] = array('str' => '${player_name}${teamstr}',
                                     'args' => array( 'player_name' => $player['player_name'], 'teamstr' => $teamstr),

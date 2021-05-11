@@ -257,12 +257,17 @@ function (dojo, declare) {
                         log = log.replace('${card_value}', '');
                     }
                     if (args.company) {
-                        args.company = this.format_block('jstpl_rr_name', {
+                        var compstr = this.format_block('jstpl_rr_name', {
                             "company": args.company,
                             "rrname": rr_label
                         }) + this.format_block('jstpl_rr_icon', {
                             "rrname": rr_label
                         });
+                        args.company = compstr;
+                        if (args.action) {
+                            // interpolation inside the action
+                            args.action = args.action.replace('${company}', compstr);
+                        }
                         // hack because we had to insert ${rr}
                         log = log.replace('${rr}', '');
                     }
