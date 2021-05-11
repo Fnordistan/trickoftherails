@@ -627,7 +627,7 @@ class TrickOfTheRails extends Table
                 // do I have a card of that color in my hand?
                 if ($this->hasCurrentTrick($player_id)) {
                     $compname = $this->railroads[$trick_rr]['nametr'];
-                    throw new BgaUserException( self::_( "You must play a $compname card" ));
+                    throw new BgaUserException( self::_( 'You must play a $compname card' ));
                 }
             }
         }
@@ -837,27 +837,21 @@ class TrickOfTheRails extends Table
         $company = "";
         $rr = self::getGameStateValue( 'trickRR' );
         $action = "";
-        $qualifier = "";
         $round_type = self::getStat('turns_number') % 2 == 0 ? self::_("Operating Round") : self::_("Stock Round");
 
         if ($rr == 0) {
-            $action = clienttranslate("lead the trick");
-            $qualifier = "";
-            $company = "";
+            $action = clienttranslate("must lead the trick");
         } else if ($this->hasCurrentTrick(self::getActivePlayerId())) {
-            $action = clienttranslate("play a");
-            $qualifier = clienttranslate("card");
             $company = $this->railroads[$rr]['name'];
+            $action = clienttranslate('must play a ${company} card').'${rr}';
         } else {
-            $action = clienttranslate("play any card (no");
-            $qualifier = clienttranslate("cards in hand)");
             $company = $this->railroads[$rr]['name'];
+            $action = clienttranslate('must play any card (no ${company} cards in hand)').'${rr}';
         }
         return array(
-            "i18n" => array('round_type', 'card_action', 'qualifier', 'company'),
+            "i18n" => array('round_type', 'action', 'company', 'rr'),
             'round_type' => $round_type,
-            'card_action' => $action,
-            'qualifier' => $qualifier,
+            'action' => $action,
             'rr' => $rr,
             'company' => $company,
         );
@@ -1250,7 +1244,7 @@ class TrickOfTheRails extends Table
         }
         $teamlbl = $team == 1 ? clienttranslate("One") : clienttranslate("Two");
         $winnerlbl = $winners[0].", ".$winners[1];
-        $teamwinners = clienttranslate("Team $teamlbl Winners: $winnerlbl");
+        $teamwinners = clienttranslate('Team $teamlbl Winners: $winnerlbl');
         return $teamwinners;
     }
 
@@ -1300,7 +1294,7 @@ class TrickOfTheRails extends Table
             $teamstr = "";
             if ($this->isTeamsVariant()) {
                 $team = $teams[$player_id];
-                $teamstr = clienttranslate(" (Team $team)");
+                $teamstr = ' ('.clienttranslate('Team $team').')';
             }
             $table_header[] = array('str' => '${player_name}${teamstr}',
                                     'args' => array( 'player_name' => $player['player_name'], 'teamstr' => $teamstr),
@@ -1335,9 +1329,9 @@ class TrickOfTheRails extends Table
             $team_row[] = array('str' => clienttranslate('Team Scores'), 'args' => array(), 'type' => 'header' );
             $team_row[] = array('str' => ' ', 'args' => array(), 'type' => 'header' );
             $team_row[] = array('str' => clienttranslate('Team 1'), 'args' => array(), 'type' => 'header' );
-            $team_row[] = array('str' => clienttranslate('${team1}'), 'args' => array('team1' => $team1score), 'type' => 'header' );
+            $team_row[] = array('str' => '${team1}', 'args' => array('team1' => $team1score), 'type' => 'header' );
             $team_row[] = array('str' => clienttranslate('Team 2'), 'args' => array(), 'type' => 'header' );
-            $team_row[] = array('str' => clienttranslate('${team2}'), 'args' => array('team2' => $team2score), 'type' => 'header' );
+            $team_row[] = array('str' => '${team2}', 'args' => array('team2' => $team2score), 'type' => 'header' );
             $table[] = $team_row;
         }
 

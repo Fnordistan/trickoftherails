@@ -86,8 +86,8 @@ $machinestates = array(
     
     STATE_PLAY_CARD => array(
         "name" => "playerTurn",
-        "description" => clienttranslate( '${round_type}: ${actplayer} must ${card_action} ${company} ${qualifier}' ),
-        "descriptionmyturn" => clienttranslate( '${round_type}: ${you} must ${card_action} ${company} ${qualifier}' ),
+        "description" => '${round_type}: ${actplayer} ${action}',// NOI18N
+        "descriptionmyturn" => '${round_type}: ${you} ${action}',// NOI18N
         "type" => "activeplayer",
         "possibleactions" => array( "playCard" ),
         "args" => "argPlayCards",
