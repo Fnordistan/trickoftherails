@@ -351,6 +351,7 @@ class TrickOfTheRails extends Table
         $result['current_share_values'] = $current_share_val;
 
         $result['round'] = self::getStat('turns_number') % 2 == 0 ? "operating" : "stock";
+        $result['reservation_cards'] = $this->countReservationCards();
         return $result;
     }
 
@@ -447,6 +448,19 @@ class TrickOfTheRails extends Table
      */
     function isReservationCard($card) {
         return $card['type'] == LASTROW && $card['type_arg'] == RESERVATION;
+    }
+
+    /**
+     * How many Reservation Cards are left in the Trick Lane?
+     */
+    function countReservationCards() {
+        $ct = 0;
+        foreach ($this->cards->getCardsInLocation('tricklane') as $c) {
+            if ($this->isReservationCard($c)) {
+                $ct++;
+            }
+        }
+        return $ct;
     }
 
     /**

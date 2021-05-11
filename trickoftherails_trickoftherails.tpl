@@ -4,8 +4,9 @@
     <div class="totr_lane_header">{MY_HAND}</div>
 </div>
 
-<div id="share_value_display" class="whiteblock">
+<div id="share_value_wrap" class="whiteblock">
     <div class="totr_lane_header">{SHARE_VALUES}</div>
+    <div id="share_value_display"></div>
 </div>
 
 <div id="help_wrap" class="totr_help_display">

@@ -215,6 +215,7 @@ function (dojo, declare) {
                 this.sharePiles[DISCARD].push(discarded_shares);
             }
 
+            this.reservation_cards = gamedatas.reservation_cards;
             // create all the Stock items
             this.setupAllCards();
 
@@ -456,7 +457,6 @@ function (dojo, declare) {
          */
         populateTrickLane: function() {
             // first we need to know, because of tooltip text, if any reservation cards are in the lane
-            this.countReservationCardsInTrickLane();
             // Special counter for Reservation cards
             var rsv = 0;
             for (const i in this.gamedatas.tricklanecards) {
@@ -474,23 +474,6 @@ function (dojo, declare) {
                     dojo.addClass(card_div, "totr_unl_loc");
                 }
                 this.addTooltipToCard(card_div, ctype, LOCATION.TRICK_LANE);
-            }
-        },
-
-        /**
-         * 
-         * @returns Check whether there is a reservation card in the trick lane.
-         */
-        countReservationCardsInTrickLane: function() {
-            this.reservation_cards = 0;
-            for (const i in this.gamedatas.tricklanecards) {
-                var tlcard = this.gamedatas.tricklanecards[i];
-                var tt = tlcard.type;
-                var value = tlcard.type_arg;
-                var ctype = this.getUniqueTypeForCard(tt, value);
-                if (ctype == RESERVATION_CARD_TYPE) {
-                    this.reservation_cards++;
-                }
             }
         },
 
@@ -548,7 +531,7 @@ function (dojo, declare) {
                     this.addTooltip(rr+'_counter_icon_current_value', dojo.string.substitute(_("${rr} current share value"), {rr: RAILROADS[rri]}), '');
                 }
             } else {
-                document.getElementById("share_value_display").style['display'] = "none";
+                document.getElementById("share_value_wrap").style['display'] = "none";
             }
         },
 
@@ -574,7 +557,7 @@ function (dojo, declare) {
         {
             switch( stateName ) {
                 case 'newTrick':
-                    this.round_type = this.round_type == "operating" ? "stock" : "operating";
+                    this.round_type = (this.round_type == "operating") ? "stock" : "operating";
                     break;
                 case 'playerTurn':
                     this.updateHand(this.isCurrentPlayerActive(), args.args.rr);
@@ -736,7 +719,7 @@ function (dojo, declare) {
         /**
          * Create tooltips.
          * @param {string} card_div id
-         * @param {int} card_type type of card (type_arg)
+         * @param {int} card_type type of card
          * @param {enum} location where card is going to be placed
          */
         addTooltipToCard: function(card_div, card_type, location) {
@@ -1404,11 +1387,11 @@ function (dojo, declare) {
             this.cardsPlayed.removeFromStockById(card_id, reserve_div);
             // now refresh TrickLane tooltips
             this.reservation_cards--;
-            for (var t of this.trickLane.items) {
-                debugger;
-                var ct = t.type;
-                var new_card_divid = this.trickLane.getItemDivId(ct);
-                this.addTooltipToCard(new_card_divid, ct, LOCATION.TRICK_LANE);
+            var tricklanecards = this.trickLane.getAllItems();
+            for (t of tricklanecards) {
+                var id = t.id;
+                var new_card_divid = this.trickLane.getItemDivId(id);
+                this.addTooltipToCard(new_card_divid, t.type, LOCATION.TRICK_LANE);
             }
         },
 

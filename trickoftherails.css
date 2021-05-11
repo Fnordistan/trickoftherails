@@ -425,6 +425,11 @@
     display: flex;
 }
 
+#share_value_display {
+    display: flex;
+    justify-content: center;
+}
+
 #cardsplayed_wrap {
     margin: 5px;
     flex: 0 0 415px;
