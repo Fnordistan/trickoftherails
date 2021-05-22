@@ -454,6 +454,7 @@ function (dojo, declare) {
         addPlayerLabel: function(id, player_id) {
             const card_div = document.getElementById('cardsplayed_item_'+id);
             const player = this.gamedatas.players[player_id];
+            card_div.style['border'] = "3px solid #"+ player['color'];
             dojo.place(this.format_block('jstpl_player_label', {pid: player_id, pname: player['name'], color: player['color']}), card_div);
         },
 

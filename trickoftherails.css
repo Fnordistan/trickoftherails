@@ -209,12 +209,15 @@
 }
 */
 .card_played_lbl {
+    color: white;
+    margin-top: 10px;
+    padding: 5px 3px 5px;
     position: absolute;
     bottom: 0;
     font-size: 0.5em;
     font-weight: 700;
     text-align: center;
-    transform: translateY(10px);
+    transform: translateY(20px);
 }
 
 /** for card value text in logs */
