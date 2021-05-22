@@ -51,11 +51,11 @@
 
     <!-- BEGIN RAILROAD -->
     <div id="{RR}_lane" class="whiteblock totr_flex_lane">
-        <div id="{RR}_logo" class="totr_rr_logo totr_rr_icon totr_{RR}_icon" style="--scale: 3;" title="{COMPANY} Railway"></div>
-        <div id="{RR}_locomotive" class="totr_locomotive_slot" title="{COMPANY} locomotive space"></div>
-        <div id="{RR}_start" class="totr_railhouse" title="{COMPANY} railway start"></div>
+        <div id="{RR}_logo" class="totr_rr_logo totr_rr_icon totr_{RR}_icon" style="--scale: 3;"></div>
+        <div id="{RR}_locomotive" class="totr_locomotive_slot"></div>
+        <div id="{RR}_start" class="totr_railhouse"></div>
         <div id="{RR}_railway"></div>
-        <div id="{RR}_end" class="totr_railhouse" title="{COMPANY} railway end"></div>
+        <div id="{RR}_end" class="totr_railhouse"></div>
     </div>
     <!-- END RAILROAD -->
 </div>

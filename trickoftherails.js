@@ -496,6 +496,7 @@ function (dojo, declare) {
             var rw = 0;
             for (const rr of RR_PREFIXES) {
                 var railwaycards = this.gamedatas[rr+'_railway_cards'];
+                var has_loco = false;
                 for (const i in railwaycards) {
                     var railwaycard = railwaycards[i];
                     var tt = railwaycard.type;
@@ -503,14 +504,32 @@ function (dojo, declare) {
                     if (railwaycard.location_arg == 0) {
                         // Locomotives go to the loco slot
                         this.placeLocomotiveCard(parseInt(value), rw+1);
+                        has_loco = true;
                     } else {
                         var ctype = this.getUniqueTypeForCard(tt, value);
                         this.railWays[rw].item_type[ctype].weight = parseInt(railwaycard.location_arg);
                         this.railWays[rw].addToStockWithId(ctype, railwaycard.id);
                     }
                 }
+                this.addTitleTags(rw, rr, has_loco);
                 rw++;
             }
+        },
+
+        /**
+         * Sets "title" styles for all the fixed icons on railway lines.
+         * @param {int} ri 
+         * @param {string} rr prefix
+         * @param {bool} has_loco is there a loco card?
+         */
+        addTitleTags: function(ri, rr, has_loco) {
+            var company = RAILROADS[ri];
+            document.getElementById(rr+"_logo").title = dojo.string.substitute(_("${company} railway"), {company: company});
+            if (!has_loco) {
+                document.getElementById(rr+"_locomotive").title = dojo.string.substitute(_("${company} locomotive space"), {company: company});
+            }
+            document.getElementById(rr+"_start").title = dojo.string.substitute(_("${company} railway start"), {company: company});
+            document.getElementById(rr+"_end").title = dojo.string.substitute(_("${company} railway end"), {company: company});
         },
 
         /**
