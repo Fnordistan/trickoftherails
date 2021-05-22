@@ -616,19 +616,19 @@ class TrickOfTheRails extends Table
         $company = $this->railroads[$railroad]['name'];
 
         // am I the first to play this trick?
-        $action = clienttranslate("plays ${company}");
+        $action = clienttranslate('plays ${company}');
         $trick_rr = self::getGameStateValue( 'trickRR' );
         if ($trick_rr == 0) {
             // I'm the lead
             self::setGameStateValue( 'trickRR', $railroad);
             self::setGameStateValue( 'leadCard', $card_played['id']);
-            $action = clienttranslate("leads the trick with ${company}");
+            $action = clienttranslate('leads the trick with ${company}');
         } else {
             if ($railroad != $trick_rr) {
                 // do I have a card of that color in my hand?
                 if ($this->hasCurrentTrick($player_id)) {
                     $compname = $this->railroads[$trick_rr]['nametr'];
-                    throw new BgaUserException( self::_( "You must play a ${compname} card" ));
+                    throw new BgaUserException( self::_( 'You must play a ${compname} card' ));
                 }
             }
         }
