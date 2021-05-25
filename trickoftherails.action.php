@@ -74,4 +74,12 @@
       self::ajaxResponse( );
     }
 
+    public function actChangePref() {
+      self::setAjaxMode();
+      $pref = self::getArg('pref', AT_posint, true);
+      $value = self::getArg('value', AT_posint, true);
+      $this->game->changePreference($pref, $value);
+      self::ajaxResponse();
+    }    
+
   }

@@ -24,6 +24,7 @@ define('RESERVATION', 9);
 define('EXCHANGE', 11);
 define('RAILROAD_STATION', 12);
 define('TRICKLANE', "tricklane");
+define('AUTOPICK', 102);
 
 class TrickOfTheRails extends Table
 {
@@ -86,6 +87,9 @@ class TrickOfTheRails extends Table
                 self::initStat('player', $rr['railway'].'_shares', 0, $player_id);
                 self::initStat('player', $rr['railway'].'_profits', 0, $player_id);
             }
+            // get autopick pref
+            $autopick = $this->player_preferences[$player_id][AUTOPICK] ?? 1;
+            self::DbQuery("UPDATE player SET player_autopick=$autopick WHERE player_id=$player_id");
         }
         $sql .= implode( $values, ',' );
         self::DbQuery( $sql );
@@ -350,8 +354,13 @@ class TrickOfTheRails extends Table
         }
         $result['current_share_values'] = $current_share_val;
 
+        $result['turn'] = self::getStat('turns_number');
+        $result['game_length'] = self::getGameStateValue('handSize');
         $result['round'] = self::getStat('turns_number') % 2 == 0 ? "operating" : "stock";
         $result['reservation_cards'] = $this->countReservationCards();
+        // $result['autopick'] = $this->player_preferences;
+
+
         return $result;
     }
 
@@ -602,6 +611,18 @@ class TrickOfTheRails extends Table
         Each time a player is doing some game action, one of the methods below is called.
         (note: each method below must match an input method in trickoftherails.action.php)
     */
+
+    /**
+     * When players change player prefs.
+     */
+    function changePreference($pref, $value) {
+
+        if ($pref == AUTOPICK) {
+            $player_id = self::getCurrentPlayerId();
+            self::DbQuery("UPDATE player SET player_autopick=$value WHERE player_id=$player_id");
+            self::notifyPlayer( $player_id, "preferenceChanged", "", array() );
+        }
+    }
 
     /**
      * When someone plays a card to a trick.

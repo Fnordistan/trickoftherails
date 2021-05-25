@@ -98,7 +98,7 @@ var jstpl_rr_counter_block = '<div id="${rr}_counter_block_${id}" class="totr_rr
         <span id="${rr}_shares_counter_${id}" class="totr_shares_ctr totr_${rr}_shares_ctr" style="color: var(--color_${rr});"></span>\
     </div>';
 
-var jstpl_player_label = '<span id="card_played_${pid}" class="card_played_lbl" style="background-color: #${color};">${pname}</span>';
+var jstpl_player_label = '<span id="card_played_${pid}" class="totr_card_played_lbl" style="background-color: #${color};">${pname}</span>';
 
 var jstpl_team_heading = '<div id="${id}_team${team}" class="totr_team_banner" style="background-color: var(--color_team${team});">\
                                 <div id="${id}_team${team}_loco_l" class="totr_locomotive_icon" style="transform: scaleX(-1); float: left;"></div>\

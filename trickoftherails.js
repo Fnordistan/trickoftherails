@@ -26,6 +26,8 @@ const RAILHOUSE_W = 75;
 
 // ms used to set synchronous delay between scoring rrs in endgame
 const SCORING_DELAY = 3000;
+// individual player settings for auto play
+const PREF_AUTO_PLAY = 102;
 
 /**
  * Enum for Railhouse icons.
@@ -110,6 +112,8 @@ function (dojo, declare) {
             // Setting up player boards
             var teams = this.gamedatas.teams;
             this.round_type = this.gamedatas.round;
+            this.turn_number = this.gamedatas.turn;
+            this.game_length = this.gamedatas.game_length;
 
             for ( const player_id in gamedatas.players ) {
                 // Setting up player board
@@ -234,6 +238,7 @@ function (dojo, declare) {
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
+            this.setupPreference();
         },
 
         ///////////////////////////////////////////////////
@@ -561,6 +566,21 @@ function (dojo, declare) {
         },
 
         /**
+         * Check whether this is the last turn of the game.
+         */
+        isLastTurn: function() {
+            return this.game_length == this.turn_number;
+        },
+
+        /**
+         * Check whether this player should autoplay a card if possible.
+         * @returns true if autoplay
+         */
+        isAutopick: function() {
+            return this.prefs[102].value == 3 || (this.prefs[102].value == 2 && this.isLastTurn());
+        },
+
+        /**
          * Set value for current share value.
          * @param {int} rr
          * @param {int} sv
@@ -569,6 +589,53 @@ function (dojo, declare) {
             if (this.prefs[101].value == 2) {
                 const rw = RR_PREFIXES[rr-1];
                 this.currentShareValues[rw].setValue(sv);
+            }
+        },
+
+        /**
+         * Initialize preference values.
+         */
+         setupPreference: function() {
+            // set preference for autoplay
+            this.onPreferenceChanged(PREF_AUTO_PLAY, this.prefs[PREF_AUTO_PLAY].value);
+
+            dojo.query('.preference_control').on('change', (e) => {
+                // debugger;
+                var match = e.target.id.match(/^preference_control_(\d+)$/);
+                if (match) {
+                    var pref = match[1];
+                    var newValue = e.target.value;
+                    this.prefs[pref].value = newValue;
+                    this.onPreferenceChanged(pref, newValue);
+                }
+            });
+        },
+
+        /**
+         * 
+         * @param {*} backPrefs 
+         */
+        checkPreferencesConsistency: function(backPrefs) {
+            Object.keys(backPrefs).forEach(pref => {
+                if (this.prefs[pref].value != backPrefs[pref]) {
+                    this.onPreferenceChanged(PREF_AUTO_PLAY, this.prefs[pref].value);
+                }
+            })
+        },
+
+        /*
+        * Preference polyfill
+        */
+        setPreferenceValue: function(number, newValue) {
+            var optionSel = 'option[value="' + newValue + '"]';
+            dojo.query('#preference_control_' + number + ' > ' + optionSel + ', #preference_fontrol_' + number + ' > ' + optionSel).attr('selected', true);
+            var select = $('preference_control_' + number);
+            if (dojo.isIE) {
+                select.fireEvent('onchange');
+            } else {
+                var event = document.createEvent('HTMLEvents');
+                event.initEvent('change', false, true);
+                select.dispatchEvent(event);
             }
         },
 
@@ -582,6 +649,7 @@ function (dojo, declare) {
         {
             switch( stateName ) {
                 case 'newTrick':
+                    this.turn_number++;
                     this.round_type = (this.round_type == "operating") ? "stock" : "operating";
                     break;
                 case 'playerTurn':
@@ -1118,20 +1186,24 @@ function (dojo, declare) {
             return -1;
         },
 
+        ///////////////////////////////////////////////////
+        //// Player's action
+
         /**
-         * For calculating share values on the fly
+         * 
+         * @param {*} pref 
+         * @param {*} val 
          */
-        calculateShareValues: function() {
-            for (const r in RR_PREFIXES) {
-                var sv = 0;
-                var rr = RR_PREFIXES[r];
-                
+        onPreferenceChanged: function(pref, val) {
+            if (pref == PREF_AUTO_PLAY) {
+                this.ajaxcall( "/trickoftherails/trickoftherails/actChangePref.html", { 
+                    pref: PREF_AUTO_PLAY,
+                    value: val,
+                    lock: true 
+                }, this, function( result ) {  }, function( is_error) { } );                        
             }
         },
 
-        ///////////////////////////////////////////////////
-        //// Player's action
-        
         /*
         
             Here, you are defining methods to handle player's action (ex: results of mouse click on 
