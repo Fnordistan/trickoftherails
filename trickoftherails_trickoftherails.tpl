@@ -106,6 +106,16 @@ var jstpl_team_heading = '<div id="${id}_team${team}" class="totr_team_banner" s
                                 <div id="${id}_team${team}_loco_r" class="totr_locomotive_icon" style="float: right;"></div>\
                             </div>';
 
-</script>  
+var jstpl_player_prefs = '<label class="totr_pref">Never\
+                            <input id="autopick_0" type="radio" name="radio">\
+                        </label>\
+                        <label class="totr_pref">Last turn only\
+                            <input id="autopick_1"  type="radio" name="radio">\
+                        </label>\
+                        <label class="totr_pref">Always\
+                            <input id="autopick_2" type="radio" name="radio">\
+                        </label>';
+
+</script>
 
 {OVERALL_GAME_FOOTER}

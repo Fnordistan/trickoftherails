@@ -279,6 +279,18 @@
     line-height: 35px;
 }
 
+.totr_player_prefs {
+    display: block;
+    text-align: left;
+    font-size: 14px;
+    font-weight: normal;
+    border-top: 2px solid;
+}
+
+.totr_pref {
+    padding-left: 10px;
+}
+
 /* base class for RR logs */
 .totr_rr_logo {
     margin: 5px;

@@ -172,8 +172,12 @@ function (dojo, declare) {
                 myhand_wrap = "myhand_wrap_bottom";
                 myhand_wrap_hide = "myhand_wrap_top";
             }
+            var myhand_container = document.getElementById(myhand_wrap);
 
-            document.getElementById(myhand_wrap).appendChild(myhand);
+            myhand_container.appendChild(myhand);
+            // add options checkboxes
+            this.setupPlayerPreferenceButtons(myhand_container);
+
             document.getElementById(myhand_wrap_hide).remove();
 
             if (!this.isSpectator) {
@@ -593,6 +597,29 @@ function (dojo, declare) {
         },
 
         /**
+         * Attach the player preference buttons to hand div
+         * @param {element} hand_div
+         */
+        setupPlayerPreferenceButtons: function(hand_div) {
+            var pick_pref = this.prefs[PREF_AUTO_PLAY].value;
+
+            var pref_opt = document.createElement("DIV");
+            pref_opt.classList.add("totr_player_prefs");
+            pref_opt.innerHTML = _("Play card automatically if there is only one card you can play:");
+            hand_div.appendChild(pref_opt);
+            var player_prefs = this.format_block('jstpl_player_prefs', {});
+            dojo.place(player_prefs, pref_opt);
+            for (var i = 0; i < 3; i++) {
+                var checkid = "autopick_"+i;
+                var check = document.getElementById(checkid);
+                if (i == pick_pref) {
+                    check.setAttribute("checked", "checked");
+                }
+                dojo.connect(check, 'onchange', this, 'changePreference');
+            }
+        },
+
+        /**
          * Initialize preference values.
          */
          setupPreference: function() {
@@ -621,6 +648,11 @@ function (dojo, declare) {
                     this.onPreferenceChanged(PREF_AUTO_PLAY, this.prefs[pref].value);
                 }
             })
+        },
+
+        changePreference: function(check) {
+            var newpref = parseInt(check.target.id[check.target.id.length-1]);
+            this.setPreferenceValue(PREF_AUTO_PLAY, newpref);
         },
 
         /*
@@ -1198,8 +1230,7 @@ function (dojo, declare) {
             if (pref == PREF_AUTO_PLAY) {
                 this.ajaxcall( "/trickoftherails/trickoftherails/actChangePref.html", { 
                     pref: PREF_AUTO_PLAY,
-                    value: val,
-                    lock: true 
+                    value: val
                 }, this, function( result ) {  }, function( is_error) { } );                        
             }
         },
