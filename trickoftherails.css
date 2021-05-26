@@ -281,6 +281,7 @@
 
 .totr_player_prefs {
     display: block;
+    padding-top: 5px;
     text-align: left;
     font-size: 14px;
     font-weight: normal;

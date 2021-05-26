@@ -79,11 +79,11 @@ $game_preferences = array(
         'default' => 1
     ),
     102 => array(
-        'name' => totranslate('Autoplay card when you have only one card of the trick suit'),
-        'needReload' => true,
+        'name' => totranslate('Autoplay card when you have only one card to play'),
+        'needReload' => false,
         'values' => array(
             0 => array( 'name' => totranslate( "Never" )),
-            1 => array( 'name' => totranslate( "Only on last turn" )),
+            1 => array( 'name' => totranslate( "Final hand only" )),
             2 => array( 'name' => totranslate( "Always" ))
         ),
         'default' => 0

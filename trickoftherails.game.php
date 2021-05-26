@@ -425,6 +425,43 @@ class TrickOfTheRails extends Table
     }
 
     /**
+     * Does the player have exactly one card of the trick suit?
+     */
+    function trickCardsInHand($player_id) {
+        $trick_rr = self::getGameStateValue( 'trickRR' );
+        $cards_in_hand = $this->cards->getCardsInLocation( 'hand', $player_id );
+        $trickcards = array();
+        foreach ($cards_in_hand as $card) {
+            if ($card['type'] == $trick_rr) {
+                $trickcards[] = $card;
+            }
+        }
+        return $trickcards;
+    }
+
+    /**
+     * Is this the last turn?
+     */
+    function isLastTurn() {
+        return self::getGameStateValue('handSize') == self::getStat('turns_number');
+    }
+
+    /**
+     * Check whether this player has only one card and autopick pref is set.
+     */
+    function getAutoPick($player_id) {
+        $card = null;
+        $pref = self::getUniqueValueFromDB("SELECT player_autopick pref FROM player WHERE player_id=$player_id");
+        if ($pref == 2 || ($pref == 1 && $this->isLastTurn())) {
+            $cards = $this->trickCardsInHand($player_id);
+            if (count($cards) == 1) {
+                $card = $cards[0];
+            }
+        }
+        return $card;
+    }
+
+    /**
      * Return the card_id of the most recent card played to the trickrow by the current active player.
      */
     function getActivePlayersCard() {
@@ -437,7 +474,7 @@ class TrickOfTheRails extends Table
     }
 
     /**
-     * **** Should no longer be needed as the UI checks if a card is already there. ****
+     * **** Should no longer be needed as the UI checks if a card is already there, but in case of client-side shenanigans. ****
      * 
      * Checks whether a locomotive has already been placed here.
      * Given a ${rr}_railway" location.
@@ -991,9 +1028,13 @@ class TrickOfTheRails extends Table
             $this->gamestate->nextState( 'resolveTrick' );        
         } else {
             $player_id = self::activeNextPlayer();
-            self::giveExtraTime( $player_id );
-
+            $card = $this->getAutoPick($player_id);
             $this->gamestate->nextState( 'nextPlayer' );        
+            if ($card == null) {
+                self::giveExtraTime( $player_id );
+            } else {
+                $this->playCard($card['id']);
+            }
         }
     }
 

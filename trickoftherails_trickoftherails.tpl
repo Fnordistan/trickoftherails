@@ -109,7 +109,7 @@ var jstpl_team_heading = '<div id="${id}_team${team}" class="totr_team_banner" s
 var jstpl_player_prefs = '<label class="totr_pref">Never\
                             <input id="autopick_0" type="radio" name="radio">\
                         </label>\
-                        <label class="totr_pref">Last turn only\
+                        <label class="totr_pref">Final hand only\
                             <input id="autopick_1"  type="radio" name="radio">\
                         </label>\
                         <label class="totr_pref">Always\

@@ -570,21 +570,6 @@ function (dojo, declare) {
         },
 
         /**
-         * Check whether this is the last turn of the game.
-         */
-        isLastTurn: function() {
-            return this.game_length == this.turn_number;
-        },
-
-        /**
-         * Check whether this player should autoplay a card if possible.
-         * @returns true if autoplay
-         */
-        isAutopick: function() {
-            return this.prefs[102].value == 3 || (this.prefs[102].value == 2 && this.isLastTurn());
-        },
-
-        /**
          * Set value for current share value.
          * @param {int} rr
          * @param {int} sv
@@ -650,13 +635,17 @@ function (dojo, declare) {
             })
         },
 
+        /**
+         * Called bu clicking preference checkboxes, sets player pref.
+         * @param {*} check 
+         */
         changePreference: function(check) {
             var newpref = parseInt(check.target.id[check.target.id.length-1]);
             this.setPreferenceValue(PREF_AUTO_PLAY, newpref);
         },
 
         /*
-        * Preference polyfill
+        * Preference polyfill. Called by both checkbox and the player preference menu.
         */
         setPreferenceValue: function(number, newValue) {
             var optionSel = 'option[value="' + newValue + '"]';
@@ -1232,6 +1221,9 @@ function (dojo, declare) {
                     pref: PREF_AUTO_PLAY,
                     value: val
                 }, this, function( result ) {  }, function( is_error) { } );                        
+                for (let i = 0; i < 3; i++) {
+                    document.getElementById("autopick_"+i).checked = (val == i);
+                }
             }
         },
 
