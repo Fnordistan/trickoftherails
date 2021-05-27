@@ -54,6 +54,7 @@ if (!defined('STATE_SETUP')) { // ensure this block is only invoked once, since 
     define("STATE_NEW_TRICK", 2);
     define("STATE_PLAY_CARD", 3);
     define("STATE_NEXT_PLAYER", 4);
+    define("STATE_AUTOPLAY", 5);
     define("STATE_RESOLVE_TRICK", 10);
     define("STATE_ADD_LOCOMOTIVE", 20);
     define("STATE_ADD_RAILWAY", 25);
@@ -99,7 +100,15 @@ $machinestates = array(
         "description" => "",
         "type" => "game",
         "action" => "stNextPlayer",
-        "transitions" => array( "nextPlayer" => STATE_PLAY_CARD, "resolveTrick" => STATE_RESOLVE_TRICK )
+        "transitions" => array( "nextPlayer" => STATE_PLAY_CARD, "autoPick" => STATE_AUTOPLAY, "resolveTrick" => STATE_RESOLVE_TRICK )
+    ),
+
+    STATE_AUTOPLAY => array(
+        "name" => "autoPlay",
+        "description" => "",
+        "type" => "game",
+        "action" => "stAutoPlay",
+        "transitions" => array( "" => STATE_NEXT_PLAYER )
     ),
 
     STATE_RESOLVE_TRICK => array(

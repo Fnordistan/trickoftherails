@@ -448,11 +448,18 @@ class TrickOfTheRails extends Table
 
     /**
      * Check whether this player has only one card and autopick pref is set.
+     * Returns 1 card if conditions are met for autopick, otherwise null
      */
     function getAutoPick($player_id) {
         $card = null;
         $pref = self::getUniqueValueFromDB("SELECT player_autopick pref FROM player WHERE player_id=$player_id");
-        if ($pref == 2 || ($pref == 1 && $this->isLastTurn())) {
+        if ($this->isLastTurn() && ($pref == 1 || $pref == 2)) {
+            $cards_in_hand = $this->cards->getCardsInLocation( 'hand', $player_id );
+            if (count($cards_in_hand) != 1) {
+                throw new BgaVisibleSystemException('player $player_id has more than one card on last turn'); // NOI18N
+            }
+            $card = array_pop($cards_in_hand);
+        } else if ($pref == 2) {
             $cards = $this->trickCardsInHand($player_id);
             if (count($cards) == 1) {
                 $card = $cards[0];
@@ -663,11 +670,19 @@ class TrickOfTheRails extends Table
 
     /**
      * When someone plays a card to a trick.
+     * Now just a wrapper for state transitions.
      */
-    function playCard( $card_id )
-    {
+    function playCard( $card_id ) {
         self::checkAction( 'playCard' ); 
+        $this->doCardPlay($card_id);
+        // Next player
+        $this->gamestate->nextState();
+    }
 
+    /**
+     * Functionality extracted from the playCard action function.
+     */
+    function doCardPlay($card_id) {
         $player_id = self::getActivePlayerId();
         $card_played = $this->cards->getCard($card_id);
         $railroad = $card_played['type'];
@@ -707,8 +722,6 @@ class TrickOfTheRails extends Table
             'card_value_label' => $this->values_label [$card_played ['type_arg']],
             'rr' => $railroad,
             'company' => $company));
-        // Next player
-        $this->gamestate->nextState();
     }
 
     /**
@@ -1029,13 +1042,23 @@ class TrickOfTheRails extends Table
         } else {
             $player_id = self::activeNextPlayer();
             $card = $this->getAutoPick($player_id);
-            $this->gamestate->nextState( 'nextPlayer' );        
             if ($card == null) {
                 self::giveExtraTime( $player_id );
+                $this->gamestate->nextState( 'nextPlayer' );        
             } else {
-                $this->playCard($card['id']);
+                $this->gamestate->nextState( 'autoPick' );        
             }
         }
+    }
+
+    /**
+     * Plays card for player with autoplay option set.
+     */
+    function stAutoPlay() {
+        $player_id = self::getActivePlayerId();
+        $card = $this->getAutoPick($player_id);
+        $this->doCardPlay($card['id']);
+        $this->gamestate->nextState("");
     }
 
     /**
@@ -1535,29 +1558,14 @@ class TrickOfTheRails extends Table
     
     function upgradeTableDb( $from_version )
     {
-        // $from_version is the current version of this game database, in numerical form.
-        // For example, if the game was running with a release of your game named "140430-1345",
-        // $from_version is equal to 1404301345
         
         // Example:
-//        if( $from_version <= 1404301345 )
-//        {
-//            // ! important ! Use DBPREFIX_<table_name> for all tables
-//
-//            $sql = "ALTER TABLE DBPREFIX_xxxxxxx ....";
-//            self::applyDbUpgradeToAllDB( $sql );
-//        }
-//        if( $from_version <= 1405061421 )
-//        {
-//            // ! important ! Use DBPREFIX_<table_name> for all tables
-//
-//            $sql = "CREATE TABLE DBPREFIX_xxxxxxx ....";
-//            self::applyDbUpgradeToAllDB( $sql );
-//        }
-//        // Please add your future database scheme changes here
-//
-//
+       if( $from_version <= 2105120134 )
+       {
+           // ! important ! Use DBPREFIX_<table_name> for all tables
 
-
-    }    
+           $sql = "ALTER TABLE DBPREFIX_player ADD `player_autopick` TINYINT NOT NULL";
+           self::applyDbUpgradeToAllDB( $sql );
+       }
+    }
 }
