@@ -1564,7 +1564,7 @@ class TrickOfTheRails extends Table
        {
            // ! important ! Use DBPREFIX_<table_name> for all tables
 
-           $sql = "ALTER TABLE DBPREFIX_player ADD `player_autopick` TINYINT NOT NULL";
+           $sql = "ALTER TABLE DBPREFIX_player ADD player_autopick TINYINT NOT NULL DEFAULT '0'";
            self::applyDbUpgradeToAllDB( $sql );
        }
     }
