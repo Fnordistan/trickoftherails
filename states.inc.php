@@ -82,7 +82,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "stNewTrick",
         "updateGameProgression" => true,
-    	"transitions" => array( "" => STATE_PLAY_CARD )
+    	"transitions" => array( "nextPlayer" => STATE_PLAY_CARD, "autoPick" => STATE_AUTOPLAY )
     ),
     
     STATE_PLAY_CARD => array(

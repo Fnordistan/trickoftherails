@@ -262,10 +262,8 @@ function (dojo, declare) {
                             "card_value_label": args.card_value_label,
                             "rrname": rr_label
                         });
-                        // hack because we had to insert ${card_value}
-                        log = log.replace('${card_value}', '');
                     }
-                    if (args.company) {
+                    if (args.company || args.company_name) {
                         var compstr = this.format_block('jstpl_rr_name', {
                             "company": args.company,
                             "rrname": rr_label
@@ -277,15 +275,17 @@ function (dojo, declare) {
                             // interpolation inside the action
                             args.action = args.action.replace('${company}', compstr);
                         }
-                        // hack because we had to insert ${rr}
-                        log = log.replace('${rr}', '');
                     }
                     if (args.locomotive) {
                         let re = /\[(.+)\]/;
                         var loc_str = args.locomotive;
-                        loc_str = loc_str.replace(re, "<span class=\"totr_locomotive_value\">$1</span>");
+                        loc_str = loc_str.replace(re, " <span class=\"totr_locomotive_value\">$1</span>");
                         args.locomotive = loc_str;
                     }
+                    // hack to remove all the interpolated vars
+                    log = log.replace('${rr}', '');
+                    log = log.replace('${card_value}', '');
+                    log = log.replace('${company_name}', '');
                 }
             } catch (e) {
                 console.error(log, args, "Exception thrown", e.stack);
@@ -451,8 +451,11 @@ function (dojo, declare) {
                 var rr = tcard.type;
                 var value = tcard.type_arg;
                 var ctype = this.getUniqueTypeForCard(rr, value);
-                this.cardsPlayed.item_type[ctype].weight = parseInt(tcard.location_arg);
+                var wt = parseInt(tcard.location_arg);
+                this.cardsPlayed.item_type[ctype].weight = wt;
                 this.cardsPlayed.addToStockWithId(ctype, tcard.id);
+                const card_div = document.getElementById('cardsplayed_item_'+i);
+                card_div.style['transform'] = "translateX("+(wt*2)+"px)";
                 this.addPlayerLabel(i, played[i]);
             }
         },
@@ -463,7 +466,7 @@ function (dojo, declare) {
         addPlayerLabel: function(id, player_id) {
             const card_div = document.getElementById('cardsplayed_item_'+id);
             const player = this.gamedatas.players[player_id];
-            card_div.style['border'] = "3px solid #"+ player['color'];
+            card_div.style['border'] = "2px solid #"+ player['color'];
             dojo.place(this.format_block('jstpl_player_label', {pid: player_id, pname: player['name'], color: player['color']}), card_div);
         },
 

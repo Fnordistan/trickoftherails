@@ -25,6 +25,9 @@ define('EXCHANGE', 11);
 define('RAILROAD_STATION', 12);
 define('TRICKLANE', "tricklane");
 define('AUTOPICK', 102);
+define('STRVAR_RR', '${rr}');
+define('STRVAR_CV', '${card_value}');
+define('STRVAR_COMP', '${company_name}');
 
 class TrickOfTheRails extends Table
 {
@@ -701,7 +704,7 @@ class TrickOfTheRails extends Table
                 // do I have a card of that color in my hand?
                 if ($this->hasCurrentTrick($player_id)) {
                     $compname = $this->railroads[$trick_rr]['nametr'];
-                    throw new BgaUserException( self::_( 'You must play a ${compname} card' ));
+                    throw new BgaUserException( self::_( "You must play a ${compname} card" ));
                 }
             }
         }
@@ -713,7 +716,7 @@ class TrickOfTheRails extends Table
 
         // Notify all players about the card played
         // ${rr} and ${card_value} at the end are substituted on the client-side with js hacks
-        self::notifyAllPlayers('cardPlayed', '${player_name} ${action} ${card_value_label}'.'${rr}${card_value}', array ( // NOI18N
+        self::notifyAllPlayers('cardPlayed', '${player_name} ${action} ${card_value_label}'.STRVAR_RR.STRVAR_CV.STRVAR_COMP, array ( // NOI18N
             'card_id' => $card_id,
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
@@ -721,6 +724,7 @@ class TrickOfTheRails extends Table
             'card_value' => $card_played ['type_arg'],
             'card_value_label' => $this->values_label [$card_played ['type_arg']],
             'rr' => $railroad,
+            'company_name' => $company,
             'company' => $company));
     }
 
@@ -792,7 +796,7 @@ class TrickOfTheRails extends Table
         $this->cards->moveCard($lococard['id'], $railway, 0);
 
         // Notify all players about Locomotive placement
-        self::notifyAllPlayers('locomotivePlaced', clienttranslate('${player_name} places ${locomotive} on the ${company} railway').'${rr}', array (
+        self::notifyAllPlayers('locomotivePlaced', clienttranslate('${player_name} places ${locomotive} on the ${company} railway').STRVAR_RR, array (
             'i18n' => array ('locomotive', 'company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
@@ -828,7 +832,7 @@ class TrickOfTheRails extends Table
         }
 
         // Notify all players about Locomotive placement
-        self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} adds ${card_value_label} to ${endpoint} of the ${company} railway').'${rr}${card_value}', array (
+        self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} adds ${card_value_label} to ${endpoint} of the ${company} railway').STRVAR_RR.STRVAR_CV, array (
             'i18n' => array ('card_value_label', 'endpoint', 'company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
@@ -874,7 +878,7 @@ class TrickOfTheRails extends Table
 
         // Notify all players about City placement
         // ${rr} at the end is substituted by js on the client-side
-        self::notifyAllPlayers('cityAdded', clienttranslate('${player_name} adds ${city} to ${endpoint} of the ${company} railway').'${rr}', array (
+        self::notifyAllPlayers('cityAdded', clienttranslate('${player_name} adds ${city} to ${endpoint} of the ${company} railway').STRVAR_RR, array (
             'i18n' => array ('city', 'endpoint', 'company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
@@ -986,12 +990,17 @@ class TrickOfTheRails extends Table
         self::incGameStateValue('currentTrickIndex', 1);
 
         // who leads the new trick?
+        $nextState = "nextPlayer";
         $leadPlayer = self::getGameStateValue( 'wonLastTrick' );
         if ($leadPlayer != 0) {
             $this->gamestate->changeActivePlayer( $leadPlayer );
+            $card = $this->getAutoPick($leadPlayer);
+            if ($card != null) {
+                $nextState = "autoPick";        
+            }
         }
 
-        $this->gamestate->nextState( "" );
+        $this->gamestate->nextState( $nextState );
     }
 
     /**
@@ -1029,7 +1038,7 @@ class TrickOfTheRails extends Table
             $this->gamestate->changeActivePlayer( $winner );
 
             // ${rr}${card_value} at the end are substituted on the client side with js hacks
-            self::notifyAllPlayers('winTrick', clienttranslate('${player_name} wins trick with ${company} ${card_value_label}').'${rr}${card_value}', array (
+            self::notifyAllPlayers('winTrick', clienttranslate('${player_name} wins trick with ${company} ${card_value_label}').STRVAR_RR.STRVAR_CV, array (
                 'i18n' => array ('company', 'card_value_label' ),
                 'player_id' => self::getActivePlayerId(),
                 'player_name' => self::getActivePlayerName(),
@@ -1141,7 +1150,7 @@ class TrickOfTheRails extends Table
                 $discarded = $this->cards->getCard($trick_id);
                 if ($reservation != null) {
                     // ${rr}${card_value} at the end are replaced with js substitution on the client side
-                    self::notifyAllPlayers('reservationSwapped', clienttranslate('${player_name} replaces Reservation card with ${company} ${card_value_label} in Trick Lane').'${rr}${card_value}', array (
+                    self::notifyAllPlayers('reservationSwapped', clienttranslate('${player_name} replaces Reservation card with ${company} ${card_value_label} in Trick Lane').STRVAR_RR.STRVAR_CV, array (
                         'i18n' => array ('company', 'card_value_label' ),
                         'player_id' => $player,
                         'player_name' => $players[$player]['player_name'],
@@ -1154,7 +1163,7 @@ class TrickOfTheRails extends Table
                         'company' => $this->railroads [$discarded['type']] ['name']));
                 } else {
                     // ${rr}${card_value} at the end are replaced with js substitution on the client side
-                    self::notifyAllPlayers('discardedShare', clienttranslate('${player_name} discards ${company} ${card_value_label}').'${rr}${card_value}', array (
+                    self::notifyAllPlayers('discardedShare', clienttranslate('${player_name} discards ${company} ${card_value_label}').STRVAR_RR.STRVAR_CV, array (
                         'i18n' => array ('company', 'card_value_label' ),
                         'player_id' => $player,
                         'player_name' => $players[$player]['player_name'],
@@ -1175,7 +1184,7 @@ class TrickOfTheRails extends Table
                 $this->cards->moveCard($share['id'], 'shares', $player);
             }
             // ${rr}${card_value} at the end are replaced with js substitution on the client side
-            self::notifyAllPlayers('shareAdded', clienttranslate('${player_name} adds ${card_value_label} to ${company} shares').'${rr}${card_value}', array (
+            self::notifyAllPlayers('shareAdded', clienttranslate('${player_name} adds ${card_value_label} to ${company} shares').STRVAR_RR.STRVAR_CV, array (
                 'i18n' => array ('company', 'card_value_label' ),
                 'player_id' => $player,
                 'player_name' => $players[$player]['player_name'],
@@ -1350,8 +1359,8 @@ class TrickOfTheRails extends Table
         foreach( $this->railroads as $rr => $comp) {
             $next_row = array();
             // put company name on left column
-            // ${rr} is our hack for the client-side to turn it into the rr icon
-            $next_row[] = array('str' => '${company}${rr}',
+            // STRVAR_RR is our hack for the client-side to turn it into the rr icon
+            $next_row[] = array('str' => '${company}'.STRVAR_RR,
                                 'i18n' => array ('company'),
                                 'args' => array( 'company' => $comp['name'], 'rr' => $rr),
                                 'type' => 'header');
