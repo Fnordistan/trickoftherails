@@ -79,7 +79,7 @@ $game_preferences = array(
         'default' => 1
     ),
     102 => array(
-        'name' => totranslate('Autoplay card when you have only one card to play'),
+        'name' => totranslate('Play card automatically if there is only one card you can play'),
         'needReload' => false,
         'values' => array(
             0 => array( 'name' => totranslate( "Never" )),
