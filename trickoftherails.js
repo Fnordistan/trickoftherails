@@ -593,7 +593,7 @@ function (dojo, declare) {
 
             var pref_opt = document.createElement("DIV");
             pref_opt.classList.add("totr_player_prefs");
-            pref_opt.innerHTML = _("Play card automatically if there is only one card you can play:");
+            pref_opt.innerHTML = _("Play card automatically if there is only one card you can play")+":";
             hand_div.appendChild(pref_opt);
             var player_prefs = this.format_block('jstpl_player_prefs', {});
             dojo.place(player_prefs, pref_opt);
