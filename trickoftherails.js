@@ -595,7 +595,18 @@ function (dojo, declare) {
             pref_opt.classList.add("totr_player_prefs");
             pref_opt.innerHTML = _("Play card automatically if there is only one card you can play")+":";
             hand_div.appendChild(pref_opt);
-            var player_prefs = this.format_block('jstpl_player_prefs', {});
+            var never_lbl = _("Never");
+            var final_hand_lbl = _("Final hand only");
+            var always_lbl = _("Always");
+            var player_prefs = '<label class="totr_pref">'+never_lbl+
+                                    '<input id="autopick_0" class="totr_btn_opt" type="radio" name="radio">'+
+                                '</label>'+
+                                '<label class="totr_pref">'+final_hand_lbl+
+                                    '<input id="autopick_1" class="totr_btn_opt" type="radio" name="radio">'+
+                                '</label>'+
+                                '<label class="totr_pref">'+always_lbl+
+                                    '<input id="autopick_2" class="totr_btn_opt" type="radio" name="radio">'+
+                                '</label>';
             dojo.place(player_prefs, pref_opt);
             for (var i = 0; i < 3; i++) {
                 var checkid = "autopick_"+i;

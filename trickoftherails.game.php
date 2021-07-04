@@ -1569,7 +1569,7 @@ class TrickOfTheRails extends Table
     {
         
         // Example:
-       if( $from_version <= 2105120134 )
+       if( $from_version <= 1705160932 )
        {
            // ! important ! Use DBPREFIX_<table_name> for all tables
 

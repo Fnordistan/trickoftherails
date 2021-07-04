@@ -443,6 +443,12 @@
     width: 21px;
 }
 
+.totr_btn_opt {
+    position: relative;
+    margin: 0 2px;
+    top: 2px;
+}
+
 #card_rows {
     display: flex;
 }
