@@ -639,7 +639,7 @@ function (dojo, declare) {
 
         /**
          * 
-         * @param {*} backPrefs 
+         * @param {Object} backPrefs 
          */
         checkPreferencesConsistency: function(backPrefs) {
             Object.keys(backPrefs).forEach(pref => {
@@ -672,6 +672,10 @@ function (dojo, declare) {
                 event.initEvent('change', false, true);
                 select.dispatchEvent(event);
             }
+        },
+
+        getCompanyName: function(rr) {
+
         },
 
         ///////////////////////////////////////////////////
@@ -928,7 +932,8 @@ function (dojo, declare) {
                 icon_type = 'exchange';
                 card_text = SWAP_TEXT;
             } else {
-                lbl = RAILROADS[rri];
+                const RAILROADS_TR = [_("B&O"), _("C&O"), _("Erie"), _("NYC"), _("PRR")];
+                lbl = RAILROADS_TR[rri];
                 lbl_val = type_arg;
                 icon_type = 'railroad';
                 card_text = SWAP_TEXT;
