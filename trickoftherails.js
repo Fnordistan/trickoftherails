@@ -874,7 +874,7 @@ function (dojo, declare) {
                     case 3:
                     case 4:
                     case 5:
-                        lbl = "Locomotive";
+                        lbl = _("Locomotive");
                         lbl_val = this.getLocomotiveLabel(type_arg);
                         hdr_color_type = 'locomotive';
                         hdr_class = 'totr_tt_hdr_loc_val';
