@@ -704,7 +704,7 @@ class TrickOfTheRails extends Table
                 // do I have a card of that color in my hand?
                 if ($this->hasCurrentTrick($player_id)) {
                     $compname = $this->railroads[$trick_rr]['nametr'];
-                    throw new BgaUserException( self::_( "You must play a ${compname} card" ));
+                    throw new BgaUserException( self::_( "You must play a $compname card" ));
                 }
             }
         }
