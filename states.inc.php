@@ -87,8 +87,12 @@ $machinestates = array(
     
     STATE_PLAY_CARD => array(
         "name" => "playerTurn",
-        "description" => '${round_type}: ${actplayer} ${action}', // NOI18N
-        "descriptionmyturn" => '${round_type}: ${you} ${action}', // NOI18N
+        "description" => '${round_type}:'.clienttranslate('${actplayer} must play a ${company} card'),
+        "descriptionmyturn" => '${round_type}:'.clienttranslate('${you} must play a ${company} card'),
+        "descriptionany" => '${round_type}:'.clienttranslate('${actplayer} must play any card (no ${company} cards in hand)'),
+        "descriptionmyturnany" => '${round_type}:'.clienttranslate('${you} must play any card (no ${company} cards in hand)'),
+        "descriptionlead" => '${round_type}:'.clienttranslate('${actplayer} must lead the trick'),
+        "descriptionmyturnlead" => '${round_type}:'.clienttranslate('${you} must lead the trick'),
         "type" => "activeplayer",
         "possibleactions" => array( "playCard" ),
         "args" => "argPlayCards",

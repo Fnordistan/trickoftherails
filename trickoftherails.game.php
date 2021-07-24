@@ -910,20 +910,20 @@ class TrickOfTheRails extends Table
         $company = "";
         $rr = self::getGameStateValue( 'trickRR' );
         $action = "";
-        $round_type = self::getStat('turns_number') % 2 == 0 ? self::_("Operating Round") : self::_("Stock Round");
+        $round_type = self::getStat('turns_number') % 2 == 0 ? clienttranslate("Operating Round") : clienttranslate("Stock Round");
 
         if ($rr == 0) {
-            $action = clienttranslate('must lead the trick');
+            $action = 'lead';
         } else if ($this->hasCurrentTrick(self::getActivePlayerId())) {
             $company = $this->railroads[$rr]['name'];
-            $action = clienttranslate('must play a ${company} card');
+            $action = 'play';
         } else {
             $company = $this->railroads[$rr]['name'];
-            $action = clienttranslate('must play any card (no ${company} cards in hand)');
+            $action = 'playany';
         }
 
         return array(
-            "i18n" => array('round_type', 'action'),
+            "i18n" => array('round_type'),
             'round_type' => $round_type,
             'action' => $action,
             'rr' => $rr,
@@ -1315,9 +1315,9 @@ class TrickOfTheRails extends Table
             for ($i = 1; $i < count($winners); $i++) {
                 $winner_str = $winner_str." ".$winners[$i];
             }
-            $winner_str = clienttranslate("Winners: ").$winner_str;
+            $winner_str = clienttranslate("Winners:").' '.$winner_str;
         } else {
-            $winner_str = clienttranslate("Winner: ").$winner_str;
+            $winner_str = clienttranslate("Winner:").' '.$winner_str;
         }
         return $winner_str;
     }

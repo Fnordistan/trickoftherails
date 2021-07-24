@@ -689,7 +689,20 @@ function (dojo, declare) {
                     this.round_type = (this.round_type == "operating") ? "stock" : "operating";
                     break;
                 case 'playerTurn':
-                    this.updateHand(this.isCurrentPlayerActive(), args.args.rr);
+                    if (args && args.args) {
+                        this.updateHand(this.isCurrentPlayerActive(), args.args.rr);
+                        var action = args.args.action;
+                        if (action) {
+                            if (action == 'lead') {
+                                this.gamedatas.gamestate.description = this.gamedatas.gamestate.descriptionlead;
+                                this.gamedatas.gamestate.descriptionmyturn = this.gamedatas.gamestate.descriptionmyturnlead;
+                            } else if (action == 'playany') {
+                                this.gamedatas.gamestate.description = this.gamedatas.gamestate.descriptionany;
+                                this.gamedatas.gamestate.descriptionmyturn = this.gamedatas.gamestate.descriptionmyturnany;
+                            }
+                            this.updatePageTitle();
+                        }
+                    }
                 break;
                 case 'addRailway':
                     this.updateRailhouses(false, args.args.rr);
@@ -862,8 +875,8 @@ function (dojo, declare) {
             var icon_type = '';
             var station_value = 0;
             const CITY_CARD_TEXT = _("Trick winner places this City at either end of any railway");
-            var swap_action = this.existsReservationCard() ? _("winning card replaces leftmost Reservation Card") : _("winning card is discarded");
-            const SWAP_TEXT = _("Trick winner takes this card as a company share; ") + swap_action;
+            const swap_action = this.existsReservationCard() ? _("winning card replaces leftmost Reservation Card") : _("winning card is discarded");
+            const SWAP_TEXT = _("Trick winner takes this card as a company share;")+' '+ swap_action;
             if (type == ROWS) {
                 switch (type_arg) {
                     case 1:
