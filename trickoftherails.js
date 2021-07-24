@@ -242,7 +242,9 @@ function (dojo, declare) {
 
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
-            this.setupPreference();
+            if (!this.isReadOnly()) {
+                this.setupPreference();
+            }
         },
 
         ///////////////////////////////////////////////////
@@ -626,7 +628,6 @@ function (dojo, declare) {
             this.onPreferenceChanged(PREF_AUTO_PLAY, this.prefs[PREF_AUTO_PLAY].value);
 
             dojo.query('.preference_control').on('change', (e) => {
-                // debugger;
                 var match = e.target.id.match(/^preference_control_(\d+)$/);
                 if (match) {
                     var pref = match[1];
@@ -637,20 +638,20 @@ function (dojo, declare) {
             });
         },
 
-        /**
-         * 
-         * @param {Object} backPrefs 
-         */
-        checkPreferencesConsistency: function(backPrefs) {
-            Object.keys(backPrefs).forEach(pref => {
-                if (this.prefs[pref].value != backPrefs[pref]) {
-                    this.onPreferenceChanged(PREF_AUTO_PLAY, this.prefs[pref].value);
-                }
-            })
-        },
+        // /**
+        //  * 
+        //  * @param {Object} backPrefs 
+        //  */
+        // checkPreferencesConsistency: function(backPrefs) {
+        //     Object.keys(backPrefs).forEach(pref => {
+        //         if (this.prefs[pref].value != backPrefs[pref]) {
+        //             this.onPreferenceChanged(PREF_AUTO_PLAY, this.prefs[pref].value);
+        //         }
+        //     })
+        // },
 
         /**
-         * Called bu clicking preference checkboxes, sets player pref.
+         * Called by clicking preference checkboxes, sets player pref.
          * @param {*} check 
          */
         changePreference: function(check) {
@@ -672,10 +673,6 @@ function (dojo, declare) {
                 event.initEvent('change', false, true);
                 select.dispatchEvent(event);
             }
-        },
-
-        getCompanyName: function(rr) {
-
         },
 
         ///////////////////////////////////////////////////
@@ -1226,6 +1223,14 @@ function (dojo, declare) {
             return -1;
         },
 
+        /**
+         * Do not send preference changes if any of these pertain.
+         * @returns true if we're replaying or not active player
+         */
+        isReadOnly: function() {
+            return this.isSpectator || typeof g_replayFrom != 'undefined' || g_archive_mode;
+        },
+
         ///////////////////////////////////////////////////
         //// Player's action
 
@@ -1235,11 +1240,11 @@ function (dojo, declare) {
          * @param {*} val 
          */
         onPreferenceChanged: function(pref, val) {
-            if (pref == PREF_AUTO_PLAY) {
+            if (pref == PREF_AUTO_PLAY && !this.isReadOnly()) {
                 this.ajaxcall( "/trickoftherails/trickoftherails/actChangePref.html", { 
                     pref: PREF_AUTO_PLAY,
                     value: val
-                }, this, function( result ) {  }, function( is_error) { } );                        
+                }, this, function( result ) {  }, function( is_error) { } );
                 for (let i = 0; i < 3; i++) {
                     document.getElementById("autopick_"+i).checked = (val == i);
                 }

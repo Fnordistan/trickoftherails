@@ -129,7 +129,7 @@ class TrickOfTheRails extends Table
                 break;
             default:
                 // WTF happened?
-                throw new BgaVisibleSystemException("Invalid player count: {$players_nbr}");// NOI18N
+                throw new BgaVisibleSystemException("Invalid player count: $players_nbr");// NOI18N
         }
         self::setGameStateInitialValue( 'handSize', $handsize );
 
@@ -147,7 +147,7 @@ class TrickOfTheRails extends Table
         if ($this->isTeamsVariant()) {
             // sanity check
             if ($players_nbr != 4) {
-                throw new BgaVisibleSystemException("Invalid player count for Teams variant: {$players_nbr}");// NOI18N
+                throw new BgaVisibleSystemException("Invalid player count for Teams variant: $players_nbr");// NOI18N
             }
             $this->createTeams();
         }
