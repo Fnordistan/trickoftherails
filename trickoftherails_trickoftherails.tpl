@@ -11,7 +11,7 @@
 
 <div id="help_wrap" class="totr_help_display">
     <a href="#" id="shares_button" class="bgabutton bgabutton_blue"><span>{SHARES_BUTTON}</span></a>
-    <div id="station_values" class="totr_small_station_values_card"></div>
+    <a href="#" id="station_values_button" class="bgabutton bgabutton_green"><span>{SV_VALUES_BUTTON}</span></a>
 </div>
 
 <div id="shares_wrap" class="totr_shares_display">

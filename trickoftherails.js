@@ -395,7 +395,7 @@ function (dojo, declare) {
             // Show/Hide Player shares button
             dojo.connect($('shares_button'), 'onclick', this, 'onShowShares');
             // Station Values help card
-            this.addTooltipHtml( $('station_values'), '<div class="totr_large_station_values_card"></div>', 0 ); 
+            dojo.connect($('station_values_button'), 'onclick', this, 'onShowStationValues');
         },
 
         //// POPULATE Functions actually put the cards into the Stocks, from Db
@@ -1430,6 +1430,16 @@ function (dojo, declare) {
             var button_text = (sharedisplay == 'none') ? _("Show Player Shares") : _("Hide Player Shares");
             dojo.setStyle($('shares_wrap'), 'display', sharedisplay);
             $('shares_button').innerHTML = button_text;
+        },
+
+        onShowStationValues: function(event) {
+            const svDlg = new ebg.popindialog();
+            svDlg.create( 'myDialogUniqueId' );
+            svDlg.setTitle( _("Station Values") );
+            svDlg.setMaxWidth( 1060 );
+            const html = '<div class="totr_large_station_values_card"></div>';
+            svDlg.setContent(html);
+            svDlg.show();
         },
 
         /**

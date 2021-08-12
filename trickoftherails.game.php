@@ -717,6 +717,7 @@ class TrickOfTheRails extends Table
         // Notify all players about the card played
         // ${rr} and ${card_value} at the end are substituted on the client-side with js hacks
         self::notifyAllPlayers('cardPlayed', '${player_name} ${action} ${card_value_label}'.STRVAR_RR.STRVAR_CV.STRVAR_COMP, array ( // NOI18N
+            'i18n' => array('action'),
             'card_id' => $card_id,
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
@@ -833,7 +834,7 @@ class TrickOfTheRails extends Table
 
         // Notify all players about Locomotive placement
         self::notifyAllPlayers('railwayCardAdded', clienttranslate('${player_name} adds ${card_value_label} to ${endpoint} of the ${company} railway').STRVAR_RR.STRVAR_CV, array (
-            'i18n' => array ('card_value_label', 'endpoint', 'company'),
+            'i18n' => array ('endpoint', 'company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
             'card_id' => $mycard_id,
@@ -923,7 +924,7 @@ class TrickOfTheRails extends Table
         }
 
         return array(
-            "i18n" => array('round_type'),
+            "i18n" => array('round_type', 'company'),
             'round_type' => $round_type,
             'action' => $action,
             'rr' => $rr,
@@ -1039,7 +1040,7 @@ class TrickOfTheRails extends Table
 
             // ${rr}${card_value} at the end are substituted on the client side with js hacks
             self::notifyAllPlayers('winTrick', clienttranslate('${player_name} wins trick with ${company} ${card_value_label}').STRVAR_RR.STRVAR_CV, array (
-                'i18n' => array ('company', 'card_value_label' ),
+                'i18n' => array ('company' ),
                 'player_id' => self::getActivePlayerId(),
                 'player_name' => self::getActivePlayerName(),
                 'card_value' => $bestCard ['type_arg'],
@@ -1151,7 +1152,7 @@ class TrickOfTheRails extends Table
                 if ($reservation != null) {
                     // ${rr}${card_value} at the end are replaced with js substitution on the client side
                     self::notifyAllPlayers('reservationSwapped', clienttranslate('${player_name} replaces Reservation card with ${company} ${card_value_label} in Trick Lane').STRVAR_RR.STRVAR_CV, array (
-                        'i18n' => array ('company', 'card_value_label' ),
+                        'i18n' => array ('company'),
                         'player_id' => $player,
                         'player_name' => $players[$player]['player_name'],
                         'card_id' => $discarded['id'],
@@ -1164,7 +1165,7 @@ class TrickOfTheRails extends Table
                 } else {
                     // ${rr}${card_value} at the end are replaced with js substitution on the client side
                     self::notifyAllPlayers('discardedShare', clienttranslate('${player_name} discards ${company} ${card_value_label}').STRVAR_RR.STRVAR_CV, array (
-                        'i18n' => array ('company', 'card_value_label' ),
+                        'i18n' => array ('company'),
                         'player_id' => $player,
                         'player_name' => $players[$player]['player_name'],
                         'card_id' => $discarded['id'],
@@ -1185,7 +1186,7 @@ class TrickOfTheRails extends Table
             }
             // ${rr}${card_value} at the end are replaced with js substitution on the client side
             self::notifyAllPlayers('shareAdded', clienttranslate('${player_name} adds ${card_value_label} to ${company} shares').STRVAR_RR.STRVAR_CV, array (
-                'i18n' => array ('company', 'card_value_label' ),
+                'i18n' => array ('company'),
                 'player_id' => $player,
                 'player_name' => $players[$player]['player_name'],
                 'card_id' => $share['id'],

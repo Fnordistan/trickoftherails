@@ -139,11 +139,11 @@
 }
 
 .totr_large_station_values_card {
-    background-size: 480px 320px;
+    background-size: 960px 640px;
     background-image: url(img/station_values_card.jpg);
     background-repeat: no-repeat;
-    width: 480px;
-    height: 320px;
+    width: 960px;
+    height: 640px;
 }
 
 .totr_tooltip {
@@ -356,7 +356,7 @@
 .totr_help_display {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-evenly;
 }
 
 .totr_unl_loc {
