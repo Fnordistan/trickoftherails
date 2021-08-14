@@ -120,9 +120,12 @@ function (dojo, declare) {
                 var player_board_div = $('player_board_'+player_id);
 
                 if (teams) {
+                    const teamn = teams[player_id];
+                    const team_name = dojo.string.substitute(_("Team ${t}"), {t: teamn});
                     dojo.place( this.format_block( 'jstpl_team_heading', {
-                        "team": teams[player_id],
-                        "id": player_id
+                        "team": teamn,
+                        "id": player_id,
+                        "team_name": team_name
                     }), player_board_div);
                 }
     

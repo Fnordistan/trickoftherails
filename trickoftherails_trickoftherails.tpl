@@ -102,7 +102,7 @@ var jstpl_player_label = '<span id="card_played_${pid}" class="totr_card_played_
 
 var jstpl_team_heading = '<div id="${id}_team${team}" class="totr_team_banner" style="background-color: var(--color_team${team});">\
                                 <div id="${id}_team${team}_loco_l" class="totr_locomotive_icon" style="transform: scaleX(-1); float: left;"></div>\
-                                <div class="totr_team_label">Team ${team}</div>\
+                                <div class="totr_team_label">${team_name}</div>\
                                 <div id="${id}_team${team}_loco_r" class="totr_locomotive_icon" style="float: right;"></div>\
                             </div>';
 

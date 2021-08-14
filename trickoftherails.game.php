@@ -691,14 +691,13 @@ class TrickOfTheRails extends Table
         $railroad = $card_played['type'];
         $company = $this->railroads[$railroad]['name'];
 
-        // am I the first to play this trick?
-        $action = clienttranslate('plays ${company}');
         $trick_rr = self::getGameStateValue( 'trickRR' );
-        if ($trick_rr == 0) {
+        // am I the first to play this trick?
+        $islead = ($trick_rr == 0);
+        if ($islead) {
             // I'm the lead
             self::setGameStateValue( 'trickRR', $railroad);
             self::setGameStateValue( 'leadCard', $card_played['id']);
-            $action = clienttranslate('leads the trick with ${company}');
         } else {
             if ($railroad != $trick_rr) {
                 // do I have a card of that color in my hand?
@@ -716,12 +715,11 @@ class TrickOfTheRails extends Table
 
         // Notify all players about the card played
         // ${rr} and ${card_value} at the end are substituted on the client-side with js hacks
-        self::notifyAllPlayers('cardPlayed', '${player_name} ${action} ${card_value_label}'.STRVAR_RR.STRVAR_CV.STRVAR_COMP, array ( // NOI18N
-            'i18n' => array('action'),
+        self::notifyAllPlayers('cardPlayed', ($islead ? clienttranslate('${player_name} leads the trick with ${company} ${card_value_label}') : clienttranslate('${player_name} plays ${company} ${card_value_label}')).STRVAR_RR.STRVAR_CV.STRVAR_COMP, array (
+            'i18n' => array('company'),
             'card_id' => $card_id,
-            'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
-            'action' => $action,
+            'player_id' => self::getActivePlayerId(),
             'card_value' => $card_played ['type_arg'],
             'card_value_label' => $this->values_label [$card_played ['type_arg']],
             'rr' => $railroad,
@@ -782,7 +780,6 @@ class TrickOfTheRails extends Table
      * Return the type_arg (loco card#) of the locomotive placed, so we know if it's the next-to-last one
      */
     function doLocomotivePlacement( $rr ) {
-        // TODO- saw a bug where this wound up being 10 in zombie mode? Cannot reproduce
         $lococard = current($this->cards->getCardsInLocation('tricklane', self::getGameStateValue('currentTrickIndex')));
         $locomotive = $this->trick_type[$lococard['type_arg']]['name'];
         $railway = $this->railroads[$rr]['railway'];
@@ -797,8 +794,8 @@ class TrickOfTheRails extends Table
         $this->cards->moveCard($lococard['id'], $railway, 0);
 
         // Notify all players about Locomotive placement
-        self::notifyAllPlayers('locomotivePlaced', clienttranslate('${player_name} places ${locomotive} on the ${company} railway').STRVAR_RR, array (
-            'i18n' => array ('locomotive', 'company'),
+        self::notifyAllPlayers('locomotivePlaced', clienttranslate('${player_name} places Locomotive ${locomotive} on the ${company} railway').STRVAR_RR, array (
+            'i18n' => array ('company'),
             'player_id' => self::getActivePlayerId(),
             'player_name' => self::getActivePlayerName(),
             'card_id' => $lococard['id'],
@@ -901,12 +898,6 @@ class TrickOfTheRails extends Table
 //////////// Game state arguments
 ////////////
 
-    /*
-        Here, you can create methods defined as "game state arguments" (see "args" property in states.inc.php).
-        These methods function is to return some additional information that is specific to the current
-        game state.
-    */
-
     function argPlayCards() {
         $company = "";
         $rr = self::getGameStateValue( 'trickRR' );
@@ -937,7 +928,6 @@ class TrickOfTheRails extends Table
         $locomotive = $this->trick_type[$lococard['type_arg']]['name'];
 
         return array(
-            "i18n" => array( 'locomotive'),
             'locomotive' => $locomotive,
         );
     }
@@ -1215,11 +1205,9 @@ class TrickOfTheRails extends Table
                 // for trainless railways
                 $locomotive = 0;
                 $rrcards = 0;
-                $loco_value = 0;
             } else {
                 $locomotive = $path[0];
                 $rrcards = $path[1];
-                $loco_value = $this->stationValue($locomotive);
             }
             self::notifyAllPlayers('railroadScored', clienttranslate('scoring ${company} railway'), array (
                 'i18n' => array ('company'),
@@ -1288,15 +1276,35 @@ class TrickOfTheRails extends Table
             }
         }
         $score_table = $this->createFinalScoreTable();
-        $winner_label = $this->isTeamsVariant() ? $this->createTeamWinnerList($highscore) : $this->createWinnerList($player_scores, $highscore);
+        // $winner_label = $this->isTeamsVariant() ? $this->createTeamWinnerList($highscore) : $this->createWinnerList($player_scores, $highscore);
+        $winner_label = "";
+
+        if ($this->isTeamsVariant()) {
+            $teamwinners = $this->createTeamWinnerList($highscore);
+            $team = $teamwinners[0] == 1 ? clienttranslate("One") : clienttranslate("Two");
+            $winners = $teamwinners[1];
+            $winner_label = array('str' => clienttranslate('Team ${team} wins: ${winners}'),
+                                'args' => array('team' => $team, 'winners' => $winners),
+                                'i18n' => array('team'),
+                                'type' => 'header');
+        } else {
+            $winnerlist = $this->createWinnerList($player_scores, $highscore);
+            $sharedwin = $winnerlist[0];
+            $winner = $sharedwin ? clienttranslate("Winners") : clienttranslate("Winner");
+            $winners = $winnerlist[1];
+            $winner_label = array('str' => clienttranslate('${winner}: ${winners}'),
+                                'args' => array('winner' => $winner, 'winners' => $winners),
+                                'i18n' => array('winner'),
+                                'type' => 'header');
+        }
 
         $this->notifyAllPlayers( "tableWindow", '', array(
-            "id" => 'finalScoring',
-            "title" => clienttranslate("Final Score"),
-            "table" => $score_table,
-            "header" => $winner_label,
-            "closing" => clienttranslate( "Choo! Choo!" )
-        ) ); 
+            'id' => 'finalScoring',
+            'title' => clienttranslate("Final Score"),
+            'table' => $score_table,
+            'header' => $winner_label,
+            'closing' => clienttranslate( "Choo! Choo!" )
+        ) );
 
         $this->gamestate->nextState( "" );
     }
@@ -1312,19 +1320,19 @@ class TrickOfTheRails extends Table
             }
         }
         $winner_str = $winners[0];
-        if (count($winners) > 1) {
+        $sharedwin = count($winners) > 1;
+        if ($sharedwin) {
             for ($i = 1; $i < count($winners); $i++) {
                 $winner_str = $winner_str." ".$winners[$i];
             }
-            $winner_str = clienttranslate("Winners:").' '.$winner_str;
-        } else {
-            $winner_str = clienttranslate("Winner:").' '.$winner_str;
         }
-        return $winner_str;
+        
+        return array($sharedwin, $winner_str);
     }
 
     /**
-     * Create string for winning team
+     * Get winning team.
+     * Return tuple array, team number and winner name string
      */
     function createTeamWinnerList($highscore) {
         $player_scores = self::getNonEmptyCollectionFromDB( "SELECT player_name, player_score score, team FROM player" );
@@ -1336,10 +1344,8 @@ class TrickOfTheRails extends Table
                 $team = $player['team'];
             }
         }
-        $teamname = $team == 1 ? clienttranslate("One") : clienttranslate("Two");
         $winnernames = $winners[0]." & ".$winners[1];
-        $teamwinners = clienttranslate("Team $teamname wins: $winnernames");
-        return $teamwinners;
+        return array($team, $winnernames);
     }
 
     /**
@@ -1369,7 +1375,10 @@ class TrickOfTheRails extends Table
             $next_row[] = self::getStat($comp['railway']."_share_value");
             $profit_rows[] = $next_row;
         }
-        $total_profits = array(clienttranslate("Profits"));
+        $total_profits = array();
+        $total_profits[] = array('str' => clienttranslate("Profits"),
+                                 'args' => array(),
+                                 'type' => 'header');
         // empty cell
         $total_profits[] = "";
 
@@ -1385,21 +1394,22 @@ class TrickOfTheRails extends Table
         foreach( $players as $player ) {
             $player_id = $player['player_id'];
             $score = 0;
-            $teamstr = "";
             if ($this->isTeamsVariant()) {
                 $team = $teams[$player_id];
-                $teamstr = ' ('.clienttranslate("Team $team").')';
+                $table_header[] = array('str' => clienttranslate('${player_name} (Team ${team})'),
+                                        'args' => array( 'player_name' => $player['player_name'], 'team' => $team),
+                                        'type' => 'header');
+            } else {
+                $table_header[] = array('str' => '${player_name}',
+                                        'args' => array( 'player_name' => $player['player_name']),
+                                        'type' => 'header');
             }
-            $table_header[] = array('str' => '${player_name}${teamstr}',
-                                    'args' => array( 'player_name' => $player['player_name'], 'teamstr' => $teamstr),
-                                    'type' => 'header');
 
             $row = 0;
             foreach( $this->railroads as $rr2 => $company) {
                 $shares = self::getStat($company['railway']."_shares", $player_id);
                 $profit = self::getStat($company['railway']."_profits", $player_id);
-                $profit_rows[$row++][] = array('str' => '${profit} (${shares} shares)',
-                                                'i18n' => array ('profit', 'shares' ),
+                $profit_rows[$row++][] = array('str' => clienttranslate('${profit} (${shares} shares)'),
                                                 'args' => array('shares' => $shares, 'profit' => $profit));
                 $score += $profit;
             }
@@ -1422,9 +1432,9 @@ class TrickOfTheRails extends Table
             $team_row = array();
             $team_row[] = array('str' => clienttranslate('Team Scores'), 'args' => array(), 'type' => 'header' );
             $team_row[] = array('str' => ' ', 'args' => array(), 'type' => 'header' );
-            $team_row[] = array('str' => clienttranslate('Team 1'), 'args' => array(), 'type' => 'header' );
+            $team_row[] = array('str' => clienttranslate('${team}'), 'args' => array('team' => 'Team 1'), 'type' => 'header', 'i18n' => array('team') );
             $team_row[] = array('str' => '${team1}', 'args' => array('team1' => $team1score), 'type' => 'header' );
-            $team_row[] = array('str' => clienttranslate('Team 2'), 'args' => array(), 'type' => 'header' );
+            $team_row[] = array('str' => clienttranslate('${team}'), 'args' => array('team' => 'Team 2'), 'type' => 'header', 'i18n' => array('team') );
             $team_row[] = array('str' => '${team2}', 'args' => array('team2' => $team2score), 'type' => 'header' );
             $table[] = $team_row;
         }
