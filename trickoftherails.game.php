@@ -1209,7 +1209,7 @@ class TrickOfTheRails extends Table
                 $locomotive = $path[0];
                 $rrcards = $path[1];
             }
-            self::notifyAllPlayers('railroadScored', clienttranslate('scoring ${company} railway'), array (
+            self::notifyAllPlayers('railroadScored', clienttranslate('Scoring ${company} railway').STRVAR_RR, array (
                 'i18n' => array ('company'),
                 'company' => $this->railroads[$rri]['name'],
                 'rr' => $rri,

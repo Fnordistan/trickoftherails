@@ -268,9 +268,11 @@ function (dojo, declare) {
                             "rrname": rr_label
                         });
                     }
+
                     if (args.company || args.company_name) {
+                        var comp = args.company ?? args.company_name;
                         var compstr = this.format_block('jstpl_rr_name', {
-                            "company": args.company,
+                            "company": comp,
                             "rrname": rr_label
                         }) + this.format_block('jstpl_rr_icon', {
                             "rrname": rr_label
