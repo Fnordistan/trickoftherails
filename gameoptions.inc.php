@@ -29,15 +29,15 @@ $game_options = array(
     100 => array(
         'name' => totranslate('Trick Lane setup'),    
         'values' => array(
-            1 => array( 'name' => totranslate('Basic'), 'description' => totranslate('Standard Trick Lane (fixed order for City and Locomotive cards)')),
-            2 => array( 'name' => totranslate('Expert Variant'), 'description' => totranslate('Placement of Locomotive and City cards in the Trick Lane is randomized'), 'alpha' => false, 'nobeginner' => true )
+            1 => array( 'name' => totranslate('Basic'), 'description' => totranslate('Standard Trick Lane (fixed order for City and Locomotive cards)'), 'tmdisplay' => totranslate('Basic setup')),
+            2 => array( 'name' => totranslate('Expert Variant'), 'description' => totranslate('Placement of Locomotive and City cards in the Trick Lane is randomized'), 'tmdisplay' => totranslate('Expert setup'), 'alpha' => false, 'nobeginner' => true )
         ),
         'default' => 1
     ),
     101 => array (
         'name' => totranslate('Team Variant'),
         'values' => array (
-            1 => array( 'name' => totranslate('No teams'), 'tmdisplay' => ('')),
+            1 => array( 'name' => totranslate('No teams')),
             2 => array( 'name' => totranslate('Teams'), 'description' => totranslate('Players play as partners in teams of 2'), 'tmdisplay' => totranslate('Teams'), 'alpha' => false)
         ),
         'startcondition' => array(
